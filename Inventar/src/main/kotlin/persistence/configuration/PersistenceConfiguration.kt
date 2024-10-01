@@ -1,6 +1,6 @@
-package org.example.persistence.configuration
+package io.drullar.inventar.persistence.configuration
 
-import org.example.persistence.model.Products
+import io.drullar.inventar.persistence.model.Products
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 

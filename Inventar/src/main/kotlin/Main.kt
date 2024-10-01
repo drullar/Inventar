@@ -1,9 +1,15 @@
-package org.example
+package io.drullar.inventar
 
-import org.example.utils.Bootstrapper
+import androidx.compose.ui.window.Window
+import androidx.compose.ui.window.application
+import io.drullar.inventar.fe.App
+import io.drullar.inventar.utils.Bootstrapper
 
-//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
-// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 fun main() {
     Bootstrapper().bootstrapApplication()
+    application {
+        Window(onCloseRequest = ::exitApplication) {
+            App()
+        }
+    }
 }

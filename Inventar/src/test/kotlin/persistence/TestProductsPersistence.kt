@@ -3,7 +3,7 @@ package persistence
 import assertk.assertThat
 import assertk.assertions.isEqualTo
 import assertk.assertions.isNotNull
-import org.example.persistence.model.Product
+import io.drullar.inventar.persistence.model.Product
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.TestInstance

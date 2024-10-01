@@ -1,6 +1,6 @@
 package persistence.utils
 
-import org.example.persistence.configuration.AbstractPersistenceConfiguration
+import io.drullar.inventar.persistence.configuration.AbstractPersistenceConfiguration
 import org.jetbrains.exposed.sql.Database
 
 object TestPersistenceConfiguration : AbstractPersistenceConfiguration() {

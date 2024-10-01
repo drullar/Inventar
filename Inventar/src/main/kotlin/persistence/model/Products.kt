@@ -1,4 +1,4 @@
-package org.example.persistence.model
+package io.drullar.inventar.persistence.model
 
 import org.jetbrains.exposed.dao.EntityClass
 import org.jetbrains.exposed.dao.UUIDEntity

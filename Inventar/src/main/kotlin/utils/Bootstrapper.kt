@@ -1,7 +1,7 @@
-package org.example.utils
+package io.drullar.inventar.utils
 
-import org.example.persistence.configuration.IPersistenceConfiguration
-import org.example.persistence.configuration.PersistenceConfigurationImpl
+import io.drullar.inventar.persistence.configuration.IPersistenceConfiguration
+import io.drullar.inventar.persistence.configuration.PersistenceConfigurationImpl
 
 class Bootstrapper(
     private val persistenceConfiguration: IPersistenceConfiguration = PersistenceConfigurationImpl
