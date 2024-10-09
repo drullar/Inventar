@@ -1,8 +1,10 @@
 package io.drullar.inventar.persistence.configuration
 
 import io.drullar.inventar.persistence.model.Products
+import io.drullar.inventar.utils.AnnotationScanner
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
+import kotlin.reflect.full.isSuperclassOf
 
 /**
  * Interface for a singleton PersistenceConfiguration.
@@ -25,13 +27,18 @@ abstract class AbstractPersistenceConfiguration : IPersistenceConfiguration {
         setDatabaseConnection()
         transaction {
             addLogger(StdOutSqlLogger) // Remove logger if not required
+            val databaseTables =
+                AnnotationScanner.getAnnotatedClassesWith(Target::class.java, PERSISTENCE_CODE_PKG)
+                    .filter { it.isAssignableFrom(Table::class.java) }.map { it as Table }
             databaseTables.forEach { table ->
                 SchemaUtils.create(table)
             }
         }
     }
 
-    private val databaseTables: Set<Table> = setOf(Products)
+    companion object {
+        protected const val PERSISTENCE_CODE_PKG = "io.drullar.inventar.persistence"
+    }
 }
 
 object PersistenceConfigurationImpl : AbstractPersistenceConfiguration() {
