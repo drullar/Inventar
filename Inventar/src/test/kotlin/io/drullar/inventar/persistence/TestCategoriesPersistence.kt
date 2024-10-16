@@ -1,4 +1,4 @@
-package persistence
+package io.drullar.inventar.persistence
 
 
 class TestCategoriesPersistence : AbstractPersistenceTest() {

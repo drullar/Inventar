@@ -1,5 +1,7 @@
 package io.drullar.inventar.persistence.model
 
-object Order {
-    
-}
+import java.util.UUID
+
+data class Order(
+    val id: UUID
+)

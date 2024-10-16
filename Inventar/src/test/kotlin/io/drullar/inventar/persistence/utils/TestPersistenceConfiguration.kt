@@ -1,4 +1,4 @@
-package persistence.utils
+package io.drullar.inventar.persistence.utils
 
 import io.drullar.inventar.persistence.configuration.AbstractPersistenceConfiguration
 import org.jetbrains.exposed.sql.Database

@@ -1,7 +1,6 @@
 package io.drullar.inventar.persistence.configuration
 
-import io.drullar.inventar.persistence.model.Categories
-import io.drullar.inventar.persistence.model.Products
+import io.drullar.inventar.utils.TableScanner
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 
@@ -24,12 +23,12 @@ interface IPersistenceConfiguration {
 abstract class AbstractPersistenceConfiguration : IPersistenceConfiguration {
     override fun initiateDatabase() {
         setDatabaseConnection()
+        createTables()
+    }
+
+    private fun createTables() {
         transaction {
-            addLogger(StdOutSqlLogger) // Remove logger if not required
-            val databaseTables = setOf(
-                Categories,
-                Products
-            )
+            addLogger(StdOutSqlLogger)
             databaseTables.forEach { table ->
                 SchemaUtils.create(table)
             }
@@ -37,7 +36,9 @@ abstract class AbstractPersistenceConfiguration : IPersistenceConfiguration {
     }
 
     companion object {
-        protected const val PERSISTENCE_CODE_PKG = "io.drullar.inventar.persistence"
+        private val databaseTables by lazy {
+            TableScanner.scanForTables()
+        }
     }
 }
 

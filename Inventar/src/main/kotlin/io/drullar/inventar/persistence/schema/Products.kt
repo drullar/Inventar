@@ -1,8 +1,10 @@
-package io.drullar.inventar.persistence.model
+package io.drullar.inventar.persistence.schema
 
+import io.drullar.inventar.persistence.Relation
 import org.jetbrains.exposed.sql.Table
 
-object Products : Table() {
+@Relation
+object Products : Table("products") {
     val id = integer("id").autoIncrement().uniqueIndex()
     val name = varchar("name", NAME_MAX_LENGTH)
     val inStockQuantity = integer("quantity").default(0)

@@ -1,3 +1,5 @@
 package io.drullar.inventar.persistence.model
 
-const val NAME_MAX_LENGTH = 256
+data class Category(
+    val name: String
+)
