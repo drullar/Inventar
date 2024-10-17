@@ -1,8 +1,6 @@
 package io.drullar.inventar.persistence.repositories
 
-import org.jetbrains.exposed.sql.Table
-import org.jetbrains.exposed.sql.Transaction
-import org.jetbrains.exposed.sql.deleteAll
+import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 
 /**
@@ -35,9 +33,10 @@ interface PersistenceRepository<T : Table, D, ID> {
     fun deleteAll()
 
     /**
-     * Returns a list of all Ids
+     * Returns all persisted elements
      */
-    fun findALlIds(): List<ID>
+
+    fun findAll(): List<D>
 }
 
 /**
@@ -61,8 +60,9 @@ abstract class AbstractPersistenceRepository<T : Table, D, ID>(val table: T) : P
         }
     }
 
-    /**
-     * Save and get Model object
-     */
-    fun saveAndRetrieveModel(payload: D): D = findById(save(payload))!!
+    override fun findAll(): List<D> = withTransaction {
+        table.selectAll().map { transformResultRowToModel(it) }
+    }
+
+    protected abstract fun transformResultRowToModel(row: ResultRow): D //TODO consider moving to another abstraction, ex. ModelTransformer or sth similar
 }

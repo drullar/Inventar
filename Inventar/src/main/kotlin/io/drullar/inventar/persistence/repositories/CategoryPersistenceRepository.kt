@@ -5,11 +5,8 @@ import io.drullar.inventar.persistence.model.Category
 import io.drullar.inventar.persistence.schema.Categories
 import io.drullar.inventar.persistence.schema.Categories.name
 import io.drullar.inventar.persistence.schema.Products
+import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.deleteWhere
-import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.selectAll
-import org.jetbrains.exposed.sql.update
 
 internal object CategoryPersistenceRepository :
     AbstractPersistenceRepository<Categories, Category, String>(Categories) {
@@ -42,7 +39,5 @@ internal object CategoryPersistenceRepository :
         }
     }
 
-    override fun findALlIds(): List<String> = withTransaction {
-        table.selectAll()
-    }.map { it[name] }
+    override fun transformResultRowToModel(row: ResultRow): Category = Category(row[name])
 }

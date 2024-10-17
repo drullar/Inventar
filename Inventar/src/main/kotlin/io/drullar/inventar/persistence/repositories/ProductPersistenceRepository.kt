@@ -35,12 +35,7 @@ internal object ProductPersistenceRepository :
 
     override fun findById(id: Int): Product? = withTransaction {
         table.selectAll().where { table.id.eq(id) }.firstOrNull()?.let {
-            Product(
-                name = it[name],
-                sellingPrice = it[sellingPrice],
-                providerPrice = it[providerPrice],
-                inStockQuantity = it[inStockQuantity]
-            )
+            transformResultRowToModel(it)
         }
     }
 
@@ -50,7 +45,10 @@ internal object ProductPersistenceRepository :
         }
     }
 
-    override fun findALlIds(): List<Int> = withTransaction {
-        table.selectAll()
-    }.map { it[id] }
+    override fun transformResultRowToModel(row: ResultRow): Product = Product(
+        name = row[name],
+        inStockQuantity = row[inStockQuantity],
+        providerPrice = row[providerPrice],
+        sellingPrice = row[sellingPrice]
+    )
 }
