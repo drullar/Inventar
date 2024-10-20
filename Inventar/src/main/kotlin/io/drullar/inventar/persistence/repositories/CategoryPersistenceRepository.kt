@@ -4,23 +4,22 @@ import io.drullar.inventar.persistence.PersistenceException
 import io.drullar.inventar.persistence.model.Category
 import io.drullar.inventar.persistence.schema.Categories
 import io.drullar.inventar.persistence.schema.Categories.name
-import io.drullar.inventar.persistence.schema.Products
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 
 internal object CategoryPersistenceRepository :
     AbstractPersistenceRepository<Categories, Category, String>(Categories) {
 
-    override fun save(payload: Category): String = withTransaction {
+    override fun save(model: Category): String = withTransaction {
         Categories.insert {
-            it[name] = name
+            it[name] = model.name
         }.resultedValues?.first()?.let { it[name] } ?: throw PersistenceException()
     }
 
-    override fun update(id: String, payload: Category) {
+    override fun update(id: String, model: Category) {
         withTransaction {
             table.update(where = { table.name.eq(id) }) {
-                it[name] = payload.name
+                it[name] = model.name
             }
         }
     }
@@ -28,7 +27,7 @@ internal object CategoryPersistenceRepository :
     override fun findById(id: String): Category? = withTransaction {
         table.selectAll().where { table.name.eq(id) }.firstOrNull()?.let {
             Category(
-                name = it[Products.name]
+                name = it[name]
             )
         }
     }

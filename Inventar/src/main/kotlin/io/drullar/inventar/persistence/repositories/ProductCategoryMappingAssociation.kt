@@ -1,34 +1,34 @@
 package io.drullar.inventar.persistence.repositories
 
-import io.drullar.inventar.persistence.model.mapping.ProductCategoryPair
-import io.drullar.inventar.persistence.schema.mapping.ProductCategoriesMapping
-import io.drullar.inventar.persistence.schema.mapping.ProductCategoriesMapping.categoryName
-import io.drullar.inventar.persistence.schema.mapping.ProductCategoriesMapping.productId
+import io.drullar.inventar.persistence.model.id.ProductCategoryPair
+import io.drullar.inventar.persistence.schema.associative.ProductCategoriesAssociation
+import io.drullar.inventar.persistence.schema.associative.ProductCategoriesAssociation.categoryName
+import io.drullar.inventar.persistence.schema.associative.ProductCategoriesAssociation.productId
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 
-internal object ProductCategoryMappingRepository :
-    AbstractPersistenceRepository<ProductCategoriesMapping, ProductCategoryPair, ProductCategoryPair>(
-        ProductCategoriesMapping
+internal object ProductCategoryMappingAssociation :
+    AbstractPersistenceRepository<ProductCategoriesAssociation, ProductCategoryPair, ProductCategoryPair>(
+        ProductCategoriesAssociation
     ) {
-    private val mappingTable = ProductCategoriesMapping
+    private val mappingTable = ProductCategoriesAssociation
 
-    override fun save(payload: ProductCategoryPair): ProductCategoryPair = withTransaction {
+    override fun save(model: ProductCategoryPair): ProductCategoryPair = withTransaction {
         mappingTable.insert {
-            it[categoryName] = payload.categoryName
-            it[productId] = payload.productId
+            it[categoryName] = model.categoryName
+            it[productId] = model.productId
         }
-        payload
+        model
     }
 
-    override fun update(id: ProductCategoryPair, payload: ProductCategoryPair) {
+    override fun update(id: ProductCategoryPair, model: ProductCategoryPair) {
         withTransaction {
             table.update(where = {
                 table.categoryName.eq(id.categoryName)
                     .and(table.productId.eq(id.productId))
             }) {
-                it[categoryName] = payload.categoryName
-                it[productId] = payload.productId
+                it[categoryName] = model.categoryName
+                it[productId] = model.productId
             }
         }
     }

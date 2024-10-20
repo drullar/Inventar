@@ -10,16 +10,16 @@ import io.drullar.inventar.persistence.model.Product
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 
-internal object ProductPersistenceRepository :
+internal object ProductsRepository :
     AbstractPersistenceRepository<Products, Product, Int>(table = Products) {
-    override fun save(payload: Product): Int = withTransaction {
+    override fun save(model: Product): Int = withTransaction {
         val result = table.insert {
-            it[name] = payload.name
-            it[inStockQuantity] = payload.inStockQuantity
-            payload.sellingPrice?.let { price -> it[sellingPrice] = price }
-            payload.providerPrice?.let { price -> it[providerPrice] = price }
+            it[name] = model.name
+            it[inStockQuantity] = model.inStockQuantity
+            model.sellingPrice?.let { price -> it[sellingPrice] = price }
+            model.providerPrice?.let { price -> it[providerPrice] = price }
         }.resultedValues?.first()
-        result?.let { it[id] } ?: throw Exception("Could not save product with name ${payload.name}")
+        result?.let { it[id] } ?: throw Exception("Could not save product with name ${model.name}")
     }
 
     override fun update(id: Int, payload: Product) {

@@ -1,16 +1,15 @@
 package io.drullar.inventar.persistence.model
 
 import java.time.LocalDateTime
-import java.util.UUID
 
 data class Order(
-    val id: UUID,
-    val products: List<Product>,
     val date: LocalDateTime,
-    val status: OrderStatus
+    val status: OrderStatus,
+    val totalPrice: Double
 )
 
 enum class OrderStatus {
     COMPLETED,
-    CANCELED
+    CANCELED,
+    DRAFT
 }

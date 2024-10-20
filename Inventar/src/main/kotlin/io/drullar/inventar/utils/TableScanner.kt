@@ -17,6 +17,7 @@ object TableScanner {
             .loadClasses()
             .filter { it.superclass == Table::class.java }
             .map { it.getField("INSTANCE").get(null) as Table }
+            .toSet()
 
     private val scanAnnotation = Relation::class.java
     private const val PERSISTENCE_PKG_PATH = "io.drullar.inventar.persistence"

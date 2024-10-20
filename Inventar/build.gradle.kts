@@ -18,6 +18,7 @@ dependencies {
     implementation("org.jetbrains.exposed:exposed-jdbc:${exposedVersion}")
     implementation("org.jetbrains.exposed:exposed-dao:${exposedVersion}")
     implementation("org.jetbrains.exposed:exposed-java-time:${exposedVersion}")
+    implementation("org.xerial:sqlite-jdbc:3.46.1.3")
     implementation("com.h2database:h2:${h2Version}")
     // Note, if you develop a library, you should use compose.desktop.common.
     // compose.desktop.currentOs should be used in launcher-sourceSet

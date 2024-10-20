@@ -1,15 +1,15 @@
 package io.drullar.inventar.persistence.utils
 
 import io.drullar.inventar.persistence.configuration.AbstractPersistenceConfiguration
-import org.jetbrains.exposed.sql.Database
+import io.drullar.inventar.persistence.configuration.DatabaseConfiguration
 
 object TestPersistenceConfiguration : AbstractPersistenceConfiguration() {
-    override fun setDatabaseConnection(): Database =
-        Database.connect(
-            url = DATABASE_URL,
-            driver = DATABASE_DRIVER
-        )
 
-    private const val DATABASE_URL = "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1"
-    private const val DATABASE_DRIVER = "org.h2.Driver"
+    override fun getDatabaseConfiguration() = DatabaseConfiguration(
+        DATABASE_URL,
+        DATABASE_DRIVER
+    )
+
+    private const val DATABASE_URL = "jdbc:sqlite:build/temp.db?foreign_keys=on" //"jdbc:h2:mem:test"
+    private const val DATABASE_DRIVER = "org.sqlite.JDBC"//"org.h2.Driver"
 }

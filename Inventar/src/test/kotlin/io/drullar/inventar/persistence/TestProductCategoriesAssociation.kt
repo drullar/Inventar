@@ -4,17 +4,17 @@ import assertk.assertThat
 import assertk.assertions.isEqualTo
 import io.drullar.inventar.persistence.schema.Categories
 import io.drullar.inventar.persistence.schema.Products
-import io.drullar.inventar.persistence.schema.mapping.ProductCategoriesMapping
-import io.drullar.inventar.persistence.schema.mapping.ProductCategoriesMapping.categoryName
-import io.drullar.inventar.persistence.schema.mapping.ProductCategoriesMapping.productId
+import io.drullar.inventar.persistence.schema.associative.ProductCategoriesAssociation
+import io.drullar.inventar.persistence.schema.associative.ProductCategoriesAssociation.categoryName
+import io.drullar.inventar.persistence.schema.associative.ProductCategoriesAssociation.productId
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import kotlin.test.Test
 
-class TestProductCategoriesMapping : AbstractPersistenceTest() {
+class TestProductCategoriesAssociation : AbstractPersistenceTest() {
 
-    private val mapping = ProductCategoriesMapping
+    private val mapping = ProductCategoriesAssociation
     private val categories = Categories
     private val products = Products
 

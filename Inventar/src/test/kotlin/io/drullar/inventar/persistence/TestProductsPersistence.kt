@@ -5,10 +5,13 @@ import assertk.assertions.isEqualTo
 import assertk.assertions.isNotNull
 import assertk.assertions.isNull
 import io.drullar.inventar.persistence.model.Product
+import io.drullar.inventar.persistence.repositories.ProductsRepository
 import org.junit.jupiter.api.AfterEach
 import kotlin.test.Test
 
 class TestProductsPersistence : AbstractPersistenceTest() {
+
+    private val productsRepository = ProductsRepository
 
     @AfterEach
     override fun cleanUp() {

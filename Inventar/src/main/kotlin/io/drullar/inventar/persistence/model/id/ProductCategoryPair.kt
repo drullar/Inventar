@@ -1,4 +1,4 @@
-package io.drullar.inventar.persistence.model.mapping
+package io.drullar.inventar.persistence.model.id
 
 data class ProductCategoryPair(
     val productId: Int,

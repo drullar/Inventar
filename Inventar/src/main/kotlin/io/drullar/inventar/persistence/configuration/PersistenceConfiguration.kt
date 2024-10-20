@@ -12,7 +12,7 @@ interface IPersistenceConfiguration {
     /**
      * Each implementation should run [Database.connect] in order to set up the database connection
      */
-    fun setDatabaseConnection(): Database
+    fun setDatabaseConnection(databaseConfiguration: DatabaseConfiguration): Database
 
     /**
      * Builds the database tables and any other database required dependencies
@@ -22,16 +22,22 @@ interface IPersistenceConfiguration {
 
 abstract class AbstractPersistenceConfiguration : IPersistenceConfiguration {
     override fun initiateDatabase() {
-        setDatabaseConnection()
+        setDatabaseConnection(getDatabaseConfiguration())
         createTables()
     }
+
+    override fun setDatabaseConnection(databaseConfiguration: DatabaseConfiguration): Database =
+        Database.connect(
+            url = databaseConfiguration.databaseUrl,
+            driver = databaseConfiguration.databaseDriver
+        )
+
+    abstract fun getDatabaseConfiguration(): DatabaseConfiguration
 
     private fun createTables() {
         transaction {
             addLogger(StdOutSqlLogger)
-            databaseTables.forEach { table ->
-                SchemaUtils.create(table)
-            }
+            SchemaUtils.create(*databaseTables.toTypedArray())
         }
     }
 
@@ -43,12 +49,17 @@ abstract class AbstractPersistenceConfiguration : IPersistenceConfiguration {
 }
 
 object PersistenceConfigurationImpl : AbstractPersistenceConfiguration() {
-    override fun setDatabaseConnection(): Database =
-        Database.connect(
-            url = DATABASE_URL,
-            driver = DATABASE_DRIVER
-        )
 
-    private const val DATABASE_URL = "jdbc:h2:mem:test"
-    private const val DATABASE_DRIVER = "org.h2.Driver"
+    override fun getDatabaseConfiguration() = DatabaseConfiguration(
+        DATABASE_URL,
+        DATABASE_DRIVER
+    )
+
+    private const val DATABASE_URL = "jdbc:sqlite:file::memory:" //"jdbc:h2:mem:test"
+    private const val DATABASE_DRIVER = "java.sql.Drive"//"org.h2.Driver"
 }
+
+data class DatabaseConfiguration(
+    val databaseUrl: String,
+    val databaseDriver: String
+)

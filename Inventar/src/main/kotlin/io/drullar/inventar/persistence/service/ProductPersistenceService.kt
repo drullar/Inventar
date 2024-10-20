@@ -3,10 +3,10 @@ package io.drullar.inventar.persistence.service
 import io.drullar.inventar.persistence.model.Category
 import io.drullar.inventar.persistence.model.Product
 import io.drullar.inventar.persistence.repositories.CategoryPersistenceRepository
-import io.drullar.inventar.persistence.repositories.ProductPersistenceRepository
+import io.drullar.inventar.persistence.repositories.ProductsRepository
 
 object ProductPersistenceService {
-    private val productRepository = ProductPersistenceRepository
+    private val productRepository = ProductsRepository
     private val categoryRepository = CategoryPersistenceRepository
 
     fun save(request: SaveProductRequest) {

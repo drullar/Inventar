@@ -8,14 +8,14 @@ import org.jetbrains.exposed.sql.transactions.transaction
  */
 interface PersistenceRepository<T : Table, D, ID> {
     /**
-     * Save a new entity based on the provided [payload]
+     * Save a new entity based on the provided [model]
      */
-    fun save(payload: D): ID
+    fun save(model: D): ID
 
     /**
      * Update an entity if it exists. If an entity with the provided [id] doesn't exist, no action is taken
      */
-    fun update(id: ID, payload: D)
+    fun update(id: ID, model: D)
 
     /**
      * Return an instance of [D] if the record with [id] exists, otherwise null is returned
