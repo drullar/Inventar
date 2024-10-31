@@ -7,7 +7,7 @@ import io.drullar.inventar.persistence.schema.Categories.name
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 
-internal object CategoryPersistenceRepository :
+internal object CategoriesRepository :
     AbstractPersistenceRepository<Categories, Category, String>(Categories) {
 
     override fun save(model: Category): String = withTransaction {

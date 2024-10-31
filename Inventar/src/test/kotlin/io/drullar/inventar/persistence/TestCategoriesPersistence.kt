@@ -3,17 +3,15 @@ package io.drullar.inventar.persistence
 import assertk.assertThat
 import assertk.assertions.*
 import io.drullar.inventar.persistence.model.Category
-import io.drullar.inventar.persistence.repositories.CategoryPersistenceRepository
-import io.drullar.inventar.persistence.utils.TestPersistenceConfiguration
+import io.drullar.inventar.persistence.repositories.CategoriesRepository
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.assertThrows
 import kotlin.test.Test
 
 
 class TestCategoriesPersistence : AbstractPersistenceTest() {
 
-    private val repository = CategoryPersistenceRepository
+    private val repository = CategoriesRepository
 
     @AfterEach
     override fun cleanUp() {

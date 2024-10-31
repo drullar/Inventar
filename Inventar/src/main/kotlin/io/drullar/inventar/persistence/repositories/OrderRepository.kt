@@ -19,7 +19,7 @@ internal object OrderRepository : AbstractPersistenceRepository<Orders, Order, U
     }
 
     override fun transformResultRowToModel(row: ResultRow): Order = Order(
-        date = row[creationDate],
+        creationDate = row[creationDate],
         status = row[orderStatus],
         totalPrice = row[totalPrice]
     )
