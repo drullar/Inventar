@@ -9,7 +9,7 @@ import io.drullar.inventar.persistence.repositories.ProductsRepository
 import org.junit.jupiter.api.AfterEach
 import kotlin.test.Test
 
-class TestProductsPersistence : AbstractPersistenceTest() {
+class TestProductsScreenPersistence : AbstractPersistenceTest() {
 
     private val productsRepository = ProductsRepository
 

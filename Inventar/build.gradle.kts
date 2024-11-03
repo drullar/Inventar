@@ -4,6 +4,7 @@ plugins {
     kotlin("jvm")
     id("org.jetbrains.compose")
     id("org.jetbrains.kotlin.plugin.compose")
+    kotlin("plugin.serialization") version "2.0.21"
 }
 
 group = "io.drullar.inventar"
@@ -12,7 +13,6 @@ version = "0.1-SNAPSHOT"
 dependencies {
     val exposedVersion = "0.54.0"
     val h2Version = "2.2.224"
-    val composeNavigationVersion = "2.7.7"
     // Database dependencies
     implementation("org.jetbrains.exposed:exposed-core:${exposedVersion}")
     implementation("org.jetbrains.exposed:exposed-jdbc:${exposedVersion}")
@@ -38,14 +38,6 @@ tasks.test {
 }
 kotlin {
     jvmToolchain(17)
-}
-
-kotlin {
-    sourceSets {
-        dependencies {
-            implementation("org.jetbrains.androidx.navigation:navigation-compose:2.7.0-alpha07")
-        }
-    }
 }
 
 compose.desktop {
