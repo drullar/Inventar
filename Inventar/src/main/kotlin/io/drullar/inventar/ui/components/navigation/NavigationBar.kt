@@ -5,18 +5,17 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import io.drullar.inventar.ui.utils.Icons
 
 @Composable
-fun NavigationBar(onItemSelect: (destination: NavigationDestination) -> Unit) {
+fun NavigationBar(
+    selectedScreen: NavigationDestination,
+    onItemSelect: (destination: NavigationDestination) -> Unit
+) {
     val spacingBetweenElements = 10.dp
-    val selectedItemDetails = remember {
-        mutableStateOf(navigationItems[NavigationDestination.PRODUCTS_PAGE]!!)
-    }
+    val selectedItemDetails = navigationItems[selectedScreen]
 
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -25,9 +24,8 @@ fun NavigationBar(onItemSelect: (destination: NavigationDestination) -> Unit) {
         navigationItems.forEach { (destination, details) ->
             NavigationItem(
                 details = details,
-                isSelected = selectedItemDetails.value == details,
+                isSelected = selectedItemDetails == details,
                 onClick = {
-                    selectedItemDetails.value = details
                     onItemSelect(destination)
                 }
             )
@@ -37,8 +35,12 @@ fun NavigationBar(onItemSelect: (destination: NavigationDestination) -> Unit) {
 
 @Preview
 @Composable
-private fun NavigationBarPreviewContainer() {
-    NavigationBar({})
+@Deprecated(
+    "Used only for preview purposes",
+    ReplaceWith("NavigationBar(...)")
+)
+internal fun NavigationBarPreviewContainer() {
+    NavigationBar(NavigationDestination.PRODUCTS_PAGE, {})
 }
 
 private val navigationItems by lazy {

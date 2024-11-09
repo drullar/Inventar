@@ -5,8 +5,8 @@ import androidx.compose.runtime.Composable
 
 @Composable
 fun OrdersScreen(
-    content: @Composable () -> Unit
+    navigationBar: @Composable () -> Unit
 ) {
-    content.invoke()
-    Text("This is the orders screen")
+    navigationBar()
+    Text("Orders screen")
 }
