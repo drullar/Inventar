@@ -3,13 +3,11 @@ package io.drullar.inventar.ui.components.navigation
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -23,6 +21,8 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import io.drullar.inventar.ui.style.Colors
+import io.drullar.inventar.ui.style.roundedBorder
+import io.drullar.inventar.ui.style.rounderBorderShape
 import io.drullar.inventar.ui.utils.Icons
 
 @Preview
@@ -32,7 +32,6 @@ fun NavigationItem(
 ) {
     val navItemWidth = 120
     val navItemHeight = 40
-    val itemShape = RoundedCornerShape(10.dp)
     val onSelectBgColor = Colors.BABY_BLUE
     val defaultBgColor = Color.White
 
@@ -40,10 +39,10 @@ fun NavigationItem(
         modifier = Modifier
             .clickable(enabled = !isSelected) { onClick() }
             .size(navItemWidth.dp, navItemHeight.dp)
-            .border(1.dp, Color.Black, itemShape)
+            .roundedBorder()
             .background(
                 color = if (isSelected) onSelectBgColor else defaultBgColor,
-                shape = itemShape
+                shape = rounderBorderShape()
             )
 
     ) {

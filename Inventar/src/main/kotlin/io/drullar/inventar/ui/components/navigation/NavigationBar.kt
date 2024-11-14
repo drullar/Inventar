@@ -12,13 +12,14 @@ import io.drullar.inventar.ui.utils.Icons
 @Composable
 fun NavigationBar(
     selectedScreen: NavigationDestination,
+    modifier: Modifier = Modifier,
     onItemSelect: (destination: NavigationDestination) -> Unit
 ) {
     val spacingBetweenElements = 10.dp
     val selectedItemDetails = navigationItems[selectedScreen]
 
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(spacingBetweenElements)
     ) {
         navigationItems.forEach { (destination, details) ->
@@ -30,6 +31,7 @@ fun NavigationBar(
                 }
             )
         }
+        // TODO add SearchBar
     }
 }
 
@@ -40,7 +42,7 @@ fun NavigationBar(
     ReplaceWith("NavigationBar(...)")
 )
 internal fun NavigationBarPreviewContainer() {
-    NavigationBar(NavigationDestination.PRODUCTS_PAGE, {})
+    NavigationBar(NavigationDestination.PRODUCTS_PAGE) {}
 }
 
 private val navigationItems by lazy {
