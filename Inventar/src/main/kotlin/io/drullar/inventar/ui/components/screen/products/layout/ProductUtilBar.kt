@@ -1,4 +1,4 @@
-package io.drullar.inventar.ui.components.screen.products.child.components
+package io.drullar.inventar.ui.components.screen.products.layout
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row

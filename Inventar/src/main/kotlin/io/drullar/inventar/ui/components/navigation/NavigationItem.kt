@@ -22,7 +22,7 @@ import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import io.drullar.inventar.ui.style.Colors
 import io.drullar.inventar.ui.style.roundedBorder
-import io.drullar.inventar.ui.style.rounderBorderShape
+import io.drullar.inventar.ui.style.roundedBorderShape
 import io.drullar.inventar.ui.utils.Icons
 
 @Preview
@@ -42,7 +42,7 @@ fun NavigationItem(
             .roundedBorder()
             .background(
                 color = if (isSelected) onSelectBgColor else defaultBgColor,
-                shape = rounderBorderShape()
+                shape = roundedBorderShape()
             )
 
     ) {

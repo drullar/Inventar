@@ -8,5 +8,5 @@ import androidx.compose.ui.unit.dp
 fun Modifier.roundedBorder() = this.border(
     1.dp,
     Color.Black,
-    rounderBorderShape()
+    roundedBorderShape()
 )

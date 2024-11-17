@@ -1,4 +1,4 @@
-package io.drullar.inventar.ui.components.screen.products.child.components
+package io.drullar.inventar.ui.components.dialog
 
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.layout.Column
@@ -17,14 +17,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogWindow
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.rememberDialogState
+import io.drullar.inventar.payload.ProductDetailedPayload
+
+// TODO handle wrong input in numeric fields. Use supportingText and isError properties of TextField to provide necessary user message
 
 @Composable
 @Preview
 fun NewDialogProduct(
     onClose: () -> Unit,
-    onNewProductSubmit: (NewProductForm) -> Unit
+    onNewProductSubmit: (ProductDetailedPayload) -> Unit
 ) {
-    val productForm = mutableStateOf(NewProductForm())
+    val productForm = mutableStateOf(ProductDetailedPayload(""))
 
     DialogWindow(
         title = "Add New Product",
@@ -50,13 +53,13 @@ fun NewDialogProduct(
             )
             FormInputField(
                 label = "Quantity",
-                defaultValue = productForm.value.quantity.toString(),
-                onValueChange = { productForm.value.quantity = it.toInt() }
+                defaultValue = productForm.value.availableQuantity.toString(),
+                onValueChange = { productForm.value.availableQuantity = it.toInt() }
             )
             FormInputField(
                 label = "(Optional) Barcode",
-                defaultValue = productForm.value.barcodeNumber,
-                onValueChange = { productForm.value.barcodeNumber = it }
+                defaultValue = productForm.value.barcode ?: "",
+                onValueChange = { productForm.value.barcode = it }
             )
 
             FilledTonalButton(
@@ -90,11 +93,3 @@ private fun FormInputField(
         modifier = inputFieldModifier
     )
 }
-
-data class NewProductForm(
-    var name: String = "",
-    var quantity: Int = 0,
-    var sellingPrice: Double = 0.0,
-    var providerPrice: Double = 0.0,
-    var barcodeNumber: String = ""
-)
