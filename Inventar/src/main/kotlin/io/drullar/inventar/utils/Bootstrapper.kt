@@ -2,6 +2,7 @@ package io.drullar.inventar.utils
 
 import io.drullar.inventar.persistence.configuration.IPersistenceConfiguration
 import io.drullar.inventar.persistence.configuration.PersistenceConfigurationImpl
+import kotlinx.coroutines.runBlocking
 
 class Bootstrapper(
     private val persistenceConfiguration: IPersistenceConfiguration = PersistenceConfigurationImpl
@@ -11,6 +12,8 @@ class Bootstrapper(
     }
 
     private fun bootstrapDatabase() {
-        persistenceConfiguration.initiateDatabase()
+        runBlocking {
+            persistenceConfiguration.initiateDatabase()
+        }
     }
 }

@@ -10,5 +10,5 @@ class CategoriesService {
         categoriesRepository.save(Category(categoryName))
 
     fun categoryExists(categoryName: String) =
-        (categoriesRepository.findById(categoryName) != null)
+        (categoriesRepository.getById(categoryName) != null)
 }

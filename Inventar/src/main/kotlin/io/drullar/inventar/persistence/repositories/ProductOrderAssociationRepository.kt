@@ -31,7 +31,7 @@ object ProductOrderAssociationRepository :
         TODO("Not yet implemented")
     }
 
-    override fun findById(id: ProductOrderKey): ProductOrderAssociationModel? {
+    override fun getById(id: ProductOrderKey): ProductOrderAssociationModel? {
         TODO("Not yet implemented")
     }
 

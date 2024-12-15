@@ -1,8 +1,11 @@
 package io.drullar.inventar.persistence.configuration
 
+import io.drullar.inventar.persistence.schema.Products
 import io.drullar.inventar.utils.TableScanner
+import kotlinx.coroutines.delay
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
+import java.io.File
 
 /**
  * Interface for a singleton PersistenceConfiguration.
@@ -22,14 +25,14 @@ interface IPersistenceConfiguration {
 
 abstract class AbstractPersistenceConfiguration : IPersistenceConfiguration {
     override fun initiateDatabase() {
+        File("build/temp.db").createNewFile()
         setDatabaseConnection(getDatabaseConfiguration())
         createTables()
     }
 
     override fun setDatabaseConnection(databaseConfiguration: DatabaseConfiguration): Database =
         Database.connect(
-            url = databaseConfiguration.databaseUrl,
-            driver = databaseConfiguration.databaseDriver
+            url = databaseConfiguration.databaseUrl
         )
 
     abstract fun getDatabaseConfiguration(): DatabaseConfiguration
@@ -55,7 +58,7 @@ object PersistenceConfigurationImpl : AbstractPersistenceConfiguration() {
         DATABASE_DRIVER
     )
 
-    private const val DATABASE_URL = "jdbc:sqlite:file::memory:" //"jdbc:h2:mem:test"
+    private const val DATABASE_URL = "jdbc:sqlite:build/temp.db?foreign_keys=on"
     private const val DATABASE_DRIVER = "java.sql.Drive"//"org.h2.Driver"
 }
 

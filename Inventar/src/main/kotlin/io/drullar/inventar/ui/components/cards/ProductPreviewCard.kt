@@ -27,15 +27,15 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import io.drullar.inventar.payload.ProductDetailedPayload
+import io.drullar.inventar.shared.ProductDTO
 import io.drullar.inventar.ui.style.Colors
 import io.drullar.inventar.ui.style.roundedBorder
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProductPreviewCard(
-    productData: ProductDetailedPayload,
-    onClickCallback: (ProductDetailedPayload?) -> Unit,
+    productData: ProductDTO,
+    onClickCallback: (ProductDTO?) -> Unit,
     isSelected: Boolean = false,
     selectionIsAllowed: Boolean = true
 ) {

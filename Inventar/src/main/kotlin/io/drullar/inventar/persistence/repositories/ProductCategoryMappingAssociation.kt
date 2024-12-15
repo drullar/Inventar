@@ -33,7 +33,7 @@ internal object ProductCategoryMappingAssociation :
         }
     }
 
-    override fun findById(id: ProductCategoryPair): ProductCategoryPair? = withTransaction {
+    override fun getById(id: ProductCategoryPair): ProductCategoryPair? = withTransaction {
         table.selectAll().where {
             table.categoryName.eq(id.categoryName)
                 .and(table.productId.eq(id.productId))
@@ -51,8 +51,9 @@ internal object ProductCategoryMappingAssociation :
         }
     }
 
-    override fun transformResultRowToModel(row: ResultRow): ProductCategoryPair = ProductCategoryPair(
-        productId = row[productId],
-        categoryName = row[categoryName]
-    )
+    override fun transformResultRowToModel(row: ResultRow): ProductCategoryPair =
+        ProductCategoryPair(
+            productId = row[productId],
+            categoryName = row[categoryName]
+        )
 }

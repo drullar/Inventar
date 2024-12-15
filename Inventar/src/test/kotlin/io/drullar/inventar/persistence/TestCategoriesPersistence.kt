@@ -22,7 +22,7 @@ class TestCategoriesPersistence : AbstractPersistenceTest() {
     fun create() {
         val id = repository.save(Category("Category"))
         assertThat(id).isNotNull()
-        assertThat(repository.findById(id)).isNotNull()
+        assertThat(repository.getById(id)).isNotNull()
         assertThrows<Exception> {
             repository.save(Category("Category"))
         }
@@ -31,17 +31,17 @@ class TestCategoriesPersistence : AbstractPersistenceTest() {
     @Test
     fun update() {
         val id = repository.save(Category("Category"))
-        assertThat(repository.findById(id)).isNotNull()
+        assertThat(repository.getById(id)).isNotNull()
 
         repository.update(id, Category("NewCategory"))
-        assertThat(repository.findById(id)).isNull()
-        assertThat(repository.findById("NewCategory")).isNotNull()
+        assertThat(repository.getById(id)).isNull()
+        assertThat(repository.getById("NewCategory")).isNotNull()
     }
 
     @Test
     fun findById() {
         val id = repository.save(Category("Category"))
-        assertThat(repository.findById(id)).isNotNull()
+        assertThat(repository.getById(id)).isNotNull()
     }
 
     @Test
@@ -53,7 +53,7 @@ class TestCategoriesPersistence : AbstractPersistenceTest() {
             repository.save(category)
         }
 
-        val all = repository.findAll()
+        val all = repository.getAll()
         assertThat(all.count()).isEqualTo(10)
         assertThat(all.containsAll(categoriesList)).isTrue()
     }
@@ -61,18 +61,18 @@ class TestCategoriesPersistence : AbstractPersistenceTest() {
     @Test
     fun delete() {
         val id = repository.save(Category("Category"))
-        assertThat(repository.findById(id)).isNotNull()
+        assertThat(repository.getById(id)).isNotNull()
         repository.deleteById(id)
-        assertThat(repository.findById(id)).isNull()
+        assertThat(repository.getById(id)).isNull()
     }
 
     @Test
     fun deleteAll() {
         for (i in 1..10)
             repository.save(Category("$i"))
-        val all = repository.findAll()
+        val all = repository.getAll()
         assertThat(all.count()).isEqualTo(10)
         repository.deleteAll()
-        assertThat(repository.findAll().count()).isEqualTo(0)
+        assertThat(repository.getAll().count()).isEqualTo(0)
     }
 }

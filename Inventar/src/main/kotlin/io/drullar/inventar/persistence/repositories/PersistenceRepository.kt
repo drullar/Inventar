@@ -20,7 +20,7 @@ interface PersistenceRepository<T : Table, D, ID> {
     /**
      * Return an instance of [D] if the record with [id] exists, otherwise null is returned
      */
-    fun findById(id: ID): D?
+    fun getById(id: ID): D?
 
     /**
      * Deletes a record with the provided [id], if such record exists, otherwise not action is performed
@@ -36,16 +36,17 @@ interface PersistenceRepository<T : Table, D, ID> {
      * Returns all persisted elements
      */
 
-    fun findAll(): List<D>
+    fun getAll(): List<D>
 }
 
 /**
  * Data repository abstract class
  * [T] - Persistence Table static object
- * [D] - DAO persistence object type
+ * [D] - DTO persistence object type
  * [ID] - ID type
  */
-abstract class AbstractPersistenceRepository<T : Table, D, ID>(val table: T) : PersistenceRepository<T, D, ID> {
+abstract class AbstractPersistenceRepository<T : Table, D, ID>(val table: T) :
+    PersistenceRepository<T, D, ID> {
 
     /**
      * Perform an [action] within a [transaction] block
@@ -60,9 +61,9 @@ abstract class AbstractPersistenceRepository<T : Table, D, ID>(val table: T) : P
         }
     }
 
-    override fun findAll(): List<D> = withTransaction {
+    override fun getAll(): List<D> = withTransaction {
         table.selectAll().map { transformResultRowToModel(it) }
     }
 
-    protected abstract fun transformResultRowToModel(row: ResultRow): D //TODO consider moving to another abstraction, ex. ModelTransformer or sth similar
+    protected abstract fun transformResultRowToModel(row: ResultRow): D
 }

@@ -30,7 +30,7 @@ internal object OrderRepository : AbstractPersistenceRepository<Orders, Order, U
         }
     }
 
-    override fun findById(id: UUID): Order? = withTransaction {
+    override fun getById(id: UUID): Order? = withTransaction {
         table.selectAll().where { table.id.eq(id) }.first().let {
             transformResultRowToModel(it)
         }

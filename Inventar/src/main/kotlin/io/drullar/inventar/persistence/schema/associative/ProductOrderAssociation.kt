@@ -10,7 +10,7 @@ import org.jetbrains.exposed.sql.Table
 object ProductOrderAssociation : Table("product_order") {
     val productId = reference(
         "product_id",
-        Products.id,
+        Products.uid,
         onUpdate = ReferenceOption.NO_ACTION,
         onDelete = ReferenceOption.NO_ACTION
     )

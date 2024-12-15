@@ -21,7 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import io.drullar.inventar.payload.ProductDetailedPayload
+import io.drullar.inventar.shared.ProductDTO
 import io.drullar.inventar.ui.style.roundedBorderShape
 
 /**
@@ -31,8 +31,8 @@ import io.drullar.inventar.ui.style.roundedBorderShape
  * [onTerminalChange] - called when a Save or Revert buttons a clicked
  */
 @Composable
-fun ProductDetailedPreviewCard(
-    productData: ProductDetailedPayload,
+fun ProductDetailedViewCard(
+    productData: ProductDTO,
     onChange: () -> Unit,
     onTerminalChange: () -> Unit
 ) {

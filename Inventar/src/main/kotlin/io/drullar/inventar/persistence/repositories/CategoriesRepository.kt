@@ -24,7 +24,7 @@ internal object CategoriesRepository :
         }
     }
 
-    override fun findById(id: String): Category? = withTransaction {
+    override fun getById(id: String): Category? = withTransaction {
         table.selectAll().where { table.name.eq(id) }.firstOrNull()?.let {
             Category(
                 name = it[name]
