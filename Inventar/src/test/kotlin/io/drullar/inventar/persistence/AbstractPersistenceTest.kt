@@ -3,7 +3,7 @@ package io.drullar.inventar.persistence
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.TestInstance
-import io.drullar.inventar.persistence.utils.TestPersistenceConfiguration
+import io.drullar.inventar.persistence.utils.TestDatabaseBootstrapper
 import java.io.File
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -12,7 +12,7 @@ abstract class AbstractPersistenceTest {
     @BeforeAll
     fun setup() {
         initDatabaseFile()
-        TestPersistenceConfiguration.initiateDatabase()
+        TestDatabaseBootstrapper.initiateDatabase()
     }
 
     private fun initDatabaseFile() {

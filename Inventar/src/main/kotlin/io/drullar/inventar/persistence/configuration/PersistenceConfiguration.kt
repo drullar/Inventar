@@ -1,8 +1,6 @@
 package io.drullar.inventar.persistence.configuration
 
-import io.drullar.inventar.persistence.schema.Products
 import io.drullar.inventar.utils.TableScanner
-import kotlinx.coroutines.delay
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.io.File
@@ -11,11 +9,7 @@ import java.io.File
  * Interface for a singleton PersistenceConfiguration.
  * Used to initiate the database connection and the tables in it
  */
-interface IPersistenceConfiguration {
-    /**
-     * Each implementation should run [Database.connect] in order to set up the database connection
-     */
-    fun setDatabaseConnection(databaseConfiguration: DatabaseConfiguration): Database
+interface DatabaseBootstrapper {
 
     /**
      * Builds the database tables and any other database required dependencies
@@ -23,17 +17,14 @@ interface IPersistenceConfiguration {
     fun initiateDatabase()
 }
 
-abstract class AbstractPersistenceConfiguration : IPersistenceConfiguration {
+abstract class AbstractDatabaseBootstrapper : DatabaseBootstrapper {
+
     override fun initiateDatabase() {
-        File("build/temp.db").createNewFile()
-        setDatabaseConnection(getDatabaseConfiguration())
+        Database.connect(
+            url = getDatabaseConfiguration().databaseUrl
+        )
         createTables()
     }
-
-    override fun setDatabaseConnection(databaseConfiguration: DatabaseConfiguration): Database =
-        Database.connect(
-            url = databaseConfiguration.databaseUrl
-        )
 
     abstract fun getDatabaseConfiguration(): DatabaseConfiguration
 
@@ -51,18 +42,19 @@ abstract class AbstractPersistenceConfiguration : IPersistenceConfiguration {
     }
 }
 
-object PersistenceConfigurationImpl : AbstractPersistenceConfiguration() {
+object DatabaseBootstrapperImpl : AbstractDatabaseBootstrapper() {
 
-    override fun getDatabaseConfiguration() = DatabaseConfiguration(
-        DATABASE_URL,
-        DATABASE_DRIVER
-    )
-
-    private const val DATABASE_URL = "jdbc:sqlite:build/temp.db?foreign_keys=on"
-    private const val DATABASE_DRIVER = "java.sql.Drive"//"org.h2.Driver"
+    override fun getDatabaseConfiguration(): DatabaseConfiguration {
+        val tmpDir = File(System.getProperty("java.io.tmpdir"))
+        val dbFile = File(tmpDir, "temp.db").apply {
+            this.createNewFile()
+        } // TODO change directory with application files directory
+        return DatabaseConfiguration(
+            databaseUrl = "jdbc:sqlite:${dbFile.absolutePath}?foreign_keys=on"
+        )
+    }
 }
 
 data class DatabaseConfiguration(
     val databaseUrl: String,
-    val databaseDriver: String
 )
