@@ -6,11 +6,9 @@ import io.drullar.inventar.persistence.configuration.DatabaseConfiguration
 object TestDatabaseBootstrapper : AbstractDatabaseBootstrapper() {
 
     override fun getDatabaseConfiguration() = DatabaseConfiguration(
-        DATABASE_URL,
-        DATABASE_DRIVER
+        DATABASE_URL
     )
 
     private const val DATABASE_URL =
         "jdbc:sqlite:build/temp.db?foreign_keys=on" //"jdbc:h2:mem:test"
-    private const val DATABASE_DRIVER = "org.sqlite.JDBC"//"org.h2.Driver"
 }

@@ -1,6 +1,5 @@
 package io.drullar.inventar.persistence
 
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.TestInstance
 import io.drullar.inventar.persistence.utils.TestDatabaseBootstrapper
@@ -20,10 +19,4 @@ abstract class AbstractPersistenceTest {
         if (file.exists()) file.delete()
         file.createNewFile()
     }
-
-    /*
-    Override as needed with cleanup utils
-    */
-    @AfterEach
-    open fun cleanUp(): Unit = Unit
 }

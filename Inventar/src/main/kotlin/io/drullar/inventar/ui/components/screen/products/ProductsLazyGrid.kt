@@ -5,9 +5,11 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import io.drullar.inventar.shared.ProductDTO
@@ -15,22 +17,22 @@ import io.drullar.inventar.ui.components.cards.ProductPreviewCard
 
 @Composable
 fun ProductsLazyGrid(
-    products: MutableList<ProductDTO>,
+    products: List<ProductDTO>,
     onProductSelectCallback: (ProductDTO?) -> Unit,
     selectionIsAllowed: Boolean
 ) {
-    val selectedProduct = mutableStateOf<ProductDTO?>(null)
+    val selectedProduct by remember { mutableStateOf<ProductDTO?>(null) }
 
     LazyVerticalGrid(
         columns = GridCells.Adaptive(minSize = 160.dp),
         contentPadding = PaddingValues(10.dp)
     ) {
-        itemsIndexed(products) { index, productData ->
+        items(products) { productData ->
             Box(modifier = Modifier.padding(5.dp)) {
                 ProductPreviewCard(
                     productData,
                     onClickCallback = onProductSelectCallback,
-                    isSelected = productData == selectedProduct.value,
+                    isSelected = productData == selectedProduct,
                     selectionIsAllowed = selectionIsAllowed
                 )
             }

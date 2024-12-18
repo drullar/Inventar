@@ -34,12 +34,13 @@ import io.drullar.inventar.ui.style.roundedBorderShape
 fun ProductDetailedViewCard(
     productData: ProductDTO,
     onChange: () -> Unit,
-    onTerminalChange: () -> Unit
+    onTerminalChange: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     var hasChange by remember { mutableStateOf(false) }
 //    val stateOfProductData = remember { mutableStateOf(productData) }
 
-    Column(modifier = Modifier.fillMaxHeight().fillMaxWidth()) {
+    Column(modifier = modifier.fillMaxHeight().fillMaxWidth()) {
         OutlinedCard(
             colors = CardDefaults.outlinedCardColors(),
             modifier = Modifier.fillMaxWidth()
@@ -107,7 +108,7 @@ fun ProductDetailedViewCard(
 
 @Composable
 private fun Field(label: String, value: String, onChange: (value: String) -> Unit) {
-    var fieldValue by remember { mutableStateOf(value) }
+    var fieldValue by mutableStateOf(value)
     TextField(
         modifier = Modifier.fillMaxWidth(),
         value = fieldValue,

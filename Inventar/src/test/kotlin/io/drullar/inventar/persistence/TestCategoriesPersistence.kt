@@ -14,7 +14,7 @@ class TestCategoriesPersistence : AbstractPersistenceTest() {
     private val repository = CategoriesRepository
 
     @AfterEach
-    override fun cleanUp() {
+    fun cleanUp() {
         repository.deleteAll()
     }
 

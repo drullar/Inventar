@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -26,12 +27,13 @@ import io.drullar.inventar.ui.components.dialog.UnsavedChangesAlertDialog
 import io.drullar.inventar.ui.components.screen.products.layout.ProductUtilBar
 import io.drullar.inventar.ui.style.roundedBorder
 
+private val productsService = ProductsService()
+
 @Composable
 fun ProductsScreen(navigationBar: @Composable () -> Unit) {
-    val productsService = ProductsService()
-    val products by remember { mutableStateOf(productsService.getAll().toMutableList()) }
-    val showNewProductDialog = remember { mutableStateOf(false) }
-    val selectedProduct by remember { mutableStateOf<ProductDTO?>(null) }
+    val products = remember { mutableStateListOf(*productsService.getAll().toTypedArray()) }
+    var showNewProductDialog by remember { mutableStateOf(false) }
+    var selectedProductDTO by remember { mutableStateOf<ProductDTO?>(null) }
     var detailedProductCardHasChange by remember { mutableStateOf(false) }
     var showUnsavedChangesAlert by remember { mutableStateOf(false) }
 
@@ -42,7 +44,7 @@ fun ProductsScreen(navigationBar: @Composable () -> Unit) {
     Column {
         navigationBar()
         ProductUtilBar(
-            onNewProductButtonClick = { showNewProductDialog.value = true }
+            onNewProductButtonClick = { showNewProductDialog = true }
         )
 
         // Main content
@@ -57,35 +59,40 @@ fun ProductsScreen(navigationBar: @Composable () -> Unit) {
                     .roundedBorder()
                     .fillMaxHeight(1f)
             ) {
-                ProductsLazyGrid(products, {}, detailedProductCardHasChange)
+                ProductsLazyGrid(
+                    products = products,
+                    onProductSelectCallback = { productDTO ->
+                        selectedProductDTO = productDTO
+                    },
+                    selectionIsAllowed = !detailedProductCardHasChange
+                )
             }
+
             Box(
                 modifier = Modifier.fillMaxWidth()
                     .padding(10.dp)
                     .fillMaxHeight()
                     .roundedBorder()
             ) {
-                Box(modifier = Modifier.padding(5.dp)) {
-                    selectedProduct?.let { selectedProductDTO ->
-                        ProductDetailedViewCard(
-                            selectedProductDTO,
-                            onChange = {
-                                detailedProductCardHasChange = true
-                            },
-                            onTerminalChange = {
-                                detailedProductCardHasChange = false
-                            }
-                        )
-                    }
-
+                if (selectedProductDTO != null) {
+                    ProductDetailedViewCard(
+                        selectedProductDTO!!,
+                        onChange = {
+                            detailedProductCardHasChange = true
+                        },
+                        onTerminalChange = {
+                            detailedProductCardHasChange = false
+                        },
+                        modifier = Modifier.padding(5.dp)
+                    )
                 }
             }
         }
     }
 
-    if (showNewProductDialog.value) {
+    if (showNewProductDialog) {
         NewProductDialog(
-            onClose = { showNewProductDialog.value = false },
+            onClose = { showNewProductDialog = false },
             onNewProductSubmit = { form ->
                 productsService.save(form)
                 products.add(form)
