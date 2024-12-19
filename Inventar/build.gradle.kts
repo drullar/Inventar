@@ -27,6 +27,7 @@ dependencies {
     implementation(compose.desktop.currentOs)
     implementation("org.jetbrains.compose.ui:ui-tooling:1.6.11")
     implementation("org.jetbrains.compose.material3:material3:1.6.11")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.5")
     //Other dependencies
     implementation("io.github.classgraph:classgraph:4.8.177")
     //Test dependencies

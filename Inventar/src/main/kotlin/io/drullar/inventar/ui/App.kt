@@ -9,6 +9,7 @@ import androidx.compose.ui.unit.dp
 import io.drullar.inventar.ui.components.navigation.NavigationBar
 import io.drullar.inventar.ui.components.navigation.NavigationDestination
 import io.drullar.inventar.ui.components.screen.OrdersScreen
+import io.drullar.inventar.ui.components.screen.products.ProductViewModel
 import io.drullar.inventar.ui.components.screen.products.ProductsScreen
 
 @Composable
@@ -23,8 +24,10 @@ fun App() {
         }
     }
 
+    val productViewModel = ProductViewModel()
+
     val destinationToScreen = mapOf<NavigationDestination, @Composable () -> Unit>(
-        NavigationDestination.PRODUCTS_PAGE to { ProductsScreen { navigationBar() } },
+        NavigationDestination.PRODUCTS_PAGE to { ProductsScreen(productViewModel) { navigationBar() } },
         NavigationDestination.ORDERS_PAGE to { OrdersScreen { navigationBar() } }
     )
 

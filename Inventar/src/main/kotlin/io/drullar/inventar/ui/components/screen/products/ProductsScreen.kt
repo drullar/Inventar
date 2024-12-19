@@ -1,6 +1,5 @@
 package io.drullar.inventar.ui.components.screen.products
 
-import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -9,19 +8,12 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import io.drullar.inventar.shared.ProductDTO
 import io.drullar.inventar.service.ProductsService
-import io.drullar.inventar.ui.components.PREVIEW_COMPONENT_DEPRECATION_MESSAGE
 import io.drullar.inventar.ui.components.cards.ProductDetailedViewCard
-import io.drullar.inventar.ui.components.navigation.NavigationBar
-import io.drullar.inventar.ui.components.navigation.NavigationDestination
 import io.drullar.inventar.ui.components.dialog.NewProductDialog
 import io.drullar.inventar.ui.components.dialog.UnsavedChangesAlertDialog
 import io.drullar.inventar.ui.components.screen.products.layout.ProductUtilBar
@@ -30,23 +22,27 @@ import io.drullar.inventar.ui.style.roundedBorder
 private val productsService = ProductsService()
 
 @Composable
-fun ProductsScreen(navigationBar: @Composable () -> Unit) {
-    val products = remember { mutableStateListOf(*productsService.getAll().toTypedArray()) }
-    var showNewProductDialog by remember { mutableStateOf(false) }
-    var detailedProductCardHasChange by remember { mutableStateOf(false) }
-    var showUnsavedChangesAlert by remember { mutableStateOf(false) }
-
-    var selectedProductDTO by remember { mutableStateOf<ProductDTO?>(null) }
-    var selectedProductIndex by remember { mutableStateOf<Int?>(null) }
+fun ProductsScreen(
+    viewModel: ProductViewModel, navigationBar: @Composable () -> Unit
+) {
+    val products by viewModel.products.collectAsState()
+    val detailedProductCardHasChange by viewModel.selectedProductHasChanges.collectAsState()
+    val selectedProductDTO by viewModel.selectedProduct.collectAsState()
+    val showUnsavedChangesAlert by viewModel.showUnsavedChangesAlert.collectAsState()
+    val showNewProductDialog by viewModel.showNewProductDialog.collectAsState()
 
     if (showUnsavedChangesAlert) {
-        unsavedChangesAlert { showUnsavedChangesAlert = false }
+        UnsavedChangesAlert {
+            viewModel.updateShowUnsavedChangesAlert(false)
+        }
     }
 
     Column {
         navigationBar()
         ProductUtilBar(
-            onNewProductButtonClick = { showNewProductDialog = true }
+            onNewProductButtonClick = {
+                viewModel.updateshowNewProductDialog(true)
+            }
         )
 
         // Main content
@@ -63,11 +59,8 @@ fun ProductsScreen(navigationBar: @Composable () -> Unit) {
             ) {
                 ProductsLazyGrid(
                     products = products,
-                    onProductSelectCallback = { productOnClickData ->
-                        if (productOnClickData != null) {
-                            selectedProductDTO = productOnClickData
-                            selectedProductIndex = products.indexOf(selectedProductDTO)
-                        }
+                    onProductSelectCallback = { clickedProductData ->
+                        viewModel.selectProduct(clickedProductData)
                     },
                     selectionIsAllowed = !detailedProductCardHasChange
                 )
@@ -83,16 +76,14 @@ fun ProductsScreen(navigationBar: @Composable () -> Unit) {
                     ProductDetailedViewCard(
                         productData = selectedProductDTO!!,
                         onChange = {
-                            detailedProductCardHasChange = true
+                            viewModel.updateSelectedProductHasChanges(true)
                         },
                         onRevert = {
-                            detailedProductCardHasChange = false
+                            viewModel.updateSelectedProductHasChanges(false)
                             selectedProductDTO!!
                         },
                         onSave = { updatedProductDTO ->
-                            productsService.update(updatedProductDTO.uid!!, updatedProductDTO)
-                            products[selectedProductIndex!!] = updatedProductDTO
-                            detailedProductCardHasChange = false
+                            viewModel.updateProduct(updatedProductDTO)
                         },
                         modifier = Modifier.padding(5.dp)
                     )
@@ -103,7 +94,7 @@ fun ProductsScreen(navigationBar: @Composable () -> Unit) {
 
     if (showNewProductDialog) {
         NewProductDialog(
-            onClose = { showNewProductDialog = false },
+            onClose = { viewModel.updateshowNewProductDialog(false) },
             onNewProductSubmit = { form ->
                 productsService.save(form)
                 products.add(form)
@@ -113,26 +104,10 @@ fun ProductsScreen(navigationBar: @Composable () -> Unit) {
 }
 
 @Composable
-private fun unsavedChangesAlert(onCancel: () -> Unit) {
+private fun UnsavedChangesAlert(onCancel: () -> Unit) {
     UnsavedChangesAlertDialog(
         text = "There are unsaved changes to a product you're editing. \n" +
                 "Save or revert the changes in order to select to continue",
         onCancel = onCancel
     )
-}
-
-@Preview
-@Composable
-@Deprecated(
-    PREVIEW_COMPONENT_DEPRECATION_MESSAGE, ReplaceWith(
-        "ProductsScreen { NavigationBar() }"
-    )
-)
-internal fun ProductsScreenPreviewContainer() {
-    ProductsScreen {
-        NavigationBar(
-            selectedScreen = NavigationDestination.PRODUCTS_PAGE,
-            Modifier.padding(10.dp),
-        ) {}
-    }
 }
