@@ -38,7 +38,7 @@ fun ProductDetailedViewCard(
     modifier: Modifier = Modifier
 ) {
     var hasChange by remember { mutableStateOf(false) }
-//    val stateOfProductData = remember { mutableStateOf(productData) }
+    val stateOfProductData by mutableStateOf(productData)
 
     Column(modifier = modifier.fillMaxHeight().fillMaxWidth()) {
         OutlinedCard(
@@ -47,42 +47,45 @@ fun ProductDetailedViewCard(
         ) {
             Field(
                 label = "Name",
-                value = productData.name
+                value = stateOfProductData.name
             ) {
                 hasChange = true
                 onChange()
             }
 
-            Field(label = "Selling price", value = productData.sellingPrice.toString()) { value ->
+            Field(
+                label = "Selling price",
+                value = stateOfProductData.sellingPrice.toString()
+            ) { value ->
                 hasChange = true
-                productData.sellingPrice = value.toDouble()
+                stateOfProductData.sellingPrice = value.toDouble()
                 onChange()
             }
 
             Field(
                 label = "Available quantity",
-                value = productData.availableQuantity.toString()
+                value = stateOfProductData.availableQuantity.toString()
             ) { value ->
                 hasChange = true
-                productData.availableQuantity = value.toInt()
+                stateOfProductData.availableQuantity = value.toInt()
                 onChange()
             }
 
             Field(
                 label = "Provider price",
-                value = productData.providerPrice.toString()
+                value = stateOfProductData.providerPrice.toString()
             ) { value ->
                 hasChange = true
-                productData.providerPrice = value.toDouble()
+                stateOfProductData.providerPrice = value.toDouble()
                 onChange()
             }
 
             Field(
                 label = "Barcode",
-                value = productData.barcode ?: ""
+                value = stateOfProductData.barcode ?: ""
             ) { value ->
                 hasChange = true
-                productData.barcode = value
+                stateOfProductData.barcode = value
                 onChange()
             }
         }
@@ -98,6 +101,7 @@ fun ProductDetailedViewCard(
                 Button(onClick = {
                     /* TODO revert changes */
                     onTerminalChange()
+
                 }) {
                     Text("Revert")
                 }
@@ -114,7 +118,6 @@ private fun Field(label: String, value: String, onChange: (value: String) -> Uni
         value = fieldValue,
         onValueChange = { changedValue ->
             onChange(changedValue)
-            fieldValue = changedValue
         },
         shape = roundedBorderShape(),
         label = { Text(label) },
