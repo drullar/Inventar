@@ -17,7 +17,9 @@ class ProductsService {
 
     fun delete(id: Int) = productRepository.deleteById(id)
 
-    fun update(id: Int, product: ProductDTO) = NotImplementedError() //TODO
+    fun update(id: Int, product: ProductDTO) {
+        productRepository.update(id, product)
+    }
 }
 
 

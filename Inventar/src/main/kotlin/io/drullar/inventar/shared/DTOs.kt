@@ -4,7 +4,7 @@ import io.drullar.inventar.persistence.model.Category
 import io.drullar.inventar.ui.utils.Icons
 
 data class ProductDTO(
-    var uid: Int? = null,
+    val uid: Int? = null,
     var name: String,
     var sellingPrice: Double = 0.0,
     var availableQuantity: Int = 0,

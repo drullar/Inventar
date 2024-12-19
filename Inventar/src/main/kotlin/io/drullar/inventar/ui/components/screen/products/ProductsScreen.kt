@@ -33,9 +33,11 @@ private val productsService = ProductsService()
 fun ProductsScreen(navigationBar: @Composable () -> Unit) {
     val products = remember { mutableStateListOf(*productsService.getAll().toTypedArray()) }
     var showNewProductDialog by remember { mutableStateOf(false) }
-    var selectedProductDTO by remember { mutableStateOf<ProductDTO?>(null) }
     var detailedProductCardHasChange by remember { mutableStateOf(false) }
     var showUnsavedChangesAlert by remember { mutableStateOf(false) }
+
+    var selectedProductDTO by remember { mutableStateOf<ProductDTO?>(null) }
+    var selectedProductIndex by remember { mutableStateOf<Int?>(null) }
 
     if (showUnsavedChangesAlert) {
         unsavedChangesAlert { showUnsavedChangesAlert = false }
@@ -61,8 +63,11 @@ fun ProductsScreen(navigationBar: @Composable () -> Unit) {
             ) {
                 ProductsLazyGrid(
                     products = products,
-                    onProductSelectCallback = { productDTO ->
-                        selectedProductDTO = productDTO
+                    onProductSelectCallback = { productOnClickData ->
+                        if (productOnClickData != null) {
+                            selectedProductDTO = productOnClickData
+                            selectedProductIndex = products.indexOf(selectedProductDTO)
+                        }
                     },
                     selectionIsAllowed = !detailedProductCardHasChange
                 )
@@ -76,11 +81,17 @@ fun ProductsScreen(navigationBar: @Composable () -> Unit) {
             ) {
                 if (selectedProductDTO != null) {
                     ProductDetailedViewCard(
-                        selectedProductDTO!!,
+                        productData = selectedProductDTO!!,
                         onChange = {
                             detailedProductCardHasChange = true
                         },
-                        onTerminalChange = {
+                        onRevert = {
+                            detailedProductCardHasChange = false
+                            selectedProductDTO!!
+                        },
+                        onSave = { updatedProductDTO ->
+                            productsService.update(updatedProductDTO.uid!!, updatedProductDTO)
+                            products[selectedProductIndex!!] = updatedProductDTO
                             detailedProductCardHasChange = false
                         },
                         modifier = Modifier.padding(5.dp)

@@ -69,7 +69,7 @@ fun ProductPreviewCard(
             Text(
                 text = productData.name,
                 modifier = Modifier.padding(16.dp).align(Alignment.CenterHorizontally)
-                    .hoverable(interactionSource),
+                    .hoverable(interactionSource, selectionIsAllowed),
                 textAlign = TextAlign.Center,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis

@@ -34,11 +34,12 @@ import io.drullar.inventar.ui.style.roundedBorderShape
 fun ProductDetailedViewCard(
     productData: ProductDTO,
     onChange: () -> Unit,
-    onTerminalChange: () -> Unit,
+    onSave: (ProductDTO) -> Unit,
+    onRevert: () -> ProductDTO,
     modifier: Modifier = Modifier
 ) {
     var hasChange by remember { mutableStateOf(false) }
-//    val stateOfProductData = remember { mutableStateOf(productData) }
+    var stateOfProductData by remember(key1 = productData.uid) { mutableStateOf(productData) }
 
     Column(modifier = modifier.fillMaxHeight().fillMaxWidth()) {
         OutlinedCard(
@@ -47,57 +48,60 @@ fun ProductDetailedViewCard(
         ) {
             Field(
                 label = "Name",
-                value = productData.name
-            ) {
+                value = stateOfProductData.name
+            ) { value ->
                 hasChange = true
+                stateOfProductData = stateOfProductData.copy(name = value)
                 onChange()
             }
 
-            Field(label = "Selling price", value = productData.sellingPrice.toString()) { value ->
+            Field(
+                label = "Selling price",
+                value = stateOfProductData.sellingPrice.toString()
+            ) { value ->
                 hasChange = true
-                productData.sellingPrice = value.toDouble()
+                stateOfProductData = stateOfProductData.copy(sellingPrice = value.toDouble())
                 onChange()
             }
 
             Field(
                 label = "Available quantity",
-                value = productData.availableQuantity.toString()
+                value = stateOfProductData.availableQuantity.toString()
             ) { value ->
                 hasChange = true
-                productData.availableQuantity = value.toInt()
+                stateOfProductData = stateOfProductData.copy(availableQuantity = value.toInt())
                 onChange()
             }
 
             Field(
                 label = "Provider price",
-                value = productData.providerPrice.toString()
+                value = stateOfProductData.providerPrice.toString()
             ) { value ->
                 hasChange = true
-                productData.providerPrice = value.toDouble()
+                stateOfProductData.providerPrice = stateOfProductData.providerPrice
                 onChange()
             }
 
             Field(
                 label = "Barcode",
-                value = productData.barcode ?: ""
+                value = stateOfProductData.barcode ?: ""
             ) { value ->
                 hasChange = true
-                productData.barcode = value
+                stateOfProductData.barcode = value // TODO
                 onChange()
             }
         }
         Row(modifier = Modifier.align(Alignment.CenterHorizontally)) {
             if (hasChange) {
                 Button(onClick = {
-                    /* TODO submit save request */
-                    onTerminalChange()
+                    onSave(stateOfProductData)
                 }) {
                     Text("Save")
                 }
                 Spacer(modifier = Modifier.width(20.dp))
                 Button(onClick = {
-                    /* TODO revert changes */
-                    onTerminalChange()
+                    val originalData = onRevert()
+                    stateOfProductData = originalData
                 }) {
                     Text("Revert")
                 }
@@ -107,15 +111,11 @@ fun ProductDetailedViewCard(
 }
 
 @Composable
-private fun Field(label: String, value: String, onChange: (value: String) -> Unit) {
-    var fieldValue by mutableStateOf(value)
+private fun Field(label: String, value: String, onChange: (String) -> Unit) {
     TextField(
         modifier = Modifier.fillMaxWidth(),
-        value = fieldValue,
-        onValueChange = { changedValue ->
-            onChange(changedValue)
-            fieldValue = changedValue
-        },
+        value = value,
+        onValueChange = onChange,
         shape = roundedBorderShape(),
         label = { Text(label) },
         colors = TextFieldDefaults.colors().copy(unfocusedContainerColor = Color.White)
