@@ -6,24 +6,22 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import io.drullar.inventar.service.ProductsService
 import io.drullar.inventar.ui.components.cards.ProductDetailedViewCard
 import io.drullar.inventar.ui.components.dialog.NewProductDialog
 import io.drullar.inventar.ui.components.dialog.UnsavedChangesAlertDialog
 import io.drullar.inventar.ui.components.screen.products.layout.ProductUtilBar
 import io.drullar.inventar.ui.style.roundedBorder
 
-private val productsService = ProductsService()
-
 @Composable
 fun ProductsScreen(
-    viewModel: ProductViewModel, navigationBar: @Composable () -> Unit
+    viewModel: ProductViewModel, NavigationBar: @Composable () -> Unit
 ) {
     val products by viewModel.products.collectAsState()
     val detailedProductCardHasChange by viewModel.selectedProductHasChanges.collectAsState()
@@ -32,16 +30,18 @@ fun ProductsScreen(
     val showNewProductDialog by viewModel.showNewProductDialog.collectAsState()
 
     if (showUnsavedChangesAlert) {
-        UnsavedChangesAlert {
-            viewModel.updateShowUnsavedChangesAlert(false)
-        }
+        UnsavedChangesAlert(
+            onCancel = { viewModel.updateShowUnsavedChangesAlert(false) }
+        )
     }
 
     Column {
-        navigationBar()
+        NavigationBar()
         ProductUtilBar(
+            modifier = Modifier
+                .heightIn(30.dp, 80.dp),
             onNewProductButtonClick = {
-                viewModel.updateshowNewProductDialog(true)
+                viewModel.updateShowNewProductDialog(true)
             }
         )
 
@@ -94,11 +94,8 @@ fun ProductsScreen(
 
     if (showNewProductDialog) {
         NewProductDialog(
-            onClose = { viewModel.updateshowNewProductDialog(false) },
-            onNewProductSubmit = { form ->
-                productsService.save(form)
-                products.add(form)
-            }
+            onClose = { viewModel.updateShowNewProductDialog(false) },
+            onSubmit = { viewModel.addNewProduct(it) }
         )
     }
 }

@@ -8,16 +8,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import io.drullar.inventar.ui.style.roundedBorder
 
 @Composable
-fun ProductUtilBar(onNewProductButtonClick: () -> Unit) {
+fun ProductUtilBar(modifier: Modifier = Modifier, onNewProductButtonClick: () -> Unit) {
     Row(
-        modifier = Modifier.fillMaxWidth()
+        modifier = modifier
             .padding(5.dp)
-            .fillMaxHeight(0.1f)
     ) {
         Box(
             modifier = Modifier.padding(5.dp)
@@ -25,7 +25,10 @@ fun ProductUtilBar(onNewProductButtonClick: () -> Unit) {
                 .fillMaxHeight()
                 .roundedBorder()
         ) {
-            FilledTonalButton(onClick = onNewProductButtonClick) {
+            FilledTonalButton(
+                onClick = onNewProductButtonClick,
+                Modifier.align(Alignment.CenterStart)
+            ) {
                 Text("Add new product")
             }
         }

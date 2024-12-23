@@ -48,7 +48,13 @@ class ProductViewModel : ViewModel() {
         _showUnsavedChangesAlert.value = value
     }
 
-    fun updateshowNewProductDialog(value: Boolean) {
+    fun updateShowNewProductDialog(value: Boolean) {
         _showNewProductDialog.value = value
+    }
+
+    fun addNewProduct(product: ProductDTO) {
+        productsService.save(product)
+        _products.value = (_products.value + product).toMutableList()
+        println("added new product")
     }
 }

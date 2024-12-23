@@ -1,11 +1,15 @@
 package io.drullar.inventar.ui.components.cards
 
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.Button
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.OutlinedCard
@@ -42,10 +46,14 @@ fun ProductDetailedViewCard(
     var stateOfProductData by remember(key1 = productData.uid) { mutableStateOf(productData) }
 
     Column(modifier = modifier.fillMaxHeight().fillMaxWidth()) {
+        val scrollableState = rememberScrollState()
         OutlinedCard(
             colors = CardDefaults.outlinedCardColors(),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .scrollable(state = scrollableState, orientation = Orientation.Vertical)
         ) {
+            // TODO add icon
             Field(
                 label = "Name",
                 value = stateOfProductData.name
@@ -111,9 +119,14 @@ fun ProductDetailedViewCard(
 }
 
 @Composable
-private fun Field(label: String, value: String, onChange: (String) -> Unit) {
+private fun Field(
+    label: String,
+    value: String,
+    modifier: Modifier = Modifier,
+    onChange: (String) -> Unit
+) {
     TextField(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         value = value,
         onValueChange = onChange,
         shape = roundedBorderShape(),

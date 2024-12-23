@@ -14,6 +14,8 @@ import io.drullar.inventar.ui.components.screen.products.ProductsScreen
 
 @Composable
 fun App() {
+    val productViewModel = ProductViewModel()
+
     val currentScreen = remember { mutableStateOf(NavigationDestination.PRODUCTS_PAGE) }
     val navigationBar: @Composable () -> Unit = @Composable {
         val navBarModifier = Modifier.padding(10.dp)
@@ -24,13 +26,11 @@ fun App() {
         }
     }
 
-    val productViewModel = ProductViewModel()
-
     val destinationToScreen = mapOf<NavigationDestination, @Composable () -> Unit>(
         NavigationDestination.PRODUCTS_PAGE to { ProductsScreen(productViewModel) { navigationBar() } },
         NavigationDestination.ORDERS_PAGE to { OrdersScreen { navigationBar() } }
     )
-
+    
     destinationToScreen[currentScreen.value]!!()
 }
 

@@ -28,7 +28,7 @@ import io.drullar.inventar.shared.ProductDTO
 @Preview
 fun NewProductDialog(
     onClose: () -> Unit,
-    onNewProductSubmit: (ProductDTO) -> Unit
+    onSubmit: (ProductDTO) -> Unit
 ) {
     val productForm by mutableStateOf(
         ProductDTO(
@@ -85,7 +85,7 @@ fun NewProductDialog(
                         }
 
                         FormValidationProblem.NONE -> {
-                            onNewProductSubmit(productForm)
+                            onSubmit(productForm)
                             onClose()
                         }
                     }
