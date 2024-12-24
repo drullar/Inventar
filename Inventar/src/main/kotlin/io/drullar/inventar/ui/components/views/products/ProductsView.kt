@@ -1,4 +1,4 @@
-package io.drullar.inventar.ui.components.screen.products
+package io.drullar.inventar.ui.components.views.products
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,12 +16,12 @@ import androidx.compose.ui.unit.dp
 import io.drullar.inventar.ui.components.cards.ProductDetailedViewCard
 import io.drullar.inventar.ui.components.dialog.NewProductDialog
 import io.drullar.inventar.ui.components.dialog.UnsavedChangesAlertDialog
-import io.drullar.inventar.ui.components.screen.products.layout.ProductUtilBar
+import io.drullar.inventar.ui.components.views.products.layout.ProductUtilBar
 import io.drullar.inventar.ui.style.roundedBorder
 
 @Composable
-fun ProductsScreen(
-    viewModel: ProductViewModel, NavigationBar: @Composable () -> Unit
+fun ProductsView(
+    viewModel: ProductViewModel, modifier: Modifier = Modifier
 ) {
     val products by viewModel.products.collectAsState()
     val detailedProductCardHasChange by viewModel.selectedProductHasChanges.collectAsState()
@@ -35,11 +35,10 @@ fun ProductsScreen(
         )
     }
 
-    Column {
-        NavigationBar()
+    Column(modifier = modifier) {
         ProductUtilBar(
             modifier = Modifier
-                .heightIn(30.dp, 80.dp),
+                .heightIn(30.dp, 70.dp),
             onNewProductButtonClick = {
                 viewModel.updateShowNewProductDialog(true)
             }

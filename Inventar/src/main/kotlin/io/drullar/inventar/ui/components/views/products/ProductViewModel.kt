@@ -1,4 +1,4 @@
-package io.drullar.inventar.ui.components.screen.products
+package io.drullar.inventar.ui.components.views.products
 
 import androidx.lifecycle.ViewModel
 import io.drullar.inventar.service.ProductsService

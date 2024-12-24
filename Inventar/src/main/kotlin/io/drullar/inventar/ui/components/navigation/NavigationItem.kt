@@ -44,7 +44,6 @@ fun NavigationItem(
                 color = if (isSelected) onSelectBgColor else defaultBgColor,
                 shape = roundedBorderShape()
             )
-
     ) {
         Image(
             painter = painterResource(details.iconPath), //painterResource(details.iconPath, CustomResourceLoader()),
