@@ -11,9 +11,7 @@ import kotlinx.coroutines.flow.asStateFlow
 class ProductViewModel : ViewModel() {
 
     private val productsService = ProductsService()
-    private val _products = MutableStateFlow(
-        mutableListOf(*productsService.getAll().toTypedArray())
-    )
+    private val _products = MutableStateFlow(productsService.getAll().toMutableList())
     private var _selectedProduct = MutableStateFlow<ProductDTO?>(null)
     private var _selectedProductIndex: Int? = null
     private var _selectedProductHasChanges = MutableStateFlow(false)
@@ -55,6 +53,5 @@ class ProductViewModel : ViewModel() {
     fun addNewProduct(product: ProductDTO) {
         productsService.save(product)
         _products.value = (_products.value + product).toMutableList()
-        println("added new product")
     }
 }

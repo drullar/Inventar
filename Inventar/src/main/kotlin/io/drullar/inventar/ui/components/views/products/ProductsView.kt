@@ -71,6 +71,8 @@ fun ProductsView(
                     .fillMaxHeight()
                     .roundedBorder()
             ) {
+                //TODO add some sort of abstraction to switch between selectedProduct and OrderCreationCard
+
                 if (selectedProductDTO != null) {
                     ProductDetailedViewCard(
                         productData = selectedProductDTO!!,
