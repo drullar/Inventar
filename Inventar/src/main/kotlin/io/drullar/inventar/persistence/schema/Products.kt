@@ -6,7 +6,7 @@ import org.jetbrains.exposed.sql.Table
 @Relation
 object Products : Table("products") {
     val uid = integer("id").autoIncrement().uniqueIndex()
-    val name = varchar("name", NAME_MAX_LENGTH)
+    val name = varchar("name", NAME_MAX_LENGTH).uniqueIndex()
     val availableQuantity = integer("quantity")
     val sellingPrice = double("selling_price")
     val providerPrice = double("provider_price").nullable()

@@ -8,8 +8,13 @@ data class ProductDTO(
     var name: String,
     var sellingPrice: Double = 0.0,
     var availableQuantity: Int = 0,
-    val iconPath: String = Icons.PRODUCTS_ICON, // TODO change default value after creating a default value image
+    val iconPath: String = Icons.PRODUCTS, // TODO change default value after creating a default value image
     var providerPrice: Double?,
     var barcode: String?,
     var categories: Set<Category> = emptySet()
+)
+
+data class OrderDTO(
+    val orderId: Int,
+    val productNameToQuantity: Map<String, Int>
 )

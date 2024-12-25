@@ -1,6 +1,7 @@
 package io.drullar.inventar.persistence.repositories
 
 import io.drullar.inventar.persistence.model.Order
+import io.drullar.inventar.persistence.model.OrderStatus
 import io.drullar.inventar.persistence.schema.Orders
 import io.drullar.inventar.persistence.schema.Orders.creationDate
 import io.drullar.inventar.persistence.schema.Orders.id
@@ -44,5 +45,10 @@ internal object OrderRepository : AbstractPersistenceRepository<Orders, Order, U
                 // Creation date should not be updated
             }
         }
+    }
+
+    fun getAllByStatus(status: OrderStatus) = withTransaction {
+        table.selectAll().where { table.orderStatus.eq(status) }.orderBy(table.creationDate)
+            .map { transformResultRowToModel(it) }
     }
 }

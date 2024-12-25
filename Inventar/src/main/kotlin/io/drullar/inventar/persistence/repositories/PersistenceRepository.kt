@@ -64,6 +64,6 @@ abstract class AbstractPersistenceRepository<T : Table, D, ID>(val table: T) :
     override fun getAll(): List<D> = withTransaction {
         table.selectAll().map { transformResultRowToModel(it) }
     }
-
+    
     protected abstract fun transformResultRowToModel(row: ResultRow): D
 }

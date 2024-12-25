@@ -19,6 +19,7 @@ import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.TooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,12 +36,13 @@ import io.drullar.inventar.ui.style.roundedBorder
 @Composable
 fun ProductPreviewCard(
     productData: ProductDTO,
-    onClickCallback: (ProductDTO?) -> Unit,
+    onClickCallback: (ProductDTO) -> Unit,
     isSelected: Boolean = false,
     selectionIsAllowed: Boolean = true
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isHoveredOn by interactionSource.collectIsHoveredAsState()
+    val isSelectedState by remember { mutableStateOf(isSelected) }
 
     val width = 160.dp
     val height = 180.dp
@@ -51,14 +53,14 @@ fun ProductPreviewCard(
         ),
         border = BorderStroke(
             width = 2.dp,
-            color = if (isSelected) Color.Blue else Colors.BABY_BLUE
+            color = if (isSelectedState) Colors.INDIGO else Colors.BABY_BLUE
         ),
         modifier = Modifier
             .size(width = width, height = height)
             .clickable {
                 if (selectionIsAllowed && !isSelected) {
                     onClickCallback(productData)
-                } else onClickCallback(null)
+                }
             }
     ) {
         TooltipBox(

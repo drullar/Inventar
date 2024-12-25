@@ -6,4 +6,8 @@ object Colors {
     val BABY_BLUE by lazy {
         Color(137, 207, 240)
     }
+
+    val INDIGO by lazy {
+        Color(40, 30, 93)
+    }
 }

@@ -26,7 +26,6 @@ fun App() {
     val productViewModel = ProductViewModel()
     var currentView by remember { mutableStateOf(NavigationDestination.PRODUCTS_PAGE) }
     Column(modifier = Modifier.fillMaxWidth().fillMaxHeight()) {
-
         Row(modifier = Modifier.fillMaxWidth().padding(10.dp)) {
             NavigationBar(
                 selectedView = currentView,

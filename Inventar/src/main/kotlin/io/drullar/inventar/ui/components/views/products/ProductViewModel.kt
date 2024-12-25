@@ -1,45 +1,68 @@
 package io.drullar.inventar.ui.components.views.products
 
 import androidx.lifecycle.ViewModel
+import io.drullar.inventar.persistence.model.Order
+import io.drullar.inventar.service.OrdersService
 import io.drullar.inventar.service.ProductsService
 import io.drullar.inventar.shared.ProductDTO
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-//data class ProductScreenState TODO encapsulate the exposed properties in a data class ... or split the different states to context appropriate data classes
-
 class ProductViewModel : ViewModel() {
-
     private val productsService = ProductsService()
-    private val _products = MutableStateFlow(productsService.getAll().toMutableList())
-    private var _selectedProduct = MutableStateFlow<ProductDTO?>(null)
-    private var _selectedProductIndex: Int? = null
-    private var _selectedProductHasChanges = MutableStateFlow(false)
-    private var _showUnsavedChangesAlert = MutableStateFlow(false)
-    private var _showNewProductDialog = MutableStateFlow(false)
+    private val ordersService = OrdersService()
 
+    private val _previewChangeIsAllowed = MutableStateFlow(true)
+    val previewChangeIsAllowed = _previewChangeIsAllowed.asStateFlow()
+
+    private val _products = MutableStateFlow(productsService.getAll().toMutableList())
     val products = _products.asStateFlow()
-    val selectedProductHasChanges = _selectedProductHasChanges.asStateFlow()
-    val selectedProduct = _selectedProduct.asStateFlow()
+
+    private var _selectedProductIndex: Int? = null
+
+    private var _showUnsavedChangesAlert = MutableStateFlow(false)
     val showUnsavedChangesAlert = _showUnsavedChangesAlert.asStateFlow()
+
+    private var _showNewProductDialog = MutableStateFlow(false)
     var showNewProductDialog = _showNewProductDialog.asStateFlow()
 
+    private var _preview = MutableStateFlow<Preview<*>?>(null)
+    var preview = _preview.asStateFlow()
+
+    private val _draftOrders by lazy { MutableStateFlow(ordersService.getDraftOrders()) }
+    val draftOrders by lazy { _draftOrders.asStateFlow() }
+
+    private val _orderButtonText = MutableStateFlow(
+        _draftOrders.value.count().let {
+            when {
+                it == 0 -> ""
+                it > 99 -> "99+"
+                else -> it.toString()
+            }
+        }
+    )
+    val orderButtonCount = _orderButtonText.asStateFlow()
 
     fun updateProduct(product: ProductDTO) {
         productsService.update(product.uid!!, product)
         _products.value[_selectedProductIndex!!] = product
-        _selectedProductHasChanges.value = false
+        _previewChangeIsAllowed.value = true
     }
 
-    fun selectProduct(product: ProductDTO?) {
-        if (product != null) {
-            _selectedProduct.value = product
+    fun selectProduct(product: ProductDTO) {
+        if (_previewChangeIsAllowed.value) {
+            _preview.value = DetailedProductPreview(product)
             _selectedProductIndex = _products.value.indexOf(product)
         }
     }
 
-    fun updateSelectedProductHasChanges(value: Boolean) {
-        _selectedProductHasChanges.value = value
+    fun allowPreviewChange() {
+        _previewChangeIsAllowed.value = true
+    }
+
+    fun forbidPreviewChange() {
+        _previewChangeIsAllowed.value = false
     }
 
     fun updateShowUnsavedChangesAlert(value: Boolean) {
@@ -53,5 +76,12 @@ class ProductViewModel : ViewModel() {
     fun addNewProduct(product: ProductDTO) {
         productsService.save(product)
         _products.value = (_products.value + product).toMutableList()
+    }
+
+    fun handleOrdersButtonClick(): List<Order>? {
+        if (_previewChangeIsAllowed.value) {
+            return _draftOrders.value;
+        }
+        return null
     }
 }

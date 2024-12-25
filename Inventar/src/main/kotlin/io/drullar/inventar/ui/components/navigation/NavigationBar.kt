@@ -31,7 +31,6 @@ fun NavigationBar(
                 }
             )
         }
-        // TODO add SearchBar
     }
 }
 
@@ -48,12 +47,12 @@ internal fun NavigationBarPreviewContainer() {
 private val navigationItems by lazy {
     sortedMapOf(
         NavigationDestination.PRODUCTS_PAGE to NavigationItemDetails(
-            iconPath = Icons.PRODUCTS_ICON,
-            "Products"
+            iconPath = Icons.PRODUCTS,
+            "Main"
         ),
         NavigationDestination.ORDERS_PAGE to NavigationItemDetails(
-            iconPath = Icons.ORDERS_ICON,
-            "Orders"
+            iconPath = Icons.ORDERS_LOG,
+            "Log History"
         )
     )
 }

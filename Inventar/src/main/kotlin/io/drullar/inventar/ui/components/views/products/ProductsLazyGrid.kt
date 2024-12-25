@@ -18,7 +18,7 @@ import io.drullar.inventar.ui.components.cards.ProductPreviewCard
 @Composable
 fun ProductsLazyGrid(
     products: List<ProductDTO>,
-    onProductSelectCallback: (ProductDTO?) -> Unit,
+    onProductSelectCallback: (ProductDTO) -> Unit,
     selectionIsAllowed: Boolean
 ) {
     val selectedProduct by remember { mutableStateOf<ProductDTO?>(null) }

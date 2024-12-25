@@ -70,7 +70,7 @@ fun NavigationItem(
 private fun NavigationItemPreviewContainer() {
     NavigationItem(
         NavigationItemDetails(
-            iconPath = Icons.PRODUCTS_ICON,
+            iconPath = Icons.PRODUCTS,
             textIdentifier = "Products",
         ),
         true,
