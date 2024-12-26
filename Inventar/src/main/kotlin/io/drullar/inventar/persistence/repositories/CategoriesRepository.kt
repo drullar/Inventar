@@ -10,10 +10,11 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 internal object CategoriesRepository :
     AbstractPersistenceRepository<Categories, Category, String>(Categories) {
 
-    override fun save(model: Category): String = withTransaction {
+    override fun save(model: Category): Category = withTransaction {
         Categories.insert {
             it[name] = model.name
-        }.resultedValues?.first()?.let { it[name] } ?: throw PersistenceException()
+        }.resultedValues?.first()?.let { transformResultRowToModel(it) }
+            ?: throw PersistenceException()
     }
 
     override fun update(id: String, model: Category) {

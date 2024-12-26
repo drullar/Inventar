@@ -5,7 +5,6 @@ import io.drullar.inventar.persistence.model.Order
 import io.drullar.inventar.service.OrdersService
 import io.drullar.inventar.service.ProductsService
 import io.drullar.inventar.shared.ProductDTO
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
@@ -74,8 +73,8 @@ class ProductViewModel : ViewModel() {
     }
 
     fun addNewProduct(product: ProductDTO) {
-        productsService.save(product)
-        _products.value = (_products.value + product).toMutableList()
+        val persistedObject: ProductDTO = productsService.save(product)
+        _products.value = (_products.value + persistedObject).toMutableList()
     }
 
     fun handleOrdersButtonClick(): List<Order>? {
@@ -84,4 +83,23 @@ class ProductViewModel : ViewModel() {
         }
         return null
     }
+
+    fun deleteProduct(product: ProductDTO) {
+        // Whether the product queued for deletion is being edited
+        if (isProductBeingEdited(product)) {
+            // TODO set show alert dialog
+        } else {
+            _products.value = (_products.value - product).toMutableList()
+            productsService.delete(product.uid!!)
+        }
+    }
+
+    fun handleAddProductToOrder() {
+        throw NotImplementedError()
+    }
+
+    private fun isProductBeingEdited(product: ProductDTO) =
+        _preview.value is DetailedProductPreview &&
+                (_preview.value as DetailedProductPreview).getPreviewData().uid == product.uid &&
+                !_previewChangeIsAllowed.value
 }

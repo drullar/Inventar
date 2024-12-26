@@ -12,16 +12,17 @@ object ProductOrderAssociationRepository :
     AbstractPersistenceRepository<ProductOrderAssociation, ProductOrderAssociationModel, ProductOrderKey>(
         ProductOrderAssociation
     ) {
-    override fun save(model: ProductOrderAssociationModel): ProductOrderKey = withTransaction {
-        table.insert {
-            it[productId] = model.productOrderKey.productId
-            it[orderId] = model.productOrderKey.orderId
-            it[orderedAmount] = model.orderedAmount
-            it[sellingPrice] = model.productSellingPrice
+    override fun save(model: ProductOrderAssociationModel): ProductOrderAssociationModel =
+        withTransaction {
+            table.insert {
+                it[productId] = model.productOrderKey.productId
+                it[orderId] = model.productOrderKey.orderId
+                it[orderedAmount] = model.orderedAmount
+                it[sellingPrice] = model.productSellingPrice
+            }.resultedValues?.first()?.let {
+                transformResultRowToModel(it)
+            } ?: throw NotImplementedError("Operation is not implemented fully")
         }
-
-        model.productOrderKey
-    }
 
     override fun transformResultRowToModel(row: ResultRow): ProductOrderAssociationModel {
         TODO("Not yet implemented")

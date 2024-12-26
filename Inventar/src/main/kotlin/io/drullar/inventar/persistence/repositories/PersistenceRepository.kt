@@ -10,7 +10,7 @@ interface PersistenceRepository<T : Table, D, ID> {
     /**
      * Save a new entity based on the provided [model]
      */
-    fun save(model: D): ID
+    fun save(model: D): D
 
     /**
      * Update an entity if it exists. If an entity with the provided [id] doesn't exist, no action is taken
@@ -64,6 +64,6 @@ abstract class AbstractPersistenceRepository<T : Table, D, ID>(val table: T) :
     override fun getAll(): List<D> = withTransaction {
         table.selectAll().map { transformResultRowToModel(it) }
     }
-    
+
     protected abstract fun transformResultRowToModel(row: ResultRow): D
 }

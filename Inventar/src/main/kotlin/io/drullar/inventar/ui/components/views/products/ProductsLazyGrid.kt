@@ -13,13 +13,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import io.drullar.inventar.shared.ProductDTO
-import io.drullar.inventar.ui.components.cards.ProductPreviewCard
+import io.drullar.inventar.ui.components.cards.ProductSummarizedPreviewCard
 
 @Composable
 fun ProductsLazyGrid(
     products: List<ProductDTO>,
     onProductSelectCallback: (ProductDTO) -> Unit,
-    selectionIsAllowed: Boolean
+    selectionIsAllowed: Boolean,
+    onProductDeleteRequest: (ProductDTO) -> Unit,
+    onProductEditRequest: (ProductDTO) -> Unit,
+    onAddProductToOrderRequest: (ProductDTO) -> Unit
 ) {
     val selectedProduct by remember { mutableStateOf<ProductDTO?>(null) }
 
@@ -29,11 +32,14 @@ fun ProductsLazyGrid(
     ) {
         items(products) { productData ->
             Box(modifier = Modifier.padding(5.dp)) {
-                ProductPreviewCard(
+                ProductSummarizedPreviewCard(
                     productData,
                     onClickCallback = onProductSelectCallback,
                     isSelected = productData == selectedProduct,
-                    selectionIsAllowed = selectionIsAllowed
+                    selectionIsAllowed = selectionIsAllowed,
+                    onEditRequest = onProductEditRequest,
+                    onDeleteRequest = onProductDeleteRequest,
+                    onAddToOrderRequest = onAddProductToOrderRequest
                 )
             }
 

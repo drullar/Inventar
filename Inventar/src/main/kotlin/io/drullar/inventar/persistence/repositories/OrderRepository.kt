@@ -12,11 +12,11 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import java.util.UUID
 
 internal object OrderRepository : AbstractPersistenceRepository<Orders, Order, UUID>(Orders) {
-    override fun save(model: Order): UUID = withTransaction {
+    override fun save(model: Order): Order = withTransaction {
         table.insert {
             it[orderStatus] = model.status
             it[totalPrice] = model.totalPrice
-        }.resultedValues!!.first().let { it[id] }
+        }.resultedValues!!.first().let { transformResultRowToModel(it) }
     }
 
     override fun transformResultRowToModel(row: ResultRow): Order = Order(

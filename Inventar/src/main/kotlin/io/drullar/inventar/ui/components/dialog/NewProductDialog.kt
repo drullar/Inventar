@@ -4,6 +4,7 @@ import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -15,18 +16,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogWindow
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.rememberDialogState
 import io.drullar.inventar.shared.ProductDTO
-
-// TODO handle wrong input in numeric fields. Use supportingText and isError properties of TextField to provide necessary user message
+import kotlin.reflect.KClass
 
 @Composable
 @Preview
-fun NewProductDialog(
+fun NewProductDialog( //TODO reuse same form here and inside ProductDetailedPreviewCard
     onClose: () -> Unit,
     onSubmit: (ProductDTO) -> Unit
 ) {
@@ -53,27 +54,32 @@ fun NewProductDialog(
                 onValueChange = { value ->
                     productForm.name = value
                 },
-                warningMessage = nameFieldWarning
+                warningMessage = nameFieldWarning,
+                inputType = String::class
             )
             FormInputField(
                 label = "Selling price",
                 defaultValue = productForm.sellingPrice.toString(),
-                onValueChange = { productForm.sellingPrice = it.toDouble() }
+                onValueChange = { productForm.sellingPrice = it.toDouble() },
+                inputType = Double::class
             )
             FormInputField(
                 label = "Provider price",
                 defaultValue = productForm.providerPrice.toString(),
-                onValueChange = { productForm.providerPrice = it.toDouble() }
+                onValueChange = { productForm.providerPrice = it.toDouble() },
+                inputType = Double::class
             )
             FormInputField(
                 label = "Quantity",
                 defaultValue = productForm.availableQuantity.toString(),
-                onValueChange = { productForm.availableQuantity = it.toInt() }
+                onValueChange = { productForm.availableQuantity = it.toInt() },
+                inputType = Int::class
             )
             FormInputField(
                 label = "(Optional) Barcode",
                 defaultValue = productForm.barcode ?: "",
-                onValueChange = { productForm.barcode = it }
+                onValueChange = { productForm.barcode = it },
+                inputType = String::class
             )
 
             FilledTonalButton(
@@ -102,9 +108,10 @@ private fun validateForm(form: ProductDTO): FormValidationProblem = when {
 }
 
 @Composable
-private fun FormInputField(
+private fun <T : Any> FormInputField(
     label: String,
     defaultValue: String,
+    inputType: KClass<T>,
     onValueChange: (value: String) -> Unit,
     warningMessage: String? = null
 ) {
@@ -122,7 +129,14 @@ private fun FormInputField(
             warningMessage?.let {
                 Text(warningMessage, color = Color.Red)
             }
-        }
+        },
+        keyboardOptions = KeyboardOptions(
+            keyboardType = when (inputType) {
+                Double::class -> KeyboardType.Decimal
+                Number::class -> KeyboardType.Number
+                else -> KeyboardType.Text
+            }
+        )
     )
 }
 

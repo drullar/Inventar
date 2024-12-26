@@ -83,7 +83,16 @@ fun ProductsView(
                     onProductSelectCallback = { clickedProductData ->
                         viewModel.selectProduct(clickedProductData)
                     },
-                    selectionIsAllowed = previewChangeIsAllowed.value
+                    selectionIsAllowed = previewChangeIsAllowed.value,
+                    onProductEditRequest = { productDTO ->
+                        viewModel.selectProduct(productDTO)
+                    },
+                    onProductDeleteRequest = { productDTO ->
+                        viewModel.deleteProduct(productDTO)
+                    },
+                    onAddProductToOrderRequest = {
+                        viewModel.handleAddProductToOrder()
+                    }
                 )
             }
 

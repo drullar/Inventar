@@ -14,7 +14,7 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 internal object ProductsService :
     AbstractPersistenceRepository<Products, ProductDTO, Int>(table = Products) {
 
-    override fun save(model: ProductDTO): Int = withTransaction {
+    override fun save(model: ProductDTO): ProductDTO = withTransaction {
         val result = table.insert {
             it[name] = model.name
             it[availableQuantity] = model.availableQuantity
@@ -22,7 +22,7 @@ internal object ProductsService :
             it[barcode] = model.barcode
             it[providerPrice] = model.providerPrice
         }.resultedValues?.first()
-        result?.let { it[uid] }
+        result?.let { transformResultRowToModel(it) }
             ?: throw Exception("Could not save product with name ${model.name}")
     }
 
