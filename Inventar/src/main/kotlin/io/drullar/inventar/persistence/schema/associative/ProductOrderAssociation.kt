@@ -8,16 +8,16 @@ import org.jetbrains.exposed.sql.Table
 
 @Relation
 object ProductOrderAssociation : Table("product_order") {
-    val productId = reference(
+    val productUid = reference(
         "product_id",
         Products.uid,
         onUpdate = ReferenceOption.NO_ACTION,
         onDelete = ReferenceOption.NO_ACTION
     )
-    val orderId = reference("order_id", Orders.id, onDelete = ReferenceOption.CASCADE)
+    val orderUid = reference("order_id", Orders.id, onDelete = ReferenceOption.CASCADE)
     val sellingPrice = double("product_price")
     val orderedAmount = integer("ordered_amount")
 
     override val primaryKey: PrimaryKey
-        get() = PrimaryKey(orderId, productId)
+        get() = PrimaryKey(orderUid, productUid)
 }
