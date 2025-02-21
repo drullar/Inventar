@@ -29,7 +29,7 @@ data class ProductCreationDTO(
     var name: String,
     var sellingPrice: Double = 0.0,
     var availableQuantity: Int = 0,
-    val iconPath: String = Icons.PRODUCTS, // TODO change default value after creating a default value image
+    val iconPath: String = Icons.PRODUCTS, //  TODO change default value after creating a default value image
     var providerPrice: Double? = null,
     var barcode: String? = null,
     var categories: Set<Category> = emptySet()
@@ -38,13 +38,21 @@ data class ProductCreationDTO(
 data class OrderDTO(
     val orderId: Int,
     val productToQuantity: MutableMap<ProductDTO, Int>,
-    val creationData: LocalDateTime,
+    val creationDate: LocalDateTime,
     val status: OrderStatus
 ) {
     fun toOrderCreationDTO(): OrderCreationDTO = OrderCreationDTO(
         productToQuantity = productToQuantity,
         status = status
     )
+
+    fun getTotalPrice(): Double {
+        var cost: Double = 0.0
+        productToQuantity.forEach { (product, quantity) ->
+            cost += (product.sellingPrice * quantity)
+        }
+        return cost
+    }
 }
 
 data class OrderCreationDTO(

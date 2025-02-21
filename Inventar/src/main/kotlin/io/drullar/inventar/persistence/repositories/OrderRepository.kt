@@ -92,7 +92,7 @@ object OrderRepository : AbstractRepository<Orders, OrderDTO, OrderCreationDTO, 
         orderId = row[id],
         status = row[orderStatus],
         productToQuantity = getProductToSoldAmountAssociation(row[id]).toMutableMap(),
-        creationData = row[creationDate]
+        creationDate = row[creationDate]
     )
 
     fun getAllByStatus(status: OrderStatus): RepositoryResponse<List<OrderDTO>> = response {
@@ -194,4 +194,8 @@ object OrderRepository : AbstractRepository<Orders, OrderDTO, OrderCreationDTO, 
                         .getDataOnSuccessOrNull()!! to it[orderedAmount]
                 }
         }
+
+    fun getCountByStatus(status: OrderStatus) = withTransaction {
+        table.selectAll().where { table.orderStatus.eq(status) }.count()
+    }
 }

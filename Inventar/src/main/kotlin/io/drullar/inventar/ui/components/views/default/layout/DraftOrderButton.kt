@@ -1,4 +1,4 @@
-package io.drullar.inventar.ui.components.views.products.layout
+package io.drullar.inventar.ui.components.views.default.layout
 
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.background
@@ -23,7 +23,7 @@ import androidx.compose.ui.unit.dp
 import io.drullar.inventar.ui.utils.Icons
 
 @Composable
-fun DraftOrderButton(modifier: Modifier = Modifier, draftOrdersCount: String, onClick: () -> Unit) {
+fun DraftOrderButton(modifier: Modifier = Modifier, draftOrdersCount: Long, onClick: () -> Unit) {
     Row {
         IconButton(
             onClick = onClick, modifier.wrapContentSize()
@@ -34,20 +34,17 @@ fun DraftOrderButton(modifier: Modifier = Modifier, draftOrdersCount: String, on
                 modifier = Modifier
             )
         }
-
-        if (draftOrdersCount.isNotEmpty()) {
-            Box(
-                Modifier.background(Color.Red, CircleShape)
-                    .widthIn(25.dp, 30.dp)
-                    .wrapContentHeight()
-            ) {
-                Text(
-                    text = draftOrdersCount,
-                    fontSize = TextUnit(13f, TextUnitType.Sp),
-                    color = Color.White,
-                    modifier = modifier.align(Alignment.Center).padding(2.dp)
-                )
-            }
+        Box(
+            Modifier.background(Color.Red, CircleShape)
+                .widthIn(25.dp, 30.dp)
+                .wrapContentHeight()
+        ) {
+            Text(
+                text = if (draftOrdersCount <= 99) draftOrdersCount.toString() else "99+",
+                fontSize = TextUnit(13f, TextUnitType.Sp),
+                color = Color.White,
+                modifier = modifier.align(Alignment.Center).padding(2.dp)
+            )
         }
     }
 }
@@ -55,17 +52,17 @@ fun DraftOrderButton(modifier: Modifier = Modifier, draftOrdersCount: String, on
 @Composable
 @Preview
 private fun DraftOrderButtonLimitPreview() {
-    DraftOrderButton(draftOrdersCount = "99+", onClick = {})
+    DraftOrderButton(draftOrdersCount = 99, onClick = {})
 }
 
 @Composable
 @Preview
 private fun DraftOrderButtonSingleDitPreview() {
-    DraftOrderButton(draftOrdersCount = "9", onClick = {})
+    DraftOrderButton(draftOrdersCount = 1, onClick = {})
 }
 
 @Composable
 @Preview
 private fun DraftOrderButtonEmptyPreview() {
-    DraftOrderButton(draftOrdersCount = "", onClick = {})
+    DraftOrderButton(draftOrdersCount = 0, onClick = {})
 }

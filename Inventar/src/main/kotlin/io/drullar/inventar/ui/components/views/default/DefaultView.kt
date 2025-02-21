@@ -1,4 +1,4 @@
-package io.drullar.inventar.ui.components.views.products
+package io.drullar.inventar.ui.components.views.default
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -8,45 +8,35 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import io.drullar.inventar.ui.components.cards.OrderCreationCard
+import io.drullar.inventar.ui.components.cards.OrdersListPreviewCard
 import io.drullar.inventar.ui.components.cards.ProductDetailedViewCard
 import io.drullar.inventar.ui.components.dialog.NewProductDialog
 import io.drullar.inventar.ui.components.dialog.AlertDialog
-import io.drullar.inventar.ui.components.views.products.layout.DraftOrderButton
-import io.drullar.inventar.ui.components.views.products.layout.ProductUtilBar
+import io.drullar.inventar.ui.components.dialog.DialogType
+import io.drullar.inventar.ui.components.dialog.OrderProductConfirmation
+import io.drullar.inventar.ui.components.viewmodel.DefaultViewViewModel
+import io.drullar.inventar.ui.components.views.default.layout.DraftOrderButton
+import io.drullar.inventar.ui.components.views.default.layout.ProductUtilBar
 import io.drullar.inventar.ui.style.roundedBorder
-import io.drullar.inventar.ui.utils.Icons
+import kotlinx.coroutines.runBlocking
 
 @Composable
-fun ProductsView(
-    viewModel: ProductViewModel, modifier: Modifier = Modifier
+fun DefaultView(
+    viewModel: DefaultViewViewModel,
+    modifier: Modifier = Modifier
 ) {
     val products by viewModel.products.collectAsState()
-    val showUnsavedChangesAlert by viewModel.showUnsavedChangesAlert.collectAsState()
-    val showNewProductDialog by viewModel.showNewProductDialog.collectAsState()
-    val preview by viewModel.preview.collectAsState()
+    val dialog by viewModel.dialogToDisplay.collectAsState()
+    val preview by viewModel.preview
     val previewChangeIsAllowed = viewModel.previewChangeIsAllowed.collectAsState()
-    val draftOrders = viewModel.draftOrders.collectAsState()
-    val orderButtonCount = viewModel.orderButtonCount.collectAsState()
-
-    if (showUnsavedChangesAlert) {
-        UnsavedChangesAlert(
-            onCancel = { viewModel.updateShowUnsavedChangesAlert(false) },
-            onResolve = {
-                viewModel.updateProduct((preview as DetailedProductPreview).getPreviewData())
-                viewModel.updateShowUnsavedChangesAlert(false)
-            }
-        )
-    }
+    val draftOrdersCount = viewModel.draftOrdersCount.collectAsState()
 
     Column(modifier = modifier) {
         Row(modifier = Modifier.fillMaxWidth().heightIn(30.dp, 70.dp)) {
@@ -55,14 +45,14 @@ fun ProductsView(
                     .fillMaxWidth(0.7f)
                     .align(Alignment.CenterVertically),
                 onNewProductButtonClick = {
-                    viewModel.updateShowNewProductDialog(true)
+                    viewModel.showNewProductDialog()
                 }
             )
 
             DraftOrderButton(
                 modifier = Modifier.align(Alignment.CenterVertically),
-                draftOrdersCount = orderButtonCount.value,
-                onClick = { viewModel.handleOrdersButtonClick() })
+                draftOrdersCount = draftOrdersCount.value,
+                onClick = { viewModel.showDraftOrders() })
         }
 
 
@@ -79,7 +69,7 @@ fun ProductsView(
                     .fillMaxHeight(1f)
             ) {
                 ProductsLazyGrid(
-                    products = products,
+                    products = products ?: emptyList(),
                     onProductSelectCallback = { clickedProductData ->
                         viewModel.selectProduct(clickedProductData)
                     },
@@ -91,7 +81,7 @@ fun ProductsView(
                         viewModel.deleteProduct(productDTO)
                     },
                     onAddProductToOrderRequest = {
-                        viewModel.handleAddProductToOrder()
+                        viewModel.showOrderProductDialog(it)
                     }
                 )
             }
@@ -108,10 +98,10 @@ fun ProductsView(
                         ProductDetailedViewCard(
                             productData = data,
                             onChange = {
-                                viewModel.forbidPreviewChange()
+                                viewModel.allowPreviewChange(false)
                             },
                             onRevert = {
-                                viewModel.allowPreviewChange()
+                                viewModel.allowPreviewChange(true)
                                 data
                             },
                             onSave = { updatedProductDTO ->
@@ -122,18 +112,64 @@ fun ProductsView(
                     }
 
                     is OrderCreationPreview -> {
-                        // TODO
+                        val data = (preview as OrderCreationPreview).getPreviewData()
+                        OrderCreationCard(
+                            order = data,
+                            onCancel = {},
+                            onComplete = {},
+                            onProductRemove = { product ->
+                                viewModel.removeProductFromOrder(product)
+                            }
+                        )
+                    }
+
+                    is OrdersListPreview -> {
+                        val draftOrders = (preview as OrdersListPreview).getPreviewData()
+                        OrdersListPreviewCard(
+                            draftOrders = draftOrders,
+                            onOrderCompletion = { completedOrder ->
+                                // TODO
+                            },
+                            onOrderSelect = { selectedOrder ->
+                                // TODO
+                            })
                     }
                 }
             }
         }
     }
 
-    if (showNewProductDialog) {
-        NewProductDialog(
-            onClose = { viewModel.updateShowNewProductDialog(false) },
+    // Pop up dialogs/alerts/forms in a new window onFocus
+    when (dialog) {
+        DialogType.NEW_PRODUCT -> NewProductDialog(
+            onClose = { viewModel.closeCurrentDialog() },
             onSubmit = { viewModel.addNewProduct(it) }
         )
+
+        DialogType.UNSAVED_CHANGES_ALERT -> UnsavedChangesAlert(
+            onCancel = { viewModel.closeCurrentDialog() },
+            onResolve = {
+                viewModel.updateProduct((preview as DetailedProductPreview).getPreviewData())
+                viewModel.closeCurrentDialog()
+            }
+        )
+
+        DialogType.ADD_PRODUCT_TO_ORDER -> {
+            OrderProductConfirmation(
+                viewModel.targetProduct.value!!,
+                onConfirm = { quantity ->
+                    viewModel.addProductToOrder(quantity)
+                    viewModel.closeCurrentDialog()
+                },
+                onCancel = {
+                    viewModel.targetProduct.value = null
+                    viewModel.closeCurrentDialog()
+                }
+            )
+        }
+
+        DialogType.NONE -> Unit
+        else -> throw NotImplementedError("Dialog rendering for ${dialog.name} is not implemented")
     }
 }
 

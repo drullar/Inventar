@@ -1,4 +1,4 @@
-package io.drullar.inventar.ui.components.views.products
+package io.drullar.inventar.ui.components.views.default
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues

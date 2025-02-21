@@ -18,3 +18,7 @@ fun <T> response(action: () -> T): RepositoryResponse<T> =
 fun <T> RepositoryResponse<T>.getDataOnSuccessOrNull(): T? =
     if (this is RepositoryResponse.Success) data
     else null
+
+fun <T> RepositoryResponse<T>.getOrThrow(): T =
+    if (this is RepositoryResponse.Success) data
+    else throw (this as RepositoryResponse.Failure).exception

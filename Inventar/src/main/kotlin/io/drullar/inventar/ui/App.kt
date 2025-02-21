@@ -17,13 +17,13 @@ import androidx.compose.ui.unit.dp
 import io.drullar.inventar.ui.components.navigation.NavigationBar
 import io.drullar.inventar.ui.components.navigation.NavigationDestination
 import io.drullar.inventar.ui.components.views.OrdersView
-import io.drullar.inventar.ui.components.views.products.ProductViewModel
-import io.drullar.inventar.ui.components.views.products.ProductsView
+import io.drullar.inventar.ui.components.viewmodel.DefaultViewViewModel
+import io.drullar.inventar.ui.components.views.default.DefaultView
 import io.drullar.inventar.ui.components.search.SearchBar
 
 @Composable
 fun App() {
-    val productViewModel = ProductViewModel()
+    val defaultViewViewModel = DefaultViewViewModel()
     var currentView by remember { mutableStateOf(NavigationDestination.PRODUCTS_PAGE) }
     Column(modifier = Modifier.fillMaxWidth().fillMaxHeight()) {
         Row(modifier = Modifier.fillMaxWidth().padding(10.dp)) {
@@ -41,8 +41,8 @@ fun App() {
         val viewModifier = Modifier.fillMaxWidth().fillMaxHeight()
         val destinationToScreen = mapOf<NavigationDestination, @Composable () -> Unit>(
             NavigationDestination.PRODUCTS_PAGE to {
-                ProductsView(
-                    productViewModel,
+                DefaultView(
+                    defaultViewViewModel,
                     viewModifier
                 )
             },
@@ -51,7 +51,5 @@ fun App() {
 
         destinationToScreen[currentView]!!()
     }
-
-
 }
 

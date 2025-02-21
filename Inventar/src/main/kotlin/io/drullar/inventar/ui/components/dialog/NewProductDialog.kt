@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogWindow
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.rememberDialogState
+import io.drullar.inventar.shared.ProductCreationDTO
 import io.drullar.inventar.shared.ProductDTO
 import kotlin.reflect.KClass
 
@@ -29,10 +30,10 @@ import kotlin.reflect.KClass
 @Preview
 fun NewProductDialog( //TODO reuse same form here and inside ProductDetailedPreviewCard
     onClose: () -> Unit,
-    onSubmit: (ProductDTO) -> Unit
+    onSubmit: (ProductCreationDTO) -> Unit
 ) {
     val productForm by mutableStateOf(
-        ProductDTO(
+        ProductCreationDTO(
             name = "",
             providerPrice = 0.0,
             barcode = ""
@@ -102,7 +103,7 @@ fun NewProductDialog( //TODO reuse same form here and inside ProductDetailedPrev
     }
 }
 
-private fun validateForm(form: ProductDTO): FormValidationProblem = when {
+private fun validateForm(form: ProductCreationDTO): FormValidationProblem = when {
     form.name.isEmpty() -> FormValidationProblem.NAME_IS_EMPTY
     else -> FormValidationProblem.NONE
 }
