@@ -41,10 +41,6 @@ fun NewProductDialog( //TODO reuse same form here and inside ProductDetailedPrev
         setOf(IsNotEmpty())
     }
 
-    val sellingPriceValidator: Set<FieldValidator<Double>> by lazy {
-        setOf(IsNotEmpty(), NotNegativeNumber())
-    }
-
     var nameFieldWarning by remember { mutableStateOf<String?>(null) }
     var sellingPriceFieldWarning by remember { mutableStateOf<String?>(null) }
     var availableQuantityFieldWarning by remember { mutableStateOf<String?>(null) }
@@ -61,7 +57,7 @@ fun NewProductDialog( //TODO reuse same form here and inside ProductDetailedPrev
                     label = "Name",
                     defaultValue = name,
                     onValueChange = { value ->
-                        nameFieldWarning = produceWarningText(value, nameFieldValidators)
+                        nameFieldWarning = produceWarningText(value, setOf(IsNotEmpty()))
                         name = value
                     },
                     warningMessage = nameFieldWarning,
@@ -73,7 +69,9 @@ fun NewProductDialog( //TODO reuse same form here and inside ProductDetailedPrev
                     onValueChange = {
                         sellingPrice = it.toDoubleOrNull() ?: 0.0
                         sellingPriceFieldWarning =
-                            produceWarningText(sellingPrice, sellingPriceValidator)
+                            produceWarningText(
+                                sellingPrice, setOf(IsNotEmpty(), NotNegativeNumber())
+                            )
                     },
                     warningMessage = sellingPriceFieldWarning,
                     inputType = Double::class
@@ -129,7 +127,7 @@ fun NewProductDialog( //TODO reuse same form here and inside ProductDetailedPrev
 }
 
 private fun concatValidationIssues(issueTexts: List<String>) = issueTexts.joinToString(" ")
-private fun <T> produceWarningText(
+fun <T> produceWarningText(
     value: T,
     validators: Set<FieldValidator<T>>
 ): String? {

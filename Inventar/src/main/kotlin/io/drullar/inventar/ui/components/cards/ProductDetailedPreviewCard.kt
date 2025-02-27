@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material3.Button
@@ -26,7 +27,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import io.drullar.inventar.persistence.schema.BARCODE_LENGTH
 import io.drullar.inventar.shared.ProductDTO
+import io.drullar.inventar.ui.components.dialog.produceWarningText
+import io.drullar.inventar.ui.components.field.FormInputField
+import io.drullar.inventar.ui.components.field.IsNotEmpty
+import io.drullar.inventar.ui.components.field.NotNegativeNumber
 import io.drullar.inventar.ui.style.roundedBorderShape
 
 /**
@@ -46,6 +52,10 @@ fun ProductDetailedViewCard(
     var hasChange by remember { mutableStateOf(false) }
     var stateOfProductData by remember(key1 = productData.uid) { mutableStateOf(productData) }
 
+    var nameFieldWarning by remember { mutableStateOf<String?>(null) }
+    var sellingPriceFieldWarning by remember { mutableStateOf<String?>(null) }
+    var availableQuantityFieldWarning by remember { mutableStateOf<String?>(null) }
+
     Column(modifier = modifier.fillMaxHeight().fillMaxWidth()) {
         val scrollableState = rememberScrollState()
         OutlinedCard(
@@ -54,50 +64,76 @@ fun ProductDetailedViewCard(
                 .fillMaxWidth()
                 .scrollable(state = scrollableState, orientation = Orientation.Vertical)
         ) {
-            // TODO add icon
-            Field(
-                label = "Name",
-                value = stateOfProductData.name
-            ) { value ->
-                hasChange = true
-                stateOfProductData = stateOfProductData.copy(name = value)
-                onChange()
-            }
-
-            Field(
-                label = "Selling price",
-                value = stateOfProductData.sellingPrice.toString()
-            ) { value ->
-                hasChange = true
-                stateOfProductData = stateOfProductData.copy(sellingPrice = value.toDouble())
-                onChange()
-            }
-
-            Field(
-                label = "Available quantity",
-                value = stateOfProductData.availableQuantity.toString()
-            ) { value ->
-                hasChange = true
-                stateOfProductData = stateOfProductData.copy(availableQuantity = value.toInt())
-                onChange()
-            }
-
-            Field(
-                label = "Provider price",
-                value = stateOfProductData.providerPrice.toString()
-            ) { value ->
-                hasChange = true
-                stateOfProductData.providerPrice = stateOfProductData.providerPrice
-                onChange()
-            }
-
-            Field(
-                label = "Barcode",
-                value = stateOfProductData.barcode ?: ""
-            ) { value ->
-                hasChange = true
-                stateOfProductData.barcode = value // TODO
-                onChange()
+            Column(modifier = Modifier.fillMaxWidth().wrapContentHeight()) {
+                FormInputField(
+                    label = "Name",
+                    defaultValue = stateOfProductData.name,
+                    onValueChange = { value ->
+                        hasChange = true
+                        stateOfProductData = stateOfProductData.copy(name = value)
+                        nameFieldWarning = produceWarningText(value, setOf(IsNotEmpty()))
+                        onChange()
+                    },
+                    warningMessage = nameFieldWarning,
+                    inputType = String::class
+                )
+                FormInputField(
+                    label = "Selling price",
+                    defaultValue = stateOfProductData.sellingPrice.toString(),
+                    onValueChange = { value ->
+                        hasChange = true
+                        stateOfProductData = stateOfProductData.copy(
+                            sellingPrice = value.toDoubleOrNull() ?: 0.0
+                        )
+                        sellingPriceFieldWarning =
+                            produceWarningText(
+                                stateOfProductData.sellingPrice,
+                                setOf(IsNotEmpty(), NotNegativeNumber())
+                            )
+                        onChange()
+                    },
+                    warningMessage = sellingPriceFieldWarning,
+                    inputType = Double::class
+                )
+                FormInputField(
+                    label = "(Optional) Provider price",
+                    defaultValue = stateOfProductData.providerPrice?.toString() ?: "",
+                    onValueChange = {
+                        hasChange = true
+                        stateOfProductData =
+                            stateOfProductData.copy(providerPrice = it.toDoubleOrNull() ?: 0.0)
+                        onChange()
+                    },
+                    inputType = Double::class
+                )
+                FormInputField(
+                    label = "Quantity",
+                    defaultValue = stateOfProductData.availableQuantity.toString(),
+                    onValueChange = {
+                        hasChange = true
+                        stateOfProductData =
+                            stateOfProductData.copy(availableQuantity = it.toIntOrNull() ?: 0)
+                        availableQuantityFieldWarning =
+                            produceWarningText(
+                                stateOfProductData.availableQuantity,
+                                setOf(IsNotEmpty(), NotNegativeNumber())
+                            )
+                        onChange()
+                    },
+                    inputType = Int::class,
+                    warningMessage = availableQuantityFieldWarning
+                )
+                FormInputField(
+                    label = "(Optional) Barcode",
+                    defaultValue = stateOfProductData.barcode ?: "",
+                    onValueChange = {
+                        hasChange = true
+                        stateOfProductData = stateOfProductData.copy(barcode = it)
+                        onChange()
+                    },
+                    inputType = String::class,
+                    characterLimit = BARCODE_LENGTH
+                )
             }
         }
         Row(modifier = Modifier.align(Alignment.CenterHorizontally)) {
