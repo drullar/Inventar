@@ -1,5 +1,6 @@
 package io.drullar.inventar.ui.components.cards
 
+import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Column
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material3.Button
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.OutlinedCard
@@ -130,6 +132,17 @@ private fun Field(
         onValueChange = onChange,
         shape = roundedBorderShape(),
         label = { Text(label) },
-        colors = TextFieldDefaults.colors().copy(unfocusedContainerColor = Color.White)
-    )
+        colors = TextFieldDefaults.colors().copy(unfocusedContainerColor = Color.White),
+
+        )
+}
+
+@Composable
+@Preview
+private fun ProductDetailedViewCardPreview() {
+    ProductDetailedViewCard(
+        ProductDTO(uid = 1, name = "productName", barcode = "92319321"),
+        {},
+        {},
+        { ProductDTO(1, "") })
 }

@@ -1,0 +1,59 @@
+package io.drullar.inventar.ui.components.button
+
+import androidx.compose.desktop.ui.tooling.preview.Preview
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Text
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.TextUnitType
+import androidx.compose.ui.unit.dp
+import io.drullar.inventar.ui.style.Colors
+import androidx.compose.material3.Button as MaterialButton
+
+@Composable
+fun Button(
+    text: String,
+    onClick: () -> Unit,
+    backgroundColor: Color = Colors.BrightBlue,
+    textColor: Color = Color.White,
+    borderColor: Color? = null,
+    modifier: Modifier = Modifier
+) {
+    MaterialButton(
+        onClick = onClick,
+        colors = ButtonDefaults.buttonColors().copy(containerColor = backgroundColor),
+        border = borderColor?.let { color -> BorderStroke(1.dp, color) },
+        shape = RoundedCornerShape(5.dp),
+        modifier = modifier
+    ) {
+        Text(
+            text,
+            color = textColor,
+            fontWeight = FontWeight.W400,
+            fontSize = TextUnit(16f, TextUnitType.Sp)
+        )
+    }
+}
+
+@Composable
+@Preview
+private fun DefaultButtonPreview() {
+    Button("Complete", {})
+}
+
+@Composable
+@Preview
+private fun AltButtonPreview() {
+    Button(
+        "Terminate",
+        {},
+        backgroundColor = Color.White,
+        textColor = Color.Red,
+        borderColor = Color.Red
+    )
+}

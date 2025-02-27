@@ -25,7 +25,6 @@ import io.drullar.inventar.ui.components.viewmodel.DefaultViewViewModel
 import io.drullar.inventar.ui.components.views.default.layout.DraftOrderButton
 import io.drullar.inventar.ui.components.views.default.layout.ProductUtilBar
 import io.drullar.inventar.ui.style.roundedBorder
-import kotlinx.coroutines.runBlocking
 
 @Composable
 fun DefaultView(
@@ -115,10 +114,13 @@ fun DefaultView(
                         val data = (preview as OrderCreationPreview).getPreviewData()
                         OrderCreationCard(
                             order = data,
-                            onCancel = {},
+                            onTerminate = {},
                             onComplete = {},
                             onProductRemove = { product ->
                                 viewModel.removeProductFromOrder(product)
+                            },
+                            onProductValueChange = { product, newQuantity ->
+                                viewModel.changeProductQuantityInOrder(product, newQuantity)
                             }
                         )
                     }
@@ -128,10 +130,10 @@ fun DefaultView(
                         OrdersListPreviewCard(
                             draftOrders = draftOrders,
                             onOrderCompletion = { completedOrder ->
-                                // TODO
+                                viewModel.completeOrder(completedOrder)
                             },
                             onOrderSelect = { selectedOrder ->
-                                // TODO
+                                viewModel.selectOrder(selectedOrder)
                             })
                     }
                 }

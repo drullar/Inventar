@@ -20,7 +20,6 @@ import io.drullar.inventar.ui.components.views.default.OrderCreationPreview
 import io.drullar.inventar.ui.components.views.default.OrdersListPreview
 import io.drullar.inventar.ui.components.views.default.Preview
 import io.drullar.inventar.ui.exceptions.ControlledException
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
@@ -116,9 +115,14 @@ class DefaultViewViewModel(
             // If OrderCreation is already selected
             if (_preview.value is OrderCreationPreview) {
                 order = (_preview.value as OrderCreationPreview).getPreviewData()
-                order.productToQuantity[targetProduct.value!!] = quantity
+                val updatedProductsMap = order.productToQuantity.toMutableMap()
+                    .also { it[targetProduct.value!!] = quantity }
+
                 val updatedOrder = ordersRepository
-                    .update(order.orderId, order.toOrderCreationDTO())
+                    .update(
+                        order.orderId,
+                        order.copy(productToQuantity = updatedProductsMap).toOrderCreationDTO()
+                    )
                     .getOrThrow()
                 _preview.value = OrderCreationPreview(updatedOrder)
             } else {
@@ -129,27 +133,68 @@ class DefaultViewViewModel(
                     )
                 ).getOrThrow()
                 _preview.value = OrderCreationPreview(order)
+                _draftOrdersCount.value += 1
             }
-            _draftOrdersCount.value += 1
         } catch (exception: ControlledException) {
             closeCurrentDialog()
             exception.message?.let { log.error(it) }
         }
     }
 
+    fun selectOrder(orderDTO: OrderDTO) {
+        validatePreviewChange { _preview.value is OrdersListPreview }
+        _preview.value = OrderCreationPreview(orderDTO)
+    }
+
+    fun completeOrder(orderDTO: OrderDTO) {
+        ordersRepository.update(
+            orderDTO.orderId,
+            orderDTO.copy(status = OrderStatus.COMPLETED).toOrderCreationDTO()
+        )
+        _draftOrdersCount.value -= 1
+
+        when (_preview.value) {
+            is OrdersListPreview -> {
+                val draftOrders =
+                    (_preview.value as OrdersListPreview).getPreviewData().toMutableList()
+                draftOrders.remove(orderDTO)
+
+                _preview.value = OrdersListPreview(
+                    ordersRepository.getAllByStatus(OrderStatus.DRAFT).getOrThrow()
+                )
+            }
+
+            is OrderCreationPreview -> {
+                val order = (_preview.value as OrderCreationPreview).getPreviewData()
+            }
+        }
+
+
+    }
+
     fun removeProductFromOrder(product: ProductDTO) {
         try {
             val order = (_preview.value as OrderCreationPreview).getPreviewData()
-            order.productToQuantity.let {
-                it.remove(product)
-                it.toMap()
-            }
-            val updatedOrder = ordersRepository.update(order.orderId, order.toOrderCreationDTO())
+            val updatedProductsMap =
+                order.productToQuantity.toMutableMap().also { it.remove(product) }
+            val updatedOrder = ordersRepository.update(
+                order.orderId,
+                order.copy(productToQuantity = updatedProductsMap).toOrderCreationDTO()
+            )
             _preview.value = OrderCreationPreview(updatedOrder.getOrThrow())
         } catch (e: ControlledException) {
             e.message?.let { log.error(it) }
         }
+    }
 
+    fun changeProductQuantityInOrder(product: ProductDTO, newQuantity: Int) {
+        if (_preview.value is OrderCreationPreview) {
+            val order = (_preview.value as OrderCreationPreview).getPreviewData()
+            val productsMap = order.productToQuantity.toMutableMap()
+            productsMap[product] = newQuantity
+            _preview.value =
+                OrderCreationPreview(order.copy(productToQuantity = productsMap.toMap()))
+        }
     }
 
     fun deleteProduct(product: ProductDTO) {
@@ -170,7 +215,7 @@ class DefaultViewViewModel(
 
     private fun validateProductQuantity(quantity: Int) {
         val product =
-            productsRepository.getById(targetProduct.value!!.uid!!).getDataOnSuccessOrNull()!!
+            productsRepository.getById(targetProduct.value!!.uid).getDataOnSuccessOrNull()!!
         if (product.availableQuantity < quantity) {
             throw ControlledException(
                 "There isn't enough from this product to complete the operation. " +

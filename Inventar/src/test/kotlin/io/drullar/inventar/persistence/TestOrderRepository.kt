@@ -162,8 +162,9 @@ class TestOrderRepository : AbstractPersistenceTest() {
                 .getDataOnSuccessOrNull()
         )
 
-        val canceledOrder = orderRepository.save(OrderCreationDTO(emptyMap(), OrderStatus.CANCELED))
-            .getDataOnSuccessOrNull()
+        val canceledOrder =
+            orderRepository.save(OrderCreationDTO(emptyMap(), OrderStatus.TERMINATED))
+                .getDataOnSuccessOrNull()
 
         val completedOrder =
             orderRepository.save(OrderCreationDTO(mapOf(product to 1), OrderStatus.COMPLETED))
@@ -172,7 +173,7 @@ class TestOrderRepository : AbstractPersistenceTest() {
 
         val getAllDraft = orderRepository.getAllByStatus(OrderStatus.DRAFT).getDataOnSuccessOrNull()
         val getAllCanceled =
-            orderRepository.getAllByStatus(OrderStatus.CANCELED).getDataOnSuccessOrNull()
+            orderRepository.getAllByStatus(OrderStatus.TERMINATED).getDataOnSuccessOrNull()
         val getAllCompleted =
             orderRepository.getAllByStatus(OrderStatus.COMPLETED).getDataOnSuccessOrNull()
 

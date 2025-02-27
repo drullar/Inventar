@@ -37,7 +37,7 @@ data class ProductCreationDTO(
 
 data class OrderDTO(
     val orderId: Int,
-    val productToQuantity: MutableMap<ProductDTO, Int>,
+    val productToQuantity: Map<ProductDTO, Int>,
     val creationDate: LocalDateTime,
     val status: OrderStatus
 ) {
@@ -47,10 +47,8 @@ data class OrderDTO(
     )
 
     fun getTotalPrice(): Double {
-        var cost: Double = 0.0
-        productToQuantity.forEach { (product, quantity) ->
-            cost += (product.sellingPrice * quantity)
-        }
+        var cost = 0.0
+        productToQuantity.forEach { (product, quantity) -> cost += (product.sellingPrice * quantity) }
         return cost
     }
 }
@@ -62,6 +60,6 @@ data class OrderCreationDTO(
 
 enum class OrderStatus {
     COMPLETED,
-    CANCELED,
+    TERMINATED,
     DRAFT
 }

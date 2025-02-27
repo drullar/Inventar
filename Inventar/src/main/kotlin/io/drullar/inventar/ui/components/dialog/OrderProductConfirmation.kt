@@ -11,11 +11,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.BasicAlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.OutlinedCard
@@ -33,6 +33,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import io.drullar.inventar.shared.ProductDTO
+import io.drullar.inventar.ui.components.button.Button
 import io.drullar.inventar.ui.style.roundedBorderShape
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -54,35 +55,43 @@ fun OrderProductConfirmation(
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    "Add \"${product.name}\" to an order?",
+                    "Add \"${product.name}\" to order?",
                     textAlign = TextAlign.Center,
                     modifier = Modifier.fillMaxHeight(0.1f).align(Alignment.CenterHorizontally)
                 )
                 Row(
+                    horizontalArrangement = Arrangement.Center,
                     modifier = Modifier.wrapContentSize().fillMaxWidth(0.5f)
                         .align(alignment = Alignment.CenterHorizontally)
                 ) {
                     TextField(
-                        value = quantity.toString(),
-                        onValueChange = { quantity = it.toInt() },
+                        value = if (quantity > 0) quantity.toString() else "",
+                        onValueChange = {
+                            quantity = if (it.isEmpty()) 0 else it.toIntOrNull() ?: quantity
+                        },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         singleLine = true,
                         textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
                         shape = roundedBorderShape(),
-                        modifier = Modifier.wrapContentWidth()
+                        modifier = Modifier.widthIn(30.dp, 70.dp),
                     )
                 }
                 Row(
                     modifier = Modifier.align(Alignment.CenterHorizontally),
                     verticalAlignment = Alignment.Bottom
                 ) {
-                    Button(onClick = onCancel) {
-                        Text("Cancel")
-                    }
+                    Button(
+                        text = "Cancel",
+                        onClick = onCancel,
+                        backgroundColor = Color.White,
+                        textColor = Color.Red,
+                        borderColor = Color.Red
+                    )
                     Spacer(modifier = Modifier.width(20.dp))
-                    Button(onClick = { onConfirm(quantity) }) {
-                        Text("Add")
-                    }
+                    Button(
+                        text = "Add",
+                        onClick = { onConfirm(quantity) }
+                    )
                 }
             }
         }

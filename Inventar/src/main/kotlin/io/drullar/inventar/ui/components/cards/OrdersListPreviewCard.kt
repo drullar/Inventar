@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -51,7 +50,9 @@ fun OrdersListPreviewCard(
     )
     {
         LazyColumn {
-            items(draftOrders.sortedByDescending { it.creationDate }) { order ->
+            items(
+                items = draftOrders.sortedByDescending { it.creationDate },
+                key = { it.orderId }) { order ->
                 DraftOrderRow(order, onOrderCompletion, onOrderSelect)
             }
         }
@@ -67,7 +68,6 @@ private fun DraftOrderRow(
     Row(
         Modifier
             .border(0.5.dp, Color.Black)
-//            .padding(5.dp)
             .wrapContentHeight()
             .clickable(onClick = { onSelect(orderDTO) })
             .fillMaxWidth()
@@ -107,8 +107,11 @@ private fun DraftOrderRow(
                         + Currency.getInstance("BGN"), // TODO use java currency and Singleton for currency
                 fontSize = TextUnit(20f, TextUnitType.Sp)
             )
-            Button(onClick = { orderDTO }) {
+            Button(onClick = { onComplete(orderDTO) }) {
                 Text("Complete", maxLines = 1)
+            }
+            Button(onClick = {}) {
+                Text("Terminate", maxLines = 1)
             }
         }
 
@@ -121,7 +124,7 @@ private fun DraftOrderRowPreview() {
     DraftOrderRow(
         OrderDTO(
             1,
-            mutableMapOf(ProductDTO(1, "My PRoduct", sellingPrice = 1.234) to 1),
+            mutableMapOf(ProductDTO(1, "My Product", sellingPrice = 1.234) to 1),
             LocalDateTime.now(),
             OrderStatus.DRAFT
         ),

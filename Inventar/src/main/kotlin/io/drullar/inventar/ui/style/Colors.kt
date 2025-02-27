@@ -10,4 +10,12 @@ object Colors {
     val INDIGO by lazy {
         Color(40, 30, 93)
     }
+
+    val BrightBlue by lazy {
+        Color(0, 150, 255)
+    }
+
+    val PlatinumGray by lazy {
+        Color(229, 228, 226)
+    }
 }

@@ -4,10 +4,9 @@ import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -15,87 +14,113 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogWindow
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.rememberDialogState
+import io.drullar.inventar.persistence.schema.BARCODE_LENGTH
 import io.drullar.inventar.shared.ProductCreationDTO
-import io.drullar.inventar.shared.ProductDTO
-import kotlin.reflect.KClass
+import io.drullar.inventar.ui.components.field.FieldValidator
+import io.drullar.inventar.ui.components.field.FormInputField
+import io.drullar.inventar.ui.components.field.IsNotEmpty
+import io.drullar.inventar.ui.components.field.NotNegativeNumber
 
 @Composable
-@Preview
 fun NewProductDialog( //TODO reuse same form here and inside ProductDetailedPreviewCard
     onClose: () -> Unit,
     onSubmit: (ProductCreationDTO) -> Unit
 ) {
-    val productForm by mutableStateOf(
-        ProductCreationDTO(
-            name = "",
-            providerPrice = 0.0,
-            barcode = ""
-        )
-    )
+    var name by remember { mutableStateOf("") }
+    var sellingPrice by remember { mutableStateOf(0.0) }
+    var providerPrice by remember { mutableStateOf<Double?>(null) }
+    var availableQuantity by remember { mutableStateOf(0) }
+    var barcode by remember { mutableStateOf("") }
+
+    val nameFieldValidators: Set<FieldValidator<String>> by lazy {
+        setOf(IsNotEmpty())
+    }
+
+    val sellingPriceValidator: Set<FieldValidator<Double>> by lazy {
+        setOf(IsNotEmpty(), NotNegativeNumber())
+    }
 
     var nameFieldWarning by remember { mutableStateOf<String?>(null) }
+    var sellingPriceFieldWarning by remember { mutableStateOf<String?>(null) }
+    var availableQuantityFieldWarning by remember { mutableStateOf<String?>(null) }
 
     DialogWindow(
-        title = "Add New Product",
+        title = "New Product",
         resizable = false,
         onCloseRequest = { onClose() },
         state = rememberDialogState(WindowPosition(Alignment.Center), DpSize(500.dp, 500.dp)),
     ) {
         Column(modifier = Modifier.fillMaxWidth().fillMaxHeight()) {
-            FormInputField(
-                label = "Name",
-                defaultValue = productForm.name,
-                onValueChange = { value ->
-                    productForm.name = value
-                },
-                warningMessage = nameFieldWarning,
-                inputType = String::class
-            )
-            FormInputField(
-                label = "Selling price",
-                defaultValue = productForm.sellingPrice.toString(),
-                onValueChange = { productForm.sellingPrice = it.toDouble() },
-                inputType = Double::class
-            )
-            FormInputField(
-                label = "Provider price",
-                defaultValue = productForm.providerPrice.toString(),
-                onValueChange = { productForm.providerPrice = it.toDouble() },
-                inputType = Double::class
-            )
-            FormInputField(
-                label = "Quantity",
-                defaultValue = productForm.availableQuantity.toString(),
-                onValueChange = { productForm.availableQuantity = it.toInt() },
-                inputType = Int::class
-            )
-            FormInputField(
-                label = "(Optional) Barcode",
-                defaultValue = productForm.barcode ?: "",
-                onValueChange = { productForm.barcode = it },
-                inputType = String::class
-            )
+            Column(modifier = Modifier.fillMaxWidth().wrapContentHeight()) {
+                FormInputField(
+                    label = "Name",
+                    defaultValue = name,
+                    onValueChange = { value ->
+                        nameFieldWarning = produceWarningText(value, nameFieldValidators)
+                        name = value
+                    },
+                    warningMessage = nameFieldWarning,
+                    inputType = String::class
+                )
+                FormInputField(
+                    label = "Selling price",
+                    defaultValue = sellingPrice.toString(),
+                    onValueChange = {
+                        sellingPrice = it.toDoubleOrNull() ?: 0.0
+                        sellingPriceFieldWarning =
+                            produceWarningText(sellingPrice, sellingPriceValidator)
+                    },
+                    warningMessage = sellingPriceFieldWarning,
+                    inputType = Double::class
+                )
+                FormInputField(
+                    label = "(Optional) Provider price",
+                    defaultValue = providerPrice?.let { it.toString() } ?: "",
+                    onValueChange = { providerPrice = it.toDoubleOrNull() ?: 0.0 },
+                    inputType = Double::class
+                )
+                FormInputField(
+                    label = "Quantity",
+                    defaultValue = availableQuantity.toString(),
+                    onValueChange = {
+                        availableQuantity = it.toIntOrNull() ?: 0
+                        availableQuantityFieldWarning =
+                            produceWarningText(
+                                availableQuantity,
+                                setOf(IsNotEmpty(), NotNegativeNumber())
+                            )
+                    },
+                    inputType = Int::class,
+                    warningMessage = availableQuantityFieldWarning
+                )
+                FormInputField(
+                    label = "(Optional) Barcode",
+                    defaultValue = barcode,
+                    onValueChange = { barcode = it },
+                    inputType = String::class,
+                    characterLimit = BARCODE_LENGTH
+                )
+            }
 
             FilledTonalButton(
                 modifier = Modifier.align(Alignment.CenterHorizontally),
                 onClick = {
-                    when (validateForm(productForm)) {
-                        FormValidationProblem.NAME_IS_EMPTY -> {
-                            nameFieldWarning = "Name must not be empty!"
-                        }
-
-                        FormValidationProblem.NONE -> {
-                            onSubmit(productForm)
-                            onClose()
-                        }
+                    if (nameFieldWarning.isNullOrEmpty() && sellingPriceFieldWarning.isNullOrEmpty()) {
+                        onSubmit(
+                            ProductCreationDTO(
+                                name = name,
+                                sellingPrice = sellingPrice,
+                                providerPrice = providerPrice
+                            )
+                        )
+                        onClose()
                     }
+                    //TODO else some visual queue to acknowledge the validation errors
                 }) {
                 Text("Save")
             }
@@ -103,45 +128,19 @@ fun NewProductDialog( //TODO reuse same form here and inside ProductDetailedPrev
     }
 }
 
-private fun validateForm(form: ProductCreationDTO): FormValidationProblem = when {
-    form.name.isEmpty() -> FormValidationProblem.NAME_IS_EMPTY
-    else -> FormValidationProblem.NONE
+private fun concatValidationIssues(issueTexts: List<String>) = issueTexts.joinToString(" ")
+private fun <T> produceWarningText(
+    value: T,
+    validators: Set<FieldValidator<T>>
+): String? {
+    val validationIssues = FieldValidator.validate(value, validators)
+        .map { it.validationErrorMessage() }
+    return if (validationIssues.isNotEmpty()) concatValidationIssues(validationIssues)
+    else null
 }
 
 @Composable
-private fun <T : Any> FormInputField(
-    label: String,
-    defaultValue: String,
-    inputType: KClass<T>,
-    onValueChange: (value: String) -> Unit,
-    warningMessage: String? = null
-) {
-    val mutableDefaultValue = remember { mutableStateOf(defaultValue) }
-    val inputFieldModifier = Modifier.fillMaxWidth()
-    TextField(
-        value = mutableDefaultValue.value,
-        label = { Text(label) },
-        onValueChange = { value ->
-            mutableDefaultValue.value = value
-            onValueChange(value)
-        },
-        modifier = inputFieldModifier,
-        supportingText = {
-            warningMessage?.let {
-                Text(warningMessage, color = Color.Red)
-            }
-        },
-        keyboardOptions = KeyboardOptions(
-            keyboardType = when (inputType) {
-                Double::class -> KeyboardType.Decimal
-                Number::class -> KeyboardType.Number
-                else -> KeyboardType.Text
-            }
-        )
-    )
-}
-
-private enum class FormValidationProblem {
-    NAME_IS_EMPTY,
-    NONE
+@Preview
+private fun NewProductDialogPreview() {
+    NewProductDialog({}, {})
 }

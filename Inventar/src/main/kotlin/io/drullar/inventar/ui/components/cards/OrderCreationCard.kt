@@ -2,39 +2,37 @@ package io.drullar.inventar.ui.components.cards
 
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -46,20 +44,21 @@ import androidx.compose.ui.unit.dp
 import io.drullar.inventar.shared.OrderDTO
 import io.drullar.inventar.shared.OrderStatus
 import io.drullar.inventar.shared.ProductDTO
+import io.drullar.inventar.ui.components.button.Button
+import io.drullar.inventar.ui.style.Colors
 import io.drullar.inventar.ui.style.roundedBorderShape
 import io.drullar.inventar.ui.utils.Icons
-import kotlinx.coroutines.flow.callbackFlow
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 @Composable
 fun OrderCreationCard(
     order: OrderDTO,
-    onCancel: () -> Unit,
+    onTerminate: () -> Unit,
     onComplete: () -> Unit,
+    onProductValueChange: (ProductDTO, Int) -> Unit,
     onProductRemove: (ProductDTO) -> Unit
 ) {
-    var selectedRowIndex by remember { mutableStateOf<Int?>(null) }
     val productsMap = order.productToQuantity
 
     Column(
@@ -100,15 +99,16 @@ fun OrderCreationCard(
             LazyColumn(
                 modifier = Modifier.fillMaxWidth()
             ) {
-                itemsIndexed(
+                items(
                     items = productsMap.keys.toList(),
-                    key = { _, product -> product.uid }) { rowIndex, product ->
+                    key = { it.uid }
+                ) { product ->
                     OrderCreationRow(
                         productDTO = product,
                         quantity = productsMap[product]!!,
-                        onSelectCallback = { selectedRowIndex = rowIndex },
+                        onSelectCallback = { /*TODO*/ },
                         onQuantityChangeCallback = { newQuantity ->
-                            productsMap[product] = newQuantity
+                            onProductValueChange(product, newQuantity)
                         },
                         onRemoveCallback = { onProductRemove(it) },
                     )
@@ -116,48 +116,39 @@ fun OrderCreationCard(
             }
         }
 
-        GroupedButtons(
-            Modifier.align(Alignment.CenterHorizontally).fillMaxWidth(),
-            onCancel,
-            onComplete
-        )
+        Column(modifier = Modifier.fillMaxWidth().wrapContentHeight()) {
+            Text(
+                text = "Total price: ${order.getTotalPrice()} BGN",
+                textAlign = TextAlign.Start,
+                fontWeight = FontWeight.W100,
+                fontSize = TextUnit(30f, TextUnitType.Sp)
+            ) // TODO use currency
+            Spacer(Modifier.padding(vertical = 10.dp))
+            GroupedButtons(
+                Modifier.align(Alignment.CenterHorizontally).fillMaxWidth(),
+                onTerminate,
+                onComplete
+            )
+        }
+
     }
 }
 
 @Composable
 private fun GroupedButtons(
     modifier: Modifier = Modifier,
-    onCancel: () -> Unit,
+    onTerminate: () -> Unit,
     onComplete: () -> Unit,
 ) {
-    Row(modifier = modifier, horizontalArrangement = Arrangement.SpaceBetween) {
-        TerminalOrderButton(
-            "Cancel",
-            Color.White,
-            onCancel
-        )
-        TerminalOrderButton(
-            "Complete",
-            Color.White,
-            onComplete
-        )
-    }
-}
+    Row(modifier = modifier, horizontalArrangement = Arrangement.SpaceAround) {
+        Button("Complete", onComplete)
 
-@Composable
-private fun TerminalOrderButton(
-    text: String,
-    backgroundColor: Color,
-    onClick: () -> Unit,
-) {
-    FilledTonalButton(
-        onClick = onClick,
-        colors = ButtonDefaults.buttonColors().copy(containerColor = backgroundColor),
-        border = BorderStroke(1.dp, Color.Black)
-    ) {
-        Text(
-            text,
-            fontWeight = FontWeight.SemiBold,
+        Button(
+            "Terminate",
+            onTerminate,
+            backgroundColor = Color.White,
+            textColor = Color.Red,
+            borderColor = Color.Red
         )
     }
 }
@@ -179,18 +170,27 @@ private fun OrderCreationRow(
     ) {
         Row(modifier = Modifier.padding(5.dp)) {
             BasicTextField(
-                value = "$quantity",
-                onValueChange = { onQuantityChangeCallback(quantity) },
+                value = if (quantity > 0) quantity.toString() else "",
+                onValueChange = { value ->
+                    if (value.isEmpty()) onQuantityChangeCallback(0)
+                    else value.toIntOrNull()?.let {
+                        onQuantityChangeCallback(it)
+                    }
+                },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 singleLine = true,
+                textStyle = TextStyle.Default.copy(textAlign = TextAlign.Center),
                 modifier = Modifier
-                    .height(15.dp)
-                    .widthIn(15.dp, 50.dp)
+                    .background(color = Colors.PlatinumGray)
+                    .border(BorderStroke(0.1.dp, Color.Black), RoundedCornerShape(3.dp))
+                    .heightIn(20.dp)
+                    .widthIn(15.dp, 25.dp)
+                    .wrapContentWidth()
                     .align(Alignment.CenterVertically)
             )
             Text(
                 "x",
-                Modifier.align(Alignment.CenterVertically).height(15.dp)
+                Modifier.align(Alignment.CenterVertically).height(15.dp).padding(start = 2.dp)
             )
             Spacer(modifier = Modifier.padding(horizontal = 5.dp).align(Alignment.CenterVertically))
             Text(
@@ -203,7 +203,6 @@ private fun OrderCreationRow(
             )
             IconButton(onClick = {
                 onRemoveCallback(productDTO)
-                println("Button clicked")
             }) {
                 Icon(
                     painterResource(Icons.CROSS_RED),
@@ -222,15 +221,16 @@ private fun OrderCreationCardPreview() {
         OrderDTO(
             orderId = 1,
             productToQuantity = mutableMapOf(
-                ProductDTO(1, "Name") to 2,
-                ProductDTO(1, "ASDFS") to 2,
-                ProductDTO(1, "Adq") to 2
+                ProductDTO(1, "Name", 5.0) to 200,
+                ProductDTO(2, "ASDFS", 6.70) to 2,
+                ProductDTO(3, "Adq") to 2
             ),
             creationDate = LocalDateTime.now(),
             status = OrderStatus.DRAFT
         ),
         {},
         {},
+        { _, _ -> },
         {}
     )
 }

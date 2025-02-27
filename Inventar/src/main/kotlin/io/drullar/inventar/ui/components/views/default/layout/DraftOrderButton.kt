@@ -17,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
@@ -37,13 +38,16 @@ fun DraftOrderButton(modifier: Modifier = Modifier, draftOrdersCount: Long, onCl
         Box(
             Modifier.background(Color.Red, CircleShape)
                 .widthIn(25.dp, 30.dp)
-                .wrapContentHeight()
+                .wrapContentHeight(),
+            contentAlignment = Alignment.Center
         ) {
             Text(
                 text = if (draftOrdersCount <= 99) draftOrdersCount.toString() else "99+",
                 fontSize = TextUnit(13f, TextUnitType.Sp),
+                textAlign = TextAlign.Center,
+                maxLines = 1,
                 color = Color.White,
-                modifier = modifier.align(Alignment.Center).padding(2.dp)
+//                modifier = modifier.align(Alignment.Center)//.padding(5.dp)
             )
         }
     }
