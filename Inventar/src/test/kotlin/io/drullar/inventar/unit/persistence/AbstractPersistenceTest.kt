@@ -1,8 +1,8 @@
-package io.drullar.inventar.persistence
+package io.drullar.inventar.unit.persistence
 
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.TestInstance
-import io.drullar.inventar.persistence.utils.TestDatabaseBootstrapper
+import io.drullar.inventar.unit.persistence.utils.TestDatabaseBootstrapper
 import java.io.File
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)

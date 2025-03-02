@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
@@ -32,14 +33,15 @@ import androidx.compose.ui.unit.dp
 import io.drullar.inventar.shared.OrderDTO
 import io.drullar.inventar.shared.OrderStatus
 import io.drullar.inventar.shared.ProductDTO
+import io.drullar.inventar.ui.style.Colors
 import java.time.LocalDateTime
 import java.util.Currency
 
 @Composable
 fun OrdersListPreviewCard(
-    draftOrders: List<OrderDTO>,
+    orders: List<OrderDTO>,
     onOrderCompletion: (OrderDTO) -> Unit,
-    onOrderSelect: (OrderDTO) -> Unit
+    onOrderSelect: (OrderDTO) -> Unit,
 ) {
     val scrollableState = rememberScrollState()
     OutlinedCard(
@@ -51,19 +53,20 @@ fun OrdersListPreviewCard(
     {
         LazyColumn {
             items(
-                items = draftOrders.sortedByDescending { it.creationDate },
+                items = orders.sortedByDescending { it.creationDate },
                 key = { it.orderId }) { order ->
-                DraftOrderRow(order, onOrderCompletion, onOrderSelect)
+                SimpleOrderRow(order, onOrderCompletion, onOrderSelect)
             }
         }
     }
 }
 
 @Composable
-private fun DraftOrderRow(
+fun SimpleOrderRow(
     orderDTO: OrderDTO,
     onComplete: (OrderDTO) -> Unit,
-    onSelect: (OrderDTO) -> Unit
+    onSelect: (OrderDTO) -> Unit,
+    showOrderStatus: Boolean = false
 ) {
     Row(
         Modifier
@@ -74,7 +77,7 @@ private fun DraftOrderRow(
     ) {
         val day = orderDTO.creationDate.dayOfMonth
         val month = orderDTO.creationDate.month
-        Column(Modifier.fillMaxWidth(0.2f).padding(horizontal = 5.dp, vertical = 2.dp)) {
+        Column(Modifier.fillMaxWidth(0.1f).padding(horizontal = 5.dp, vertical = 2.dp)) {
             Text(
                 day.toString(),
                 textAlign = TextAlign.Center,
@@ -88,30 +91,46 @@ private fun DraftOrderRow(
                 fontStyle = FontStyle.Italic
             )
         }
-        Spacer(Modifier.padding(10.dp))
-        Text(
-            "Order #${orderDTO.orderId}",
-            fontSize = TextUnit(20f, TextUnitType.Sp),
-            modifier = Modifier.align(
-                Alignment.CenterVertically
-            )
-        )
-        Spacer(Modifier.padding(10.dp))
         Row(
-            modifier = Modifier.fillMaxWidth().align(Alignment.CenterVertically),
+            modifier = Modifier.fillMaxWidth(0.2f).align(Alignment.CenterVertically)
+        ) {
+            Text(
+                "Order #${orderDTO.orderId}",
+                fontSize = TextUnit(20f, TextUnitType.Sp),
+                modifier = Modifier.align(Alignment.CenterVertically)
+            )
+            if (showOrderStatus) {
+                Text(
+                    text = orderDTO.status.toString().uppercase(),
+                    color = when (orderDTO.status) {
+                        OrderStatus.COMPLETED -> Colors.DarkGreen
+                        else -> Color.Gray
+                    },
+                    fontSize = TextUnit(20f, TextUnitType.Sp),
+                    modifier = Modifier.align(Alignment.CenterVertically).padding(start = 5.dp)
+                )
+            }
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth().align(Alignment.CenterVertically).fillMaxWidth(0.5f)
+                .padding(start = 10.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 orderDTO.getTotalPrice().toString()
                         + Currency.getInstance("BGN"), // TODO use java currency and Singleton for currency
-                fontSize = TextUnit(20f, TextUnitType.Sp)
+                fontSize = TextUnit(20f, TextUnitType.Sp),
+                modifier = Modifier.fillMaxWidth(0.2f)
             )
-            Button(onClick = { onComplete(orderDTO) }) {
-                Text("Complete", maxLines = 1)
-            }
-            Button(onClick = {}) {
-                Text("Terminate", maxLines = 1)
+            if (orderDTO.status != OrderStatus.COMPLETED) {
+                Button(onClick = { onComplete(orderDTO) }) {
+                    Text("Complete", maxLines = 1)
+                }
+                Button(onClick = {}) {
+                    Text("Terminate", maxLines = 1)
+                }
             }
         }
 
@@ -121,15 +140,16 @@ private fun DraftOrderRow(
 @Composable
 @Preview
 private fun DraftOrderRowPreview() {
-    DraftOrderRow(
+    SimpleOrderRow(
         OrderDTO(
-            1,
-            mutableMapOf(ProductDTO(1, "My Product", sellingPrice = 1.234) to 1),
+            1001,
+            mutableMapOf(ProductDTO(1, "My Product", sellingPrice = 1.23) to 1),
             LocalDateTime.now(),
             OrderStatus.DRAFT
         ),
         {},
-        {}
+        {},
+        true
     )
 }
 

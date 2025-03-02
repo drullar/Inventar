@@ -156,24 +156,6 @@ fun ProductDetailedViewCard(
 }
 
 @Composable
-private fun Field(
-    label: String,
-    value: String,
-    modifier: Modifier = Modifier,
-    onChange: (String) -> Unit
-) {
-    TextField(
-        modifier = modifier.fillMaxWidth(),
-        value = value,
-        onValueChange = onChange,
-        shape = roundedBorderShape(),
-        label = { Text(label) },
-        colors = TextFieldDefaults.colors().copy(unfocusedContainerColor = Color.White),
-
-        )
-}
-
-@Composable
 @Preview
 private fun ProductDetailedViewCardPreview() {
     ProductDetailedViewCard(

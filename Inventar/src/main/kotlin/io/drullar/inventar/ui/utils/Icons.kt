@@ -8,4 +8,6 @@ object Icons {
     const val CROSS_RED = "icons/cross-red.svg"
     const val ERROR = "icons/error.svg"
     const val APP_ICON = "icons/appIcon.png"
+    const val ADD = "icons/add.svg"
+    const val NEW_WINDOW = "icons/new-window.svg"
 }

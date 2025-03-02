@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -33,7 +34,7 @@ fun DefaultView(
 ) {
     val products by viewModel.products.collectAsState()
     val dialog by viewModel.dialogToDisplay.collectAsState()
-    val preview by viewModel.preview
+    val preview by viewModel.preview.collectAsState()
     val previewChangeIsAllowed = viewModel.previewChangeIsAllowed.collectAsState()
     val draftOrdersCount = viewModel.draftOrdersCount.collectAsState()
 
@@ -41,7 +42,7 @@ fun DefaultView(
         Row(modifier = Modifier.fillMaxWidth().heightIn(30.dp, 70.dp)) {
             ProductUtilBar(
                 modifier = Modifier
-                    .fillMaxWidth(0.7f)
+                    .wrapContentWidth()
                     .align(Alignment.CenterVertically),
                 onNewProductButtonClick = {
                     viewModel.showNewProductDialog()
@@ -128,7 +129,7 @@ fun DefaultView(
                     is OrdersListPreview -> {
                         val draftOrders = (preview as OrdersListPreview).getPreviewData()
                         OrdersListPreviewCard(
-                            draftOrders = draftOrders,
+                            orders = draftOrders,
                             onOrderCompletion = { completedOrder ->
                                 viewModel.completeOrder(completedOrder)
                             },

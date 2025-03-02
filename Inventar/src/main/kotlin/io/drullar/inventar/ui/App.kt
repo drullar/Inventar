@@ -16,15 +16,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import io.drullar.inventar.ui.components.navigation.NavigationBar
 import io.drullar.inventar.ui.components.navigation.NavigationDestination
-import io.drullar.inventar.ui.components.views.OrdersView
+import io.drullar.inventar.ui.components.views.order.OrdersView
 import io.drullar.inventar.ui.components.viewmodel.DefaultViewViewModel
 import io.drullar.inventar.ui.components.views.default.DefaultView
 import io.drullar.inventar.ui.components.search.SearchBar
+import io.drullar.inventar.ui.components.viewmodel.OrderViewViewModel
+import io.drullar.inventar.ui.components.viewmodel.SharedAppStateHolderImpl
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 @Composable
 fun App() {
-    val defaultViewViewModel = DefaultViewViewModel()
+    val sharedAppStateHolder = SharedAppStateHolderImpl()
+    val defaultViewViewModel = DefaultViewViewModel(sharedAppStateHolder)
+    val orderViewViewModel = OrderViewViewModel(sharedAppStateHolder)
     var currentView by remember { mutableStateOf(NavigationDestination.PRODUCTS_PAGE) }
+
     Column(modifier = Modifier.fillMaxWidth().fillMaxHeight()) {
         Row(modifier = Modifier.fillMaxWidth().padding(10.dp)) {
             NavigationBar(
@@ -46,10 +53,21 @@ fun App() {
                     viewModifier
                 )
             },
-            NavigationDestination.ORDERS_PAGE to { OrdersView() }
+            NavigationDestination.ORDERS_PAGE to {
+                OrdersView(orderViewViewModel)
+            }
         )
 
         destinationToScreen[currentView]!!()
     }
 }
 
+class SharedStateHolder {
+    val sth = MutableStateFlow<Int?>(null)
+    val _sth = sth.asStateFlow()
+
+    suspend fun somefun() {
+        sth.emit(1)
+    }
+
+}

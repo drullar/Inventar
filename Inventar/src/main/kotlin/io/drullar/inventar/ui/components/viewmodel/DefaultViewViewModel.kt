@@ -1,8 +1,5 @@
 package io.drullar.inventar.ui.components.viewmodel
 
-import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateOf
-import androidx.lifecycle.ViewModel
 import io.drullar.inventar.logging.LoggerImpl
 import io.drullar.inventar.shared.OrderStatus
 import io.drullar.inventar.persistence.repositories.OrderRepository
@@ -28,9 +25,10 @@ import kotlinx.coroutines.flow.asStateFlow
  */
 //TODO split some of the responsibilities of the ViewModel to delegates
 class DefaultViewViewModel(
+    sharedAppStateHolder: SharedAppStateHolder,
     private val productsRepository: ProductsRepository = ProductsRepository,
     private val ordersRepository: OrderRepository = OrderRepository
-) : ViewModel() {
+) : SharedAppStateHolder by sharedAppStateHolder {
 
     private val _previewChangeIsAllowed = MutableStateFlow(true)
     val previewChangeIsAllowed = _previewChangeIsAllowed.asStateFlow()
@@ -47,8 +45,8 @@ class DefaultViewViewModel(
     private var _dialogToDisplay = MutableStateFlow(DialogType.NONE)
     var dialogToDisplay = _dialogToDisplay.asStateFlow()
 
-    private var _preview = mutableStateOf<Preview<*>?>(null)
-    var preview = _preview as State<*>
+    private var _preview = MutableStateFlow<Preview<*>?>(null)
+    var preview = _preview.asStateFlow()
 
     var targetProduct = MutableStateFlow<ProductDTO?>(null)
 

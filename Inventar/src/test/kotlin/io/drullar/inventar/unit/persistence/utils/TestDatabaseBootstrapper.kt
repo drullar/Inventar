@@ -1,4 +1,4 @@
-package io.drullar.inventar.persistence.utils
+package io.drullar.inventar.unit.persistence.utils
 
 import io.drullar.inventar.persistence.configuration.AbstractDatabaseBootstrapper
 import io.drullar.inventar.persistence.configuration.DatabaseConfiguration

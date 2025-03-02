@@ -18,4 +18,12 @@ object Colors {
     val PlatinumGray by lazy {
         Color(229, 228, 226)
     }
+
+    val Green by lazy {
+        Color(175, 225, 175)
+    }
+
+    val DarkGreen by lazy {
+        Color(80, 200, 120)
+    }
 }

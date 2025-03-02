@@ -16,7 +16,7 @@ import io.drullar.inventar.ui.style.Colors
 import androidx.compose.material3.Button as MaterialButton
 
 @Composable
-fun Button(
+fun TextButton(
     text: String,
     onClick: () -> Unit,
     backgroundColor: Color = Colors.BrightBlue,
@@ -43,13 +43,13 @@ fun Button(
 @Composable
 @Preview
 private fun DefaultButtonPreview() {
-    Button("Complete", {})
+    TextButton("Complete", {})
 }
 
 @Composable
 @Preview
 private fun AltButtonPreview() {
-    Button(
+    TextButton(
         "Terminate",
         {},
         backgroundColor = Color.White,

@@ -44,7 +44,7 @@ import androidx.compose.ui.unit.dp
 import io.drullar.inventar.shared.OrderDTO
 import io.drullar.inventar.shared.OrderStatus
 import io.drullar.inventar.shared.ProductDTO
-import io.drullar.inventar.ui.components.button.Button
+import io.drullar.inventar.ui.components.button.TextButton
 import io.drullar.inventar.ui.style.Colors
 import io.drullar.inventar.ui.style.roundedBorderShape
 import io.drullar.inventar.ui.utils.Icons
@@ -92,6 +92,7 @@ fun OrderCreationCard(
                     textDecoration = TextDecoration.Underline,
                     fontSize = TextUnit(24f, TextUnitType.Sp)
                 )
+
             }
 
             Spacer(Modifier.padding(10.dp))
@@ -141,9 +142,9 @@ private fun GroupedButtons(
     onComplete: () -> Unit,
 ) {
     Row(modifier = modifier, horizontalArrangement = Arrangement.SpaceAround) {
-        Button("Complete", onComplete)
+        TextButton("Complete", onComplete)
 
-        Button(
+        TextButton(
             "Terminate",
             onTerminate,
             backgroundColor = Color.White,

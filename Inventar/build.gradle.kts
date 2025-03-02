@@ -33,8 +33,9 @@ dependencies {
     implementation("io.github.classgraph:classgraph:4.8.177")
     //Test dependencies
     testImplementation(kotlin("test"))
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.11.0")
+    testImplementation("junit:junit:4.13.2")
     testImplementation("com.willowtreeapps.assertk:assertk:0.28.1")
+    testImplementation("androidx.compose.ui:ui-test-junit4:1.6.8")
 }
 
 tasks.test {

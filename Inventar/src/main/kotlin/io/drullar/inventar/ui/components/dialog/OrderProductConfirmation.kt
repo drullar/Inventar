@@ -33,7 +33,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import io.drullar.inventar.shared.ProductDTO
-import io.drullar.inventar.ui.components.button.Button
+import io.drullar.inventar.ui.components.button.TextButton
 import io.drullar.inventar.ui.style.roundedBorderShape
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -80,7 +80,7 @@ fun OrderProductConfirmation(
                     modifier = Modifier.align(Alignment.CenterHorizontally),
                     verticalAlignment = Alignment.Bottom
                 ) {
-                    Button(
+                    TextButton(
                         text = "Cancel",
                         onClick = onCancel,
                         backgroundColor = Color.White,
@@ -88,7 +88,7 @@ fun OrderProductConfirmation(
                         borderColor = Color.Red
                     )
                     Spacer(modifier = Modifier.width(20.dp))
-                    Button(
+                    TextButton(
                         text = "Add",
                         onClick = { onConfirm(quantity) }
                     )

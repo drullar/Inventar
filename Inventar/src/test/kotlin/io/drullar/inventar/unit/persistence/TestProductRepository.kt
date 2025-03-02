@@ -1,4 +1,4 @@
-package io.drullar.inventar.persistence
+package io.drullar.inventar.unit.persistence
 
 import assertk.assertThat
 import assertk.assertions.contains
@@ -12,6 +12,7 @@ import io.drullar.inventar.persistence.schema.Products
 import io.drullar.inventar.shared.ProductCreationDTO
 import io.drullar.inventar.shared.RepositoryResponse
 import io.drullar.inventar.shared.getDataOnSuccessOrNull
+import io.drullar.inventar.persistence.DatabaseException
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
