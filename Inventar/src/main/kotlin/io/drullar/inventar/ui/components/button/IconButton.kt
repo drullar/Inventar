@@ -19,7 +19,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import io.drullar.inventar.ui.components.NewWindowIcon
+import io.drullar.inventar.ui.components.icon.NewWindowIcon
 
 @Composable
 fun IconButton(

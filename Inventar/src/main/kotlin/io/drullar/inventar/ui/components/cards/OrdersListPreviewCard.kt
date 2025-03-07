@@ -8,8 +8,6 @@ import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
@@ -77,7 +75,7 @@ fun SimpleOrderRow(
     ) {
         val day = orderDTO.creationDate.dayOfMonth
         val month = orderDTO.creationDate.month
-        Column(Modifier.fillMaxWidth(0.1f).padding(horizontal = 5.dp, vertical = 2.dp)) {
+        Column(Modifier.fillMaxWidth(0.2f).padding(horizontal = 5.dp, vertical = 2.dp)) {
             Text(
                 day.toString(),
                 textAlign = TextAlign.Center,

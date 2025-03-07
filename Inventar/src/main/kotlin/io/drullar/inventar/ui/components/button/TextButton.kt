@@ -22,7 +22,8 @@ fun TextButton(
     backgroundColor: Color = Colors.BrightBlue,
     textColor: Color = Color.White,
     borderColor: Color? = null,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    content: (@Composable () -> Unit)? = null
 ) {
     MaterialButton(
         onClick = onClick,
@@ -37,6 +38,7 @@ fun TextButton(
             fontWeight = FontWeight.W400,
             fontSize = TextUnit(16f, TextUnitType.Sp)
         )
+        content?.let { content -> content() }
     }
 }
 

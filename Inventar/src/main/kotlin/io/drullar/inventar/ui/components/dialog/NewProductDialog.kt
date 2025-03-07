@@ -37,10 +37,6 @@ fun NewProductDialog( //TODO reuse same form here and inside ProductDetailedPrev
     var availableQuantity by remember { mutableStateOf(0) }
     var barcode by remember { mutableStateOf("") }
 
-    val nameFieldValidators: Set<FieldValidator<String>> by lazy {
-        setOf(IsNotEmpty())
-    }
-
     var nameFieldWarning by remember { mutableStateOf<String?>(null) }
     var sellingPriceFieldWarning by remember { mutableStateOf<String?>(null) }
     var availableQuantityFieldWarning by remember { mutableStateOf<String?>(null) }
@@ -69,7 +65,7 @@ fun NewProductDialog( //TODO reuse same form here and inside ProductDetailedPrev
                     onValueChange = {
                         sellingPrice = it.toDoubleOrNull() ?: 0.0
                         sellingPriceFieldWarning =
-                            produceWarningText(
+                            produceWarningText<Double>(
                                 sellingPrice, setOf(IsNotEmpty(), NotNegativeNumber())
                             )
                     },

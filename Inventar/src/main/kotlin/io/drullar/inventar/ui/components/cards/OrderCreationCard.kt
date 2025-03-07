@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
@@ -24,14 +23,11 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.Icon
 import androidx.compose.material.Text
-import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -47,7 +43,6 @@ import io.drullar.inventar.shared.ProductDTO
 import io.drullar.inventar.ui.components.button.TextButton
 import io.drullar.inventar.ui.style.Colors
 import io.drullar.inventar.ui.style.roundedBorderShape
-import io.drullar.inventar.ui.utils.Icons
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -106,6 +101,7 @@ fun OrderCreationCard(
                 ) { product ->
                     OrderCreationRow(
                         productDTO = product,
+                        isModifiable = order.status == OrderStatus.DRAFT,
                         quantity = productsMap[product]!!,
                         onSelectCallback = { /*TODO*/ },
                         onQuantityChangeCallback = { newQuantity ->
@@ -157,6 +153,7 @@ private fun GroupedButtons(
 @Composable
 private fun OrderCreationRow(
     productDTO: ProductDTO,
+    isModifiable: Boolean,
     quantity: Int,
     onSelectCallback: () -> Unit,
     onQuantityChangeCallback: (Int) -> Unit,
@@ -165,7 +162,7 @@ private fun OrderCreationRow(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .wrapContentHeight()
+            .heightIn(50.dp, 75.dp)
             .border(1.dp, Color.Black)
             .clickable(onClick = onSelectCallback)
     ) {
@@ -173,9 +170,11 @@ private fun OrderCreationRow(
             BasicTextField(
                 value = if (quantity > 0) quantity.toString() else "",
                 onValueChange = { value ->
-                    if (value.isEmpty()) onQuantityChangeCallback(0)
-                    else value.toIntOrNull()?.let {
-                        onQuantityChangeCallback(it)
+                    if (isModifiable) {
+                        if (value.isEmpty()) onQuantityChangeCallback(0)
+                        else value.toIntOrNull()?.let {
+                            onQuantityChangeCallback(it)
+                        }
                     }
                 },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
@@ -184,7 +183,6 @@ private fun OrderCreationRow(
                 modifier = Modifier
                     .background(color = Colors.PlatinumGray)
                     .border(BorderStroke(0.1.dp, Color.Black), RoundedCornerShape(3.dp))
-                    .heightIn(20.dp)
                     .widthIn(15.dp, 25.dp)
                     .wrapContentWidth()
                     .align(Alignment.CenterVertically)
@@ -197,20 +195,19 @@ private fun OrderCreationRow(
             Text(
                 productDTO.name,
                 modifier = Modifier.fillMaxWidth(0.8f)
-                    .align(Alignment.CenterVertically)
-                    .height(15.dp),
+                    .align(Alignment.CenterVertically),
                 maxLines = 1,
                 overflow = TextOverflow.Clip
             )
-            IconButton(onClick = {
-                onRemoveCallback(productDTO)
-            }) {
-                Icon(
-                    painterResource(Icons.CROSS_RED),
-                    "remove from order",
-                    Modifier.size(30.dp)
+            if (isModifiable)
+                TextButton(
+                    text = "Remove",
+                    onClick = {
+                        onRemoveCallback(productDTO)
+                    },
+                    backgroundColor = Color.Red,
+                    borderColor = Color.Red
                 )
-            }
         }
     }
 }

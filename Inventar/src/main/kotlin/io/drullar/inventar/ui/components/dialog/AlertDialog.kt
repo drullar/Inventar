@@ -28,6 +28,7 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import io.drullar.inventar.ui.components.button.TextButton
 import io.drullar.inventar.ui.style.roundedBorderShape
 import io.drullar.inventar.ui.utils.Icons
 
@@ -80,9 +81,52 @@ fun AlertDialog(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SingleActionAlertDialog(
+    text: String,
+    actionButtonText: String,
+    onAction: () -> Unit
+) {
+    BasicAlertDialog(
+        onDismissRequest = onAction,
+        modifier = Modifier.border(1.dp, Color.Black, roundedBorderShape())
+    ) {
+        OutlinedCard(modifier = Modifier.wrapContentWidth().wrapContentHeight()) {
+            Column(
+                modifier = Modifier.fillMaxWidth().wrapContentHeight(),
+                verticalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.wrapContentHeight().align(Alignment.CenterHorizontally)
+                        .padding(vertical = 50.dp)
+                )
+                Row(
+                    modifier = Modifier.align(Alignment.CenterHorizontally),
+                    verticalAlignment = Alignment.Bottom
+                ) {
+                    TextButton(actionButtonText, onAction)
+                }
+            }
+        }
+    }
+}
+
 @Composable
 @Preview
-fun UnsavedChangesAlertDialogPreview() {
+private fun SingleActionButtonPreview() {
+    SingleActionAlertDialog("There are unsaved changes to a product you're editing.\n" +
+            "Save or revert the changes in order to select to continue",
+        "Ok",
+        {}
+    )
+}
+
+@Composable
+@Preview
+private fun UnsavedChangesAlertDialogPreview() {
     AlertDialog(
         text = "There are unsaved changes to a product you're editing. " +
                 "Save or revert the changes in order to select to continue",

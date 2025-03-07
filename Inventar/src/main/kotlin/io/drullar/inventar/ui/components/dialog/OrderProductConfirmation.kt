@@ -40,10 +40,11 @@ import io.drullar.inventar.ui.style.roundedBorderShape
 @Composable
 fun OrderProductConfirmation(
     product: ProductDTO,
+    initialQuantity: Int,
     onConfirm: (Int) -> Unit,
     onCancel: () -> Unit
 ) {
-    var quantity by remember { mutableStateOf(1) }
+    var quantity by remember { mutableStateOf(initialQuantity) }
 
     BasicAlertDialog(
         onDismissRequest = onCancel,
@@ -105,6 +106,7 @@ private fun OrderProductConfirmationPreview() {
         ProductDTO(uid = 1, name = "New product", barcode = "", providerPrice = 0.0)
     OrderProductConfirmation(
         product = product,
+        initialQuantity = 1,
         onConfirm = {},
         onCancel = {}
     )

@@ -1,4 +1,4 @@
-package io.drullar.inventar.ui.components
+package io.drullar.inventar.ui.components.icon
 
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable

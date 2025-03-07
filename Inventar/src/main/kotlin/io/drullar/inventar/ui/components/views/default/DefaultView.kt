@@ -19,12 +19,14 @@ import io.drullar.inventar.ui.components.cards.OrderCreationCard
 import io.drullar.inventar.ui.components.cards.OrdersListPreviewCard
 import io.drullar.inventar.ui.components.cards.ProductDetailedViewCard
 import io.drullar.inventar.ui.components.dialog.NewProductDialog
-import io.drullar.inventar.ui.components.dialog.AlertDialog
-import io.drullar.inventar.ui.components.dialog.DialogType
+import io.drullar.inventar.ui.data.DialogType
 import io.drullar.inventar.ui.components.dialog.OrderProductConfirmation
 import io.drullar.inventar.ui.components.viewmodel.DefaultViewViewModel
 import io.drullar.inventar.ui.components.views.default.layout.DraftOrderButton
 import io.drullar.inventar.ui.components.views.default.layout.ProductUtilBar
+import io.drullar.inventar.ui.data.DetailedProductPreview
+import io.drullar.inventar.ui.data.OrderCreationPreview
+import io.drullar.inventar.ui.data.OrdersListPreview
 import io.drullar.inventar.ui.style.roundedBorder
 
 @Composable
@@ -33,7 +35,7 @@ fun DefaultView(
     modifier: Modifier = Modifier
 ) {
     val products by viewModel.products.collectAsState()
-    val dialog by viewModel.dialogToDisplay.collectAsState()
+    val dialog by viewModel.getActiveDialog().collectAsState()
     val preview by viewModel.preview.collectAsState()
     val previewChangeIsAllowed = viewModel.previewChangeIsAllowed.collectAsState()
     val draftOrdersCount = viewModel.draftOrdersCount.collectAsState()
@@ -45,7 +47,9 @@ fun DefaultView(
                     .wrapContentWidth()
                     .align(Alignment.CenterVertically),
                 onNewProductButtonClick = {
-                    viewModel.showNewProductDialog()
+                    if (viewModel.getActiveDialog().value == null) {
+                        viewModel.setActiveDialog(DialogType.NEW_PRODUCT)
+                    }
                 }
             )
 
@@ -115,8 +119,12 @@ fun DefaultView(
                         val data = (preview as OrderCreationPreview).getPreviewData()
                         OrderCreationCard(
                             order = data,
-                            onTerminate = {},
-                            onComplete = {},
+                            onTerminate = {
+                                //TODO
+                            },
+                            onComplete = {
+                                viewModel.completeOrder(data)
+                            },
                             onProductRemove = { product ->
                                 viewModel.removeProductFromOrder(product)
                             },
@@ -142,47 +150,30 @@ fun DefaultView(
         }
     }
 
-    // Pop up dialogs/alerts/forms in a new window onFocus
     when (dialog) {
         DialogType.NEW_PRODUCT -> NewProductDialog(
-            onClose = { viewModel.closeCurrentDialog() },
-            onSubmit = { viewModel.addNewProduct(it) }
-        )
-
-        DialogType.UNSAVED_CHANGES_ALERT -> UnsavedChangesAlert(
-            onCancel = { viewModel.closeCurrentDialog() },
-            onResolve = {
-                viewModel.updateProduct((preview as DetailedProductPreview).getPreviewData())
-                viewModel.closeCurrentDialog()
+            onClose = { viewModel.setActiveDialog(null) },
+            onSubmit = {
+                viewModel.addNewProduct(it)
+                viewModel.setActiveDialog(null)
             }
         )
 
         DialogType.ADD_PRODUCT_TO_ORDER -> {
             OrderProductConfirmation(
                 viewModel.targetProduct.value!!,
+                viewModel.getCurrentOrderTargetProductQuantity() ?: 1,
                 onConfirm = { quantity ->
                     viewModel.addProductToOrder(quantity)
-                    viewModel.closeCurrentDialog()
+                    viewModel.setActiveDialog(null)
                 },
                 onCancel = {
                     viewModel.targetProduct.value = null
-                    viewModel.closeCurrentDialog()
+                    viewModel.setActiveDialog(null)
                 }
             )
         }
 
-        DialogType.NONE -> Unit
-        else -> throw NotImplementedError("Dialog rendering for ${dialog.name} is not implemented")
+        else -> Unit
     }
-}
-
-@Composable
-private fun UnsavedChangesAlert(onCancel: () -> Unit, onResolve: () -> Unit) {
-    AlertDialog(
-        text = "There are unsaved changes to a product you're editing. " +
-                "Save or revert the changes in order to select to continue",
-        resolveButtonText = "Save changes",
-        onResolve = onResolve,
-        onCancel = onCancel
-    )
 }
