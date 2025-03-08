@@ -1,6 +1,8 @@
 package io.drullar.inventar.persistence.repositories
 
+import io.drullar.inventar.shared.Page
 import io.drullar.inventar.shared.RepositoryResponse
+import io.drullar.inventar.shared.getOrThrow
 import io.drullar.inventar.shared.response
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -44,6 +46,13 @@ interface Repository<T : Table, R, C, ID> {
      */
 
     fun getAll(): RepositoryResponse<List<R>>
+
+    /**
+     * Returns the total amount of items
+     */
+    fun getCount(): RepositoryResponse<Long>
+
+    fun getAllPaged(page: Int, itemsPerPage: Int): RepositoryResponse<Page<R>>
 }
 
 
@@ -65,6 +74,30 @@ abstract class AbstractRepository<T : Table, R, C, ID>(val table: T) : Repositor
     override fun getAll(): RepositoryResponse<List<R>> = response {
         withTransaction {
             table.selectAll().map { query -> transformResultRowToModel(query) }
+        }
+    }
+
+    override fun getCount(): RepositoryResponse<Long> = response {
+        withTransaction {
+            table.selectAll().count()
+        }
+    }
+
+    override fun getAllPaged(page: Int, itemsPerPage: Int): RepositoryResponse<Page<R>> {
+        val total = getCount().getOrThrow()
+        val items = withTransaction {
+            table.selectAll().limit(itemsPerPage, ((page - 1) * itemsPerPage).toLong())
+                .map { row -> transformResultRowToModel(row) }
+        }
+
+        return response {
+            Page(
+                items = items,
+                totalItems = total,
+                itemsPerPage = itemsPerPage,
+                isLastPage = page * itemsPerPage >= total,
+                pageNumber = page
+            )
         }
     }
 

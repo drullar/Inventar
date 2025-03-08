@@ -1,6 +1,6 @@
-package io.drullar.inventar.ui.components.viewmodel.delegates.impl
+package io.drullar.inventar.ui.viewmodel.delegates.impl
 
-import io.drullar.inventar.ui.components.viewmodel.delegates.AlertManager
+import io.drullar.inventar.ui.viewmodel.delegates.AlertManager
 import io.drullar.inventar.ui.data.AlertType
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -13,5 +13,5 @@ class AlertManagerImpl : AlertManager {
     }
 
     override fun getActiveAlert(): StateFlow<AlertType?> = activeAlert
-    
+
 }

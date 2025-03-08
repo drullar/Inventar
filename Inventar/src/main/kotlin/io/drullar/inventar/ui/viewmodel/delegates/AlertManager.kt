@@ -1,4 +1,4 @@
-package io.drullar.inventar.ui.components.viewmodel.delegates
+package io.drullar.inventar.ui.viewmodel.delegates
 
 import io.drullar.inventar.ui.data.AlertType
 import kotlinx.coroutines.flow.StateFlow

@@ -21,7 +21,7 @@ import io.drullar.inventar.ui.components.cards.ProductDetailedViewCard
 import io.drullar.inventar.ui.components.dialog.NewProductDialog
 import io.drullar.inventar.ui.data.DialogType
 import io.drullar.inventar.ui.components.dialog.OrderProductConfirmation
-import io.drullar.inventar.ui.components.viewmodel.DefaultViewViewModel
+import io.drullar.inventar.ui.viewmodel.DefaultViewViewModel
 import io.drullar.inventar.ui.components.views.default.layout.DraftOrderButton
 import io.drullar.inventar.ui.components.views.default.layout.ProductUtilBar
 import io.drullar.inventar.ui.data.DetailedProductPreview

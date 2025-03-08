@@ -7,10 +7,10 @@ import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import io.drullar.inventar.ui.App
 import io.drullar.inventar.ui.components.navigation.NavigationDestination
-import io.drullar.inventar.ui.components.viewmodel.DefaultViewViewModel
-import io.drullar.inventar.ui.components.viewmodel.OrderViewViewModel
-import io.drullar.inventar.ui.components.viewmodel.delegates.impl.AlertManagerImpl
-import io.drullar.inventar.ui.components.viewmodel.delegates.impl.SharedAppStateDelegateImpl
+import io.drullar.inventar.ui.viewmodel.DefaultViewViewModel
+import io.drullar.inventar.ui.viewmodel.OrderViewViewModel
+import io.drullar.inventar.ui.viewmodel.delegates.impl.AlertManagerImpl
+import io.drullar.inventar.ui.viewmodel.delegates.impl.SharedAppStateDelegateImpl
 import io.drullar.inventar.ui.utils.Icons
 import io.drullar.inventar.utils.Bootstrapper
 import java.awt.Dimension

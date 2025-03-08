@@ -1,6 +1,6 @@
-package io.drullar.inventar.ui.components.viewmodel.delegates.impl
+package io.drullar.inventar.ui.viewmodel.delegates.impl
 
-import io.drullar.inventar.ui.components.viewmodel.delegates.DialogManager
+import io.drullar.inventar.ui.viewmodel.delegates.DialogManager
 import io.drullar.inventar.ui.data.DialogType
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

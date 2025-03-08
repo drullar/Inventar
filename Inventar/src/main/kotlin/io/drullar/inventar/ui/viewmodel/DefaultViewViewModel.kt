@@ -1,4 +1,4 @@
-package io.drullar.inventar.ui.components.viewmodel
+package io.drullar.inventar.ui.viewmodel
 
 import io.drullar.inventar.logging.LoggerImpl
 import io.drullar.inventar.shared.OrderStatus
@@ -11,11 +11,11 @@ import io.drullar.inventar.shared.ProductDTO
 import io.drullar.inventar.shared.RepositoryResponse
 import io.drullar.inventar.shared.getDataOnSuccessOrNull
 import io.drullar.inventar.shared.getOrThrow
-import io.drullar.inventar.ui.components.viewmodel.delegates.AlertManager
-import io.drullar.inventar.ui.components.viewmodel.delegates.DialogManager
+import io.drullar.inventar.ui.viewmodel.delegates.AlertManager
+import io.drullar.inventar.ui.viewmodel.delegates.DialogManager
 import io.drullar.inventar.ui.data.DialogType
-import io.drullar.inventar.ui.components.viewmodel.delegates.SharedAppStateDelegate
-import io.drullar.inventar.ui.components.viewmodel.delegates.impl.DialogManagerImpl
+import io.drullar.inventar.ui.viewmodel.delegates.SharedAppStateDelegate
+import io.drullar.inventar.ui.viewmodel.delegates.impl.DialogManagerImpl
 import io.drullar.inventar.ui.data.AlertType
 import io.drullar.inventar.ui.data.DetailedProductPreview
 import io.drullar.inventar.ui.data.OrderCreationPreview

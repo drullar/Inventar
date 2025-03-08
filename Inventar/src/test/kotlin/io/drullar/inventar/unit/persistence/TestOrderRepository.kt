@@ -1,13 +1,16 @@
 package io.drullar.inventar.unit.persistence
 
+import assertk.assertAll
 import assertk.assertThat
 import assertk.assertions.containsExactly
 import assertk.assertions.containsExactlyInAnyOrder
 import assertk.assertions.extracting
 import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
+import assertk.assertions.isFalse
 import assertk.assertions.isInstanceOf
 import assertk.assertions.isNotNull
+import assertk.assertions.isTrue
 import io.drullar.inventar.persistence.repositories.OrderRepository
 import io.drullar.inventar.persistence.repositories.ProductsRepository
 import io.drullar.inventar.shared.OrderCreationDTO
@@ -208,4 +211,42 @@ class TestOrderRepository : AbstractPersistenceTest() {
         assertThat(orderRepository.getAll().getDataOnSuccessOrNull()!!.size).isEqualTo(0)
     }
 
+    @Test
+    fun getCount() {
+        repeat(10) {
+            orderRepository.save(OrderCreationDTO(emptyMap(), OrderStatus.DRAFT))
+        }
+        assertThat(orderRepository.getCount().getDataOnSuccessOrNull()).isEqualTo(10)
+        orderRepository.deleteAll()
+        assertThat(orderRepository.getCount().getDataOnSuccessOrNull()).isEqualTo(0)
+        orderRepository.save(OrderCreationDTO(emptyMap(), OrderStatus.DRAFT))
+        assertThat(orderRepository.getCount().getDataOnSuccessOrNull()).isEqualTo(1)
+    }
+
+    @Test
+    fun getAllPaged() {
+        repeat(40) {
+            orderRepository.save(OrderCreationDTO(emptyMap(), OrderStatus.DRAFT))
+        }
+
+        val firstPage = orderRepository.getAllPaged(1, 25).getDataOnSuccessOrNull()
+        assertAll {
+            assertThat(firstPage).isNotNull()
+            assertThat(firstPage!!.isLastPage).isFalse()
+            assertThat(firstPage.items.size).isEqualTo(25)
+            assertThat(firstPage.itemsPerPage).isEqualTo(25)
+            assertThat(firstPage.pageNumber).isEqualTo(1)
+            assertThat(firstPage.totalItems).isEqualTo(40)
+        }
+
+        val secondPage = orderRepository.getAllPaged(2, 25).getDataOnSuccessOrNull()
+        assertAll {
+            assertThat(secondPage).isNotNull()
+            assertThat(secondPage!!.isLastPage).isTrue()
+            assertThat(secondPage.items.size).isEqualTo(15)
+            assertThat(secondPage.itemsPerPage).isEqualTo(25)
+            assertThat(secondPage.pageNumber).isEqualTo(2)
+            assertThat(secondPage.totalItems).isEqualTo(40)
+        }
+    }
 }

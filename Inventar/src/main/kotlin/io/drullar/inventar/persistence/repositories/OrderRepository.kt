@@ -16,7 +16,6 @@ import io.drullar.inventar.shared.OrderStatus
 import io.drullar.inventar.shared.ProductDTO
 import io.drullar.inventar.shared.RepositoryResponse
 import io.drullar.inventar.shared.getDataOnSuccessOrNull
-import io.drullar.inventar.shared.getOrThrow
 import io.drullar.inventar.shared.response
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
@@ -199,12 +198,5 @@ object OrderRepository : AbstractRepository<Orders, OrderDTO, OrderCreationDTO, 
 
     fun getCountByStatus(status: OrderStatus) = withTransaction {
         table.selectAll().where { table.orderStatus.eq(status) }.count()
-    }
-
-    enum class OrderBy(val asString: String) {
-        DATE("Date"),
-        ID("Order"),
-        TOTAL_PRICE("Price"),
-        STATUS("Status")
     }
 }

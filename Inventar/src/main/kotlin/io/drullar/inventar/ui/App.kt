@@ -15,12 +15,12 @@ import io.drullar.inventar.ui.components.dialog.SingleActionAlertDialog
 import io.drullar.inventar.ui.components.navigation.NavigationBar
 import io.drullar.inventar.ui.components.navigation.NavigationDestination
 import io.drullar.inventar.ui.components.views.order.OrdersView
-import io.drullar.inventar.ui.components.viewmodel.DefaultViewViewModel
+import io.drullar.inventar.ui.viewmodel.DefaultViewViewModel
 import io.drullar.inventar.ui.components.views.default.DefaultView
 import io.drullar.inventar.ui.components.search.SearchBar
-import io.drullar.inventar.ui.components.viewmodel.OrderViewViewModel
-import io.drullar.inventar.ui.components.viewmodel.delegates.AlertManager
-import io.drullar.inventar.ui.components.viewmodel.delegates.SharedAppStateDelegate
+import io.drullar.inventar.ui.viewmodel.OrderViewViewModel
+import io.drullar.inventar.ui.viewmodel.delegates.AlertManager
+import io.drullar.inventar.ui.viewmodel.delegates.SharedAppStateDelegate
 import io.drullar.inventar.ui.data.AlertType
 
 @Composable
