@@ -25,6 +25,7 @@ import io.drullar.inventar.ui.components.field.FieldValidator
 import io.drullar.inventar.ui.components.field.FormInputField
 import io.drullar.inventar.ui.components.field.IsNotEmpty
 import io.drullar.inventar.ui.components.field.NotNegativeNumber
+import io.drullar.inventar.ui.viewmodel.delegates.getText
 
 @Composable
 fun NewProductDialog( //TODO reuse same form here and inside ProductDetailedPreviewCard
@@ -42,7 +43,7 @@ fun NewProductDialog( //TODO reuse same form here and inside ProductDetailedPrev
     var availableQuantityFieldWarning by remember { mutableStateOf<String?>(null) }
 
     DialogWindow(
-        title = "New Product",
+        title = getText("product.new"),
         resizable = false,
         onCloseRequest = { onClose() },
         state = rememberDialogState(WindowPosition(Alignment.Center), DpSize(500.dp, 500.dp)),
@@ -50,7 +51,7 @@ fun NewProductDialog( //TODO reuse same form here and inside ProductDetailedPrev
         Column(modifier = Modifier.fillMaxWidth().fillMaxHeight()) {
             Column(modifier = Modifier.fillMaxWidth().wrapContentHeight()) {
                 FormInputField(
-                    label = "Name",
+                    label = getText("field.name"),
                     defaultValue = name,
                     onValueChange = { value ->
                         nameFieldWarning = produceWarningText(value, setOf(IsNotEmpty()))
@@ -60,7 +61,7 @@ fun NewProductDialog( //TODO reuse same form here and inside ProductDetailedPrev
                     inputType = String::class
                 )
                 FormInputField(
-                    label = "Selling price",
+                    label = getText("field.selling.price"),
                     defaultValue = sellingPrice.toString(),
                     onValueChange = {
                         sellingPrice = it.toDoubleOrNull() ?: 0.0
@@ -73,13 +74,13 @@ fun NewProductDialog( //TODO reuse same form here and inside ProductDetailedPrev
                     inputType = Double::class
                 )
                 FormInputField(
-                    label = "(Optional) Provider price",
-                    defaultValue = providerPrice?.let { it.toString() } ?: "",
+                    label = getText("field.optional") + " " + getText("field.provider.price"),
+                    defaultValue = providerPrice?.toString() ?: "",
                     onValueChange = { providerPrice = it.toDoubleOrNull() ?: 0.0 },
                     inputType = Double::class
                 )
                 FormInputField(
-                    label = "Quantity",
+                    label = getText("field.quantity"),
                     defaultValue = availableQuantity.toString(),
                     onValueChange = {
                         availableQuantity = it.toIntOrNull() ?: 0
@@ -93,7 +94,7 @@ fun NewProductDialog( //TODO reuse same form here and inside ProductDetailedPrev
                     warningMessage = availableQuantityFieldWarning
                 )
                 FormInputField(
-                    label = "(Optional) Barcode",
+                    label = getText("field.optional") + " " + getText("field.barcode"),
                     defaultValue = barcode,
                     onValueChange = { barcode = it },
                     inputType = String::class,
@@ -116,7 +117,7 @@ fun NewProductDialog( //TODO reuse same form here and inside ProductDetailedPrev
                     }
                     //TODO else some visual queue to acknowledge the validation errors
                 }) {
-                Text("Save")
+                Text(getText("label.save"))
             }
         }
     }

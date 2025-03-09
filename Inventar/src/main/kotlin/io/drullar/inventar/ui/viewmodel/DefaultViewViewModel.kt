@@ -21,6 +21,7 @@ import io.drullar.inventar.ui.data.DetailedProductPreview
 import io.drullar.inventar.ui.data.OrderDetailsPreview
 import io.drullar.inventar.ui.data.OrdersListPreview
 import io.drullar.inventar.ui.exceptions.ControlledException
+import io.drullar.inventar.ui.viewmodel.delegates.SettingsProvider
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
@@ -31,12 +32,14 @@ import kotlinx.coroutines.flow.asStateFlow
 class DefaultViewViewModel(
     sharedAppStateDelegate: SharedAppStateDelegate,
     alertManagerDelegate: AlertManager,
+    settingsProvider: SettingsProvider,
     dialogManager: DialogManager = DialogManagerImpl(),
     private val productsRepository: ProductsRepository = ProductsRepository,
     private val ordersRepository: OrderRepository = OrderRepository,
 ) : SharedAppStateDelegate by sharedAppStateDelegate,
     AlertManager by alertManagerDelegate,
-    DialogManager by dialogManager {
+    DialogManager by dialogManager,
+    SettingsProvider by settingsProvider {
 
     private val _previewChangeIsAllowed = MutableStateFlow(true)
     val previewChangeIsAllowed = _previewChangeIsAllowed.asStateFlow()
@@ -52,10 +55,12 @@ class DefaultViewViewModel(
 
     var targetProduct = MutableStateFlow<ProductDTO?>(null)
 
-    private val _draftOrdersCount = MutableStateFlow(
-        ordersRepository.getCountByStatus(OrderStatus.DRAFT)
-    )
-    val draftOrdersCount = _draftOrdersCount.asStateFlow()
+    private val _draftOrdersCount by lazy {
+        MutableStateFlow(
+            ordersRepository.getCountByStatus(OrderStatus.DRAFT)
+        )
+    }
+    val draftOrdersCount by lazy { _draftOrdersCount.asStateFlow() }
 
     fun updateProduct(product: ProductDTO) {
         productsRepository.update(product.uid, product.toProductCreationDTO())

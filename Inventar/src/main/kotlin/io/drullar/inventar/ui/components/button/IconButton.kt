@@ -6,6 +6,7 @@ import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
@@ -33,21 +34,23 @@ fun IconButton(
     val isHoveredOn by interactionSource.collectIsHoveredAsState()
 
     Box(
-        modifier.hoverable(interactionSource, onHoverText != null)
+        modifier.hoverable(interactionSource, onHoverText != null),
     ) {
-        Button( //TODO button container/content colors
-            onClick,
-            colors = buttonColors ?: ButtonDefaults.buttonColors()
-        ) {
-            icon()
-        }
-        if (isHoveredOn && onHoverText != null) {
-            Text(
-                onHoverText,
-                modifier = Modifier.background(Color(255, 255, 255, 120)),
-                fontWeight = FontWeight.W500,
-                fontStyle = FontStyle.Italic
-            )
+        Row {
+            Button( //TODO button container/content colors
+                onClick,
+                colors = buttonColors ?: ButtonDefaults.buttonColors()
+            ) {
+                icon()
+            }
+            if (isHoveredOn && onHoverText != null) {
+                Text(
+                    onHoverText,
+                    modifier = Modifier.background(Color(255, 255, 255, 120)),
+                    fontWeight = FontWeight.W500,
+                    fontStyle = FontStyle.Italic
+                )
+            }
         }
     }
 }

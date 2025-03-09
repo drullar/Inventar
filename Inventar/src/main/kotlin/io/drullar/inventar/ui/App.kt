@@ -4,13 +4,20 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import io.drullar.inventar.shared.SupportedLanguage
+import io.drullar.inventar.ui.components.button.IconButton
 import io.drullar.inventar.ui.components.dialog.SingleActionAlertDialog
 import io.drullar.inventar.ui.components.navigation.NavigationBar
 import io.drullar.inventar.ui.components.navigation.NavigationDestination
@@ -18,18 +25,29 @@ import io.drullar.inventar.ui.components.views.order.OrdersView
 import io.drullar.inventar.ui.viewmodel.DefaultViewViewModel
 import io.drullar.inventar.ui.components.views.default.DefaultView
 import io.drullar.inventar.ui.components.search.SearchBar
+import io.drullar.inventar.ui.components.views.settings.SettingsView
 import io.drullar.inventar.ui.viewmodel.OrderViewViewModel
 import io.drullar.inventar.ui.viewmodel.delegates.AlertManager
 import io.drullar.inventar.ui.viewmodel.delegates.SharedAppStateDelegate
 import io.drullar.inventar.ui.data.AlertType
+import io.drullar.inventar.ui.utils.Icons
+import io.drullar.inventar.ui.viewmodel.SettingsViewModel
+import io.drullar.inventar.ui.viewmodel.delegates.getText
+import io.drullar.inventar.ui.viewmodel.delegates.impl.TextProviderImpl
 
 @Composable
 fun App(
     sharedAppState: SharedAppStateDelegate,
     alertManager: AlertManager,
     defaultViewViewModel: DefaultViewViewModel,
-    orderViewViewModel: OrderViewViewModel
+    orderViewViewModel: OrderViewViewModel,
+    settingsViewModel: SettingsViewModel
 ) {
+    val settingsState = settingsViewModel.getSettings().collectAsState()
+    val activeLanguage = settingsState.value.language
+//    TextProviderImpl(activeLanguage) // Init TextProvider so that the `getText(textId)` extension func can he used
+    TextProviderImpl(SupportedLanguage.BULGARIAN)
+
     val currentView = sharedAppState.getNavigationDestination().collectAsState()
     val activeAlert = alertManager.getActiveAlert().collectAsState()
 
@@ -43,7 +61,25 @@ fun App(
 
             SearchBar(
                 modifier = Modifier.heightIn(30.dp, 40.dp).fillMaxWidth(0.5f),
-                onSearchSubmit = { /*TODO search implementation*/ })
+                onSearchSubmit = { /*TODO search implementation*/ }
+            )
+
+            IconButton(
+                onClick = { sharedAppState.setNavigationDestination(NavigationDestination.SETTINGS_PAGE) },
+                onHoverText = getText("label.settings"),
+                buttonColors = ButtonColors(
+                    Color.Transparent,
+                    Color.Black,
+                    Color.Transparent,
+                    Color.Black
+                )
+            ) {
+                Icon(
+                    painterResource(Icons.COG_WHEEL),
+                    getText("label.settings"),
+                    Modifier.height(20.dp)
+                )
+            }
         }
 
         val viewModifier = Modifier.fillMaxWidth().fillMaxHeight()
@@ -55,13 +91,17 @@ fun App(
             NavigationDestination.ORDERS_PAGE -> {
                 OrdersView(orderViewViewModel)
             }
+
+            NavigationDestination.SETTINGS_PAGE -> {
+                SettingsView(settingsViewModel)
+            }
         }
 
         when (activeAlert.value) {
             AlertType.UNSAVED_CHANGES -> {
                 SingleActionAlertDialog(
-                    text = "You have unsaved changes. Save or revert the changes to proceed with this action",
-                    actionButtonText = "Acknowledge"
+                    text = getText("warning.unsaved.changes"),
+                    actionButtonText = getText("label.acknowledge")
                 ) {
                     alertManager.setActiveAlert(null)
                 }

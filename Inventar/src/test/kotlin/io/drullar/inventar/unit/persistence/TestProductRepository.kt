@@ -13,16 +13,14 @@ import io.drullar.inventar.shared.ProductCreationDTO
 import io.drullar.inventar.shared.RepositoryResponse
 import io.drullar.inventar.shared.getDataOnSuccessOrNull
 import io.drullar.inventar.persistence.DatabaseException
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInstance
+import org.junit.After
+import org.junit.Test
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class TestProductRepository : AbstractPersistenceTest() {
 
     private val productRepository = ProductsRepository
 
-    @AfterEach
+    @After
     fun cleanup() {
         productRepository.deleteAll()
         val table = Products.autoIncColumn!!.table

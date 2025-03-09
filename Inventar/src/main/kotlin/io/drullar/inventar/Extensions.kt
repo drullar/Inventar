@@ -1,10 +1,6 @@
 package io.drullar.inventar
 
-import androidx.compose.runtime.mutableStateMapOf
-
-fun <K, V> Map<K, V>.toMutableStateMap() = mutableStateMapOf(
-    *this.map { entry -> entry.key to entry.value }.toTypedArray()
-)
+import io.drullar.inventar.ui.viewmodel.delegates.getText
 
 inline fun <T, R : Comparable<R>> Iterable<T>.sortedBy(
     order: SortingOrder,
@@ -16,8 +12,7 @@ inline fun <T, R : Comparable<R>> Iterable<T>.sortedBy(
         sortedByDescending(selector)
 }
 
-
-enum class SortingOrder {
-    ASCENDING,
-    DESCENDING
+enum class SortingOrder(val text: String) {
+    ASCENDING(getText("order.ascending")),
+    DESCENDING(getText("order.descending"));
 }

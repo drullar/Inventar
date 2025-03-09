@@ -20,15 +20,15 @@ import io.drullar.inventar.shared.ProductDTO
 import io.drullar.inventar.shared.RepositoryResponse
 import io.drullar.inventar.shared.getDataOnSuccessOrNull
 import io.drullar.inventar.persistence.DatabaseException
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Test
+import org.junit.After
+import org.junit.Test
 
 class TestOrderRepository : AbstractPersistenceTest() {
 
     private val productRepository = ProductsRepository
     private val orderRepository = OrderRepository
 
-    @AfterEach
+    @After
     fun cleanUp() {
         orderRepository.deleteAll()
     }

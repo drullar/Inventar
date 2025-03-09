@@ -11,10 +11,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.unit.dp
 import io.drullar.inventar.shared.ProductDTO
 import io.drullar.inventar.ui.components.cards.ProductSummarizedPreviewCard
+import java.util.Currency
 
 @Composable
 fun ProductsLazyGrid(
     products: List<ProductDTO>,
+    currency: Currency,
     onProductSelectCallback: (ProductDTO) -> Unit,
     selectionIsAllowed: Boolean,
     onProductDeleteRequest: (ProductDTO) -> Unit,
@@ -30,6 +32,7 @@ fun ProductsLazyGrid(
         items(products) { productData ->
             ProductSummarizedPreviewCard(
                 productData,
+                currency = currency,
                 onClickCallback = onProductSelectCallback,
                 isSelected = productData == selectedProduct,
                 selectionIsAllowed = selectionIsAllowed,

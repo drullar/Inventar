@@ -34,12 +34,14 @@ import io.drullar.inventar.ui.components.navigation.NavigationDestination
 import io.drullar.inventar.ui.viewmodel.OrderViewViewModel
 import io.drullar.inventar.ui.data.OrderDetailsPreview
 import io.drullar.inventar.ui.style.Colors
+import io.drullar.inventar.ui.viewmodel.delegates.getText
 
 @Composable
 fun OrdersView(viewModel: OrderViewViewModel) {
     val orders = viewModel._orders.collectAsState()
     val sortingOrder by viewModel._sortingOrder.collectAsState()
     val sortingBy by viewModel._orderBy.collectAsState()
+    val settings by viewModel.getSettings().collectAsState()
     var isOrderByDropdownExtended by remember { mutableStateOf(false) }
     var isSortingOrderDropDownExtended by remember { mutableStateOf(false) }
     val scrollState = rememberLazyListState()
@@ -47,7 +49,7 @@ fun OrdersView(viewModel: OrderViewViewModel) {
     Column(modifier = Modifier.padding(horizontal = 10.dp)) {
         Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
             TextButton(
-                text = "New Order",
+                text = getText("order.new"),
                 onClick = { viewModel.newOrder() },
                 backgroundColor = Colors.DarkGreen,
                 borderColor = Colors.DarkGreen
@@ -57,25 +59,25 @@ fun OrdersView(viewModel: OrderViewViewModel) {
                 modifier = Modifier.wrapContentHeight().wrapContentWidth().padding(bottom = 10.dp)
             ) {
                 TextButton(
-                    text = "Sort by: ${sortingBy.asString}",
+                    text = "${getText("label.sort")}: ${sortingBy.text}",
                     onClick = { isOrderByDropdownExtended = !isOrderByDropdownExtended }) {
                     DropdownMenu(
                         expanded = isOrderByDropdownExtended,
                         onDismissRequest = { isOrderByDropdownExtended = false }
                     ) {
-                        DropdownMenuItem({ Text("Date") }, {
+                        DropdownMenuItem({ Text(getText("field.date")) }, {
                             viewModel.orderOrdersBy(OrderViewViewModel.OrderBy.DATE)
                             isOrderByDropdownExtended = false
                         })
-                        DropdownMenuItem({ Text("Order") }, {
+                        DropdownMenuItem({ Text(getText("field.number")) }, {
                             isOrderByDropdownExtended = false
                             viewModel.orderOrdersBy(OrderViewViewModel.OrderBy.ID)
                         })
-                        DropdownMenuItem({ Text("Price") }, {
+                        DropdownMenuItem({ Text(getText("field.total.price")) }, {
                             isOrderByDropdownExtended = false
                             viewModel.orderOrdersBy(OrderViewViewModel.OrderBy.TOTAL_PRICE)
                         })
-                        DropdownMenuItem({ Text("Status") }, {
+                        DropdownMenuItem({ Text(getText("field.status")) }, {
                             viewModel.orderOrdersBy(OrderViewViewModel.OrderBy.STATUS)
                             isOrderByDropdownExtended = false
                         })
@@ -83,13 +85,7 @@ fun OrdersView(viewModel: OrderViewViewModel) {
                 }
 
                 TextButton(
-                    text = "Order: ".plus(
-                        if (sortingOrder == SortingOrder.ASCENDING) {
-                            "Ascending"
-                        } else {
-                            "Descending"
-                        }
-                    ),
+                    text = "${getText("label.sorting.order")}:  ${sortingOrder.text}",
                     onClick = {
                         isSortingOrderDropDownExtended = !isSortingOrderDropDownExtended
                     },
@@ -103,14 +99,14 @@ fun OrdersView(viewModel: OrderViewViewModel) {
                         onDismissRequest = { isSortingOrderDropDownExtended = false }
                     ) {
                         DropdownMenuItem(
-                            { Text("Ascending") },
+                            { Text(SortingOrder.ASCENDING.text) },
                             {
                                 isOrderByDropdownExtended = false
                                 viewModel.setSortingOrder(SortingOrder.ASCENDING)
                             }
                         )
                         DropdownMenuItem(
-                            { Text("Descending") },
+                            { Text(SortingOrder.DESCENDING.text) },
                             {
                                 isOrderByDropdownExtended = false
                                 viewModel.setSortingOrder(SortingOrder.DESCENDING)
@@ -131,10 +127,21 @@ fun OrdersView(viewModel: OrderViewViewModel) {
                     if (index == orders.value.size - 1) {
                         viewModel.loadNextOrdersPage()
                     }
-                    SimpleOrderRow(item, {}, { order ->
-                        viewModel.setPreview(OrderDetailsPreview(order))
-                        viewModel.setNavigationDestination(NavigationDestination.PRODUCTS_PAGE)
-                    }, true)
+                    SimpleOrderRow(
+                        orderDTO = item,
+                        activeLocale = settings.language.locale,
+                        onComplete = {
+                            //TODO implement
+                        },
+                        onSelect = { order ->
+                            viewModel.setPreview(OrderDetailsPreview(order))
+                            viewModel.setNavigationDestination(NavigationDestination.PRODUCTS_PAGE)
+                        },
+                        onTerminate = {
+                            //TODO implement
+                        },
+                        showOrderStatus = true
+                    )
                 }
             }
 

@@ -10,4 +10,5 @@ object Icons {
     const val APP_ICON = "icons/appIcon.png"
     const val ADD = "icons/add.svg"
     const val NEW_WINDOW = "icons/new-window.svg"
+    const val COG_WHEEL = "/icons/cog.svg"
 }

@@ -1,14 +1,13 @@
 package io.drullar.inventar.unit.persistence
 
-import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.TestInstance
 import io.drullar.inventar.unit.persistence.utils.TestDatabaseBootstrapper
+import org.junit.Before
 import java.io.File
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 
 abstract class AbstractPersistenceTest {
-    @BeforeAll
+
+    @Before
     fun setup() {
         initDatabaseFile()
         TestDatabaseBootstrapper.initiateDatabase()

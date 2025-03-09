@@ -39,6 +39,7 @@ fun DefaultView(
     val preview by viewModel.preview.collectAsState()
     val previewChangeIsAllowed = viewModel.previewChangeIsAllowed.collectAsState()
     val draftOrdersCount = viewModel.draftOrdersCount.collectAsState()
+    val settings by viewModel.getSettings().collectAsState()
 
     Column(modifier = modifier) {
         Row(modifier = Modifier.fillMaxWidth().heightIn(30.dp, 70.dp)) {
@@ -74,6 +75,7 @@ fun DefaultView(
             ) {
                 ProductsLazyGrid(
                     products = products ?: emptyList(),
+                    currency = settings.currency,
                     onProductSelectCallback = { clickedProductData ->
                         viewModel.selectProduct(clickedProductData)
                     },
@@ -138,11 +140,15 @@ fun DefaultView(
                         val draftOrders = (preview as OrdersListPreview).getPreviewData()
                         OrdersListPreviewCard(
                             orders = draftOrders,
+                            activeLocale = settings.language.locale,
                             onOrderCompletion = { completedOrder ->
                                 viewModel.completeOrder(completedOrder)
                             },
                             onOrderSelect = { selectedOrder ->
                                 viewModel.selectOrder(selectedOrder)
+                            },
+                            onOrderTermination = { terminatedOrder ->
+                                //TODO implement
                             })
                     }
                 }

@@ -2,18 +2,12 @@ package io.drullar.inventar.ui.components.search
 
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -29,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.drullar.inventar.ui.style.roundedBorderShape
 import io.drullar.inventar.ui.utils.Icons
+import io.drullar.inventar.ui.viewmodel.delegates.getText
 
 @Composable
 fun SearchBar(
@@ -37,8 +32,6 @@ fun SearchBar(
     contentOnSearch: (@Composable () -> Unit)? = null //TODO dropdown of results to select from
 ) {
     var searchQuery by remember { mutableStateOf("") }
-//    var searchContext by remember { mutableStateOf(SearchContext.Products) }
-//    var expandSearchContextDropdown by remember { mutableStateOf(false) }
     val fontSize = 14
 
     Row(
@@ -47,25 +40,6 @@ fun SearchBar(
             .border(1.dp, Color.Black, roundedBorderShape()),
         verticalAlignment = Alignment.CenterVertically
     ) {
-//        Box(
-//            modifier = modifier
-//                .fillMaxHeight()
-//                .wrapContentWidth()
-//                .clickable(true, onClick = {
-//                    expandSearchContextDropdown = !expandSearchContextDropdown
-//                })
-//        ) {
-//            DropdownMenu(
-//                expanded = expandSearchContextDropdown,
-//                onDismissRequest = { expandSearchContextDropdown = false }
-//            ) {
-//                SearchContext.entries.forEach {
-//                    DropdownMenuItem(
-//                        text = { Text(it.contextName) },
-//                        onClick = { searchContext = it })
-//                }
-//            }
-//        }
 
         BasicTextField(
             value = searchQuery,
@@ -76,7 +50,7 @@ fun SearchBar(
             decorationBox = { innerTextField ->
                 if (searchQuery.isEmpty()) {
                     Text(
-                        text = "Search...",
+                        text = getText("label.search"),
                         color = Color.LightGray.copy(alpha = 0.5f),
                         fontSize = fontSize.sp
                     )
@@ -87,7 +61,7 @@ fun SearchBar(
         IconButton(onClick = { onSearchSubmit(searchQuery) }) {
             Icon(
                 painterResource(Icons.SEARCH),
-                contentDescription = "Search"
+                contentDescription = getText("label.search")
             )
         }
     }

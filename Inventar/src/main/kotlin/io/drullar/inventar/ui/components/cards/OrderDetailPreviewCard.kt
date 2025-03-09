@@ -43,6 +43,7 @@ import io.drullar.inventar.shared.ProductDTO
 import io.drullar.inventar.ui.components.button.TextButton
 import io.drullar.inventar.ui.style.Colors
 import io.drullar.inventar.ui.style.roundedBorderShape
+import io.drullar.inventar.ui.viewmodel.delegates.getText
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -73,17 +74,21 @@ fun OrderDetailPreviewCard(
             ) {
                 Column(modifier = Modifier.fillMaxWidth(0.4f)) {
                     Text(
-                        text = "Created on:",
+                        text = getText("label.created.on"),
                         textAlign = TextAlign.End,
                         fontSize = TextUnit(16.0f, TextUnitType.Sp)
                     )
                     Text(
-                        text = order.creationDate.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")),
+                        text = order.creationDate.format(
+                            DateTimeFormatter.ofPattern(
+                                "dd.MM.yyyy HH:mm"
+                            )
+                        ),
                         fontSize = TextUnit(16.0f, TextUnitType.Sp)
                     )
                 }
                 Text(
-                    "Order #${order.orderId}",
+                    getText("label.order") + "#${order.orderId}",
                     textDecoration = TextDecoration.Underline,
                     fontSize = TextUnit(24f, TextUnitType.Sp)
                 )
@@ -116,7 +121,7 @@ fun OrderDetailPreviewCard(
         if (order.status == OrderStatus.DRAFT)
             Column(modifier = Modifier.fillMaxWidth().wrapContentHeight()) {
                 Text(
-                    text = "Total price: ${order.getTotalPrice()} BGN",
+                    text = "${getText("field.total.price")}: ${order.getTotalPrice()} BGN",
                     textAlign = TextAlign.Start,
                     fontWeight = FontWeight.W100,
                     fontSize = TextUnit(30f, TextUnitType.Sp)
@@ -139,10 +144,10 @@ private fun GroupedButtons(
     onComplete: () -> Unit,
 ) {
     Row(modifier = modifier, horizontalArrangement = Arrangement.SpaceAround) {
-        TextButton("Complete", onComplete)
+        TextButton(getText("label.complete"), onComplete)
 
         TextButton(
-            "Terminate",
+            getText("label.terminate"),
             onTerminate,
             backgroundColor = Color.White,
             textColor = Color.Red,
@@ -202,7 +207,7 @@ private fun OrderCreationRow(
             )
             if (isModifiable)
                 TextButton(
-                    text = "Remove",
+                    text = getText("label.remove"),
                     onClick = {
                         onRemoveCallback(productDTO)
                     },

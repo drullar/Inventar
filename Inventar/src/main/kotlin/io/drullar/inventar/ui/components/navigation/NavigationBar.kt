@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import io.drullar.inventar.ui.utils.Icons
+import io.drullar.inventar.ui.viewmodel.delegates.getText
 
 @Composable
 fun NavigationBar(
@@ -48,11 +49,11 @@ private val navigationItems by lazy {
     sortedMapOf(
         NavigationDestination.PRODUCTS_PAGE to NavigationItemDetails(
             iconPath = Icons.PRODUCTS,
-            "Main"
+            getText("label.main")
         ),
         NavigationDestination.ORDERS_PAGE to NavigationItemDetails(
             iconPath = Icons.ORDERS_LOG,
-            "Log History"
+            getText("label.log.history")
         )
     )
 }

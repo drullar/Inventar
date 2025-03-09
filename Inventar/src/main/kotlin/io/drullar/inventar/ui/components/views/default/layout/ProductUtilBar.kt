@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import io.drullar.inventar.ui.components.button.TextButton
 import io.drullar.inventar.ui.style.Colors
+import io.drullar.inventar.ui.viewmodel.delegates.getText
 
 @Composable
 fun ProductUtilBar(modifier: Modifier = Modifier, onNewProductButtonClick: () -> Unit) {
@@ -20,7 +21,7 @@ fun ProductUtilBar(modifier: Modifier = Modifier, onNewProductButtonClick: () ->
             .fillMaxWidth(0.7f)
     ) {
         TextButton(
-            text = "New product",
+            text = getText("product.new"),
             onClick = onNewProductButtonClick,
             modifier = Modifier.padding(start = 10.dp),
             backgroundColor = Colors.DarkGreen,

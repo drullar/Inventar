@@ -1,6 +1,5 @@
 package io.drullar.inventar.ui.components.cards
 
-import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.Orientation
@@ -14,7 +13,6 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.material3.Button
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
@@ -30,16 +28,20 @@ import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import io.drullar.inventar.shared.OrderDTO
 import io.drullar.inventar.shared.OrderStatus
-import io.drullar.inventar.shared.ProductDTO
+import io.drullar.inventar.ui.components.button.TextButton
 import io.drullar.inventar.ui.style.Colors
-import java.time.LocalDateTime
+import io.drullar.inventar.ui.viewmodel.delegates.getText
+import java.time.format.TextStyle
 import java.util.Currency
+import java.util.Locale
 
 @Composable
 fun OrdersListPreviewCard(
     orders: List<OrderDTO>,
+    activeLocale: Locale,
     onOrderCompletion: (OrderDTO) -> Unit,
     onOrderSelect: (OrderDTO) -> Unit,
+    onOrderTermination: (OrderDTO) -> Unit
 ) {
     val scrollableState = rememberScrollState()
     OutlinedCard(
@@ -53,7 +55,13 @@ fun OrdersListPreviewCard(
             items(
                 items = orders.sortedByDescending { it.creationDate },
                 key = { it.orderId }) { order ->
-                SimpleOrderRow(order, onOrderCompletion, onOrderSelect)
+                SimpleOrderRow(
+                    order,
+                    activeLocale,
+                    onOrderCompletion,
+                    onOrderSelect,
+                    onOrderTermination
+                )
             }
         }
     }
@@ -62,8 +70,10 @@ fun OrdersListPreviewCard(
 @Composable
 fun SimpleOrderRow(
     orderDTO: OrderDTO,
+    activeLocale: Locale,
     onComplete: (OrderDTO) -> Unit,
     onSelect: (OrderDTO) -> Unit,
+    onTerminate: (OrderDTO) -> Unit,
     showOrderStatus: Boolean = false
 ) {
     Row(
@@ -74,7 +84,8 @@ fun SimpleOrderRow(
             .fillMaxWidth()
     ) {
         val day = orderDTO.creationDate.dayOfMonth
-        val month = orderDTO.creationDate.month
+        val month =
+            orderDTO.creationDate.month.getDisplayName(TextStyle.FULL, activeLocale)
         Column(Modifier.fillMaxWidth(0.2f).padding(horizontal = 5.dp, vertical = 2.dp)) {
             Text(
                 day.toString(),
@@ -83,7 +94,7 @@ fun SimpleOrderRow(
                 fontWeight = FontWeight.Black
             )
             Text(
-                month.name,
+                month,
                 textAlign = TextAlign.Center,
                 fontSize = TextUnit(20f, TextUnitType.Sp),
                 fontStyle = FontStyle.Italic
@@ -93,13 +104,13 @@ fun SimpleOrderRow(
             modifier = Modifier.fillMaxWidth(0.2f).align(Alignment.CenterVertically)
         ) {
             Text(
-                "Order #${orderDTO.orderId}",
+                "${getText("label.order")} #${orderDTO.orderId}",
                 fontSize = TextUnit(20f, TextUnitType.Sp),
                 modifier = Modifier.align(Alignment.CenterVertically)
             )
             if (showOrderStatus) {
                 Text(
-                    text = orderDTO.status.toString().uppercase(),
+                    text = orderDTO.status.text.uppercase(),
                     color = when (orderDTO.status) {
                         OrderStatus.COMPLETED -> Colors.DarkGreen
                         else -> Color.Gray
@@ -123,53 +134,10 @@ fun SimpleOrderRow(
                 modifier = Modifier.fillMaxWidth(0.2f)
             )
             if (orderDTO.status != OrderStatus.COMPLETED) {
-                Button(onClick = { onComplete(orderDTO) }) {
-                    Text("Complete", maxLines = 1)
-                }
-                Button(onClick = {}) {
-                    Text("Terminate", maxLines = 1)
-                }
+                TextButton(getText("label.complete"), onClick = { onComplete(orderDTO) })
+                TextButton(getText("label.terminate"), onClick = { onTerminate(orderDTO) })
             }
         }
 
     }
-}
-
-@Composable
-@Preview
-private fun DraftOrderRowPreview() {
-    SimpleOrderRow(
-        OrderDTO(
-            1001,
-            mutableMapOf(ProductDTO(1, "My Product", sellingPrice = 1.23) to 1),
-            LocalDateTime.now(),
-            OrderStatus.DRAFT
-        ),
-        {},
-        {},
-        true
-    )
-}
-
-@Composable
-@Preview
-private fun OrdersListPreviewCardPreview() {
-    OrdersListPreviewCard(
-        listOf(
-            OrderDTO(
-                1,
-                mutableMapOf(),
-                LocalDateTime.now(),
-                OrderStatus.DRAFT
-            ),
-            OrderDTO(
-                2,
-                mutableMapOf(ProductDTO(2, "My PRoduct", sellingPrice = 1.234) to 1),
-                LocalDateTime.now().minusWeeks(3),
-                OrderStatus.DRAFT
-            )
-        ),
-        {},
-        {}
-    )
 }

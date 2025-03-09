@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import io.drullar.inventar.shared.ProductDTO
 import io.drullar.inventar.ui.components.button.TextButton
 import io.drullar.inventar.ui.style.roundedBorderShape
+import io.drullar.inventar.ui.viewmodel.delegates.getText
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -56,7 +57,7 @@ fun OrderProductConfirmation(
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    "Add \"${product.name}\" to order?",
+                    getText("product.add", product.name) + "?",
                     textAlign = TextAlign.Center,
                     modifier = Modifier.fillMaxHeight(0.1f).align(Alignment.CenterHorizontally)
                 )
@@ -82,7 +83,7 @@ fun OrderProductConfirmation(
                     verticalAlignment = Alignment.Bottom
                 ) {
                     TextButton(
-                        text = "Cancel",
+                        text = getText("label.cancel"),
                         onClick = onCancel,
                         backgroundColor = Color.White,
                         textColor = Color.Red,
@@ -90,7 +91,7 @@ fun OrderProductConfirmation(
                     )
                     Spacer(modifier = Modifier.width(20.dp))
                     TextButton(
-                        text = "Add",
+                        text = getText("label.add"),
                         onClick = { onConfirm(quantity) }
                     )
                 }

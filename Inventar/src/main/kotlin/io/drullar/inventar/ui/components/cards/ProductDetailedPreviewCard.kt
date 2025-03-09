@@ -11,13 +11,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material3.Button
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -25,7 +22,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import io.drullar.inventar.persistence.schema.BARCODE_LENGTH
 import io.drullar.inventar.shared.ProductDTO
@@ -33,14 +29,8 @@ import io.drullar.inventar.ui.components.dialog.produceWarningText
 import io.drullar.inventar.ui.components.field.FormInputField
 import io.drullar.inventar.ui.components.field.IsNotEmpty
 import io.drullar.inventar.ui.components.field.NotNegativeNumber
-import io.drullar.inventar.ui.style.roundedBorderShape
+import io.drullar.inventar.ui.viewmodel.delegates.getText
 
-/**
- * Card used to view full details of a product and edit the field as needed
- * [productData] - the data that is going to be displayed
- * [onChange] - called when a field has changes
- * [onTerminalChange] - called when a Save or Revert buttons a clicked
- */
 @Composable
 fun ProductDetailedViewCard(
     productData: ProductDTO,
@@ -66,7 +56,7 @@ fun ProductDetailedViewCard(
         ) {
             Column(modifier = Modifier.fillMaxWidth().wrapContentHeight()) {
                 FormInputField(
-                    label = "Name",
+                    label = getText("field.name"),
                     defaultValue = stateOfProductData.name,
                     onValueChange = { value ->
                         hasChange = true
@@ -78,7 +68,7 @@ fun ProductDetailedViewCard(
                     inputType = String::class
                 )
                 FormInputField(
-                    label = "Selling price",
+                    label = getText("field.selling.price"),
                     defaultValue = stateOfProductData.sellingPrice.toString(),
                     onValueChange = { value ->
                         hasChange = true
@@ -96,7 +86,7 @@ fun ProductDetailedViewCard(
                     inputType = Double::class
                 )
                 FormInputField(
-                    label = "(Optional) Provider price",
+                    label = "${getText("field.optional")} ${getText("field.provider.price")}",
                     defaultValue = stateOfProductData.providerPrice?.toString() ?: "",
                     onValueChange = {
                         hasChange = true
@@ -107,7 +97,7 @@ fun ProductDetailedViewCard(
                     inputType = Double::class
                 )
                 FormInputField(
-                    label = "Quantity",
+                    label = getText("field.quantity"),
                     defaultValue = stateOfProductData.availableQuantity.toString(),
                     onValueChange = {
                         hasChange = true
@@ -124,7 +114,7 @@ fun ProductDetailedViewCard(
                     warningMessage = availableQuantityFieldWarning
                 )
                 FormInputField(
-                    label = "(Optional) Barcode",
+                    label = "${getText("field.optional")} ${getText("field.barcode")}",
                     defaultValue = stateOfProductData.barcode ?: "",
                     onValueChange = {
                         hasChange = true
@@ -141,14 +131,14 @@ fun ProductDetailedViewCard(
                 Button(onClick = {
                     onSave(stateOfProductData)
                 }) {
-                    Text("Save")
+                    Text(getText("label.save"))
                 }
                 Spacer(modifier = Modifier.width(20.dp))
                 Button(onClick = {
                     val originalData = onRevert()
                     stateOfProductData = originalData
                 }) {
-                    Text("Revert")
+                    Text(getText("label.revert"))
                 }
             }
         }

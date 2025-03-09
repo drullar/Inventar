@@ -9,14 +9,18 @@ import io.drullar.inventar.shared.getOrThrow
 import io.drullar.inventar.sortedBy
 import io.drullar.inventar.ui.components.navigation.NavigationDestination
 import io.drullar.inventar.ui.data.OrderDetailsPreview
+import io.drullar.inventar.ui.viewmodel.delegates.SettingsProvider
 import io.drullar.inventar.ui.viewmodel.delegates.SharedAppStateDelegate
+import io.drullar.inventar.ui.viewmodel.delegates.getText
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 class OrderViewViewModel(
     sharedAppStateDelegate: SharedAppStateDelegate,
+    settingsProvider: SettingsProvider,
     private val ordersRepository: OrderRepository = OrderRepository
-) : SharedAppStateDelegate by sharedAppStateDelegate {
+) : SharedAppStateDelegate by sharedAppStateDelegate,
+    SettingsProvider by settingsProvider {
 
     private val ordersFetchSize = 20
 
@@ -92,10 +96,10 @@ class OrderViewViewModel(
         }
     }
 
-    enum class OrderBy(val asString: String) {
-        DATE("Date"),
-        ID("Order"),
-        TOTAL_PRICE("Price"),
-        STATUS("Status")
+    enum class OrderBy(val text: String) {
+        DATE(getText("field.date")),
+        ID("field.number"),
+        TOTAL_PRICE("field.total.price"),
+        STATUS("field.status")
     }
 }

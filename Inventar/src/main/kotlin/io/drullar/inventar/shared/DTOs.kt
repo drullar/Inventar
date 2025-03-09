@@ -2,6 +2,7 @@ package io.drullar.inventar.shared
 
 import io.drullar.inventar.persistence.model.Category
 import io.drullar.inventar.ui.utils.Icons
+import io.drullar.inventar.ui.viewmodel.delegates.getText
 import java.time.LocalDateTime
 
 data class ProductDTO(
@@ -58,8 +59,8 @@ data class OrderCreationDTO(
     val status: OrderStatus
 )
 
-enum class OrderStatus {
-    COMPLETED,
-    TERMINATED,
-    DRAFT
+enum class OrderStatus(val text: String) {
+    COMPLETED(getText("label.completed")),
+    TERMINATED(getText("label.terminated")),
+    DRAFT(getText("label.draft"))
 }

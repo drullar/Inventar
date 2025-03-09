@@ -40,10 +40,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.drullar.inventar.shared.ProductDTO
-import io.drullar.inventar.shared.Settings
 import io.drullar.inventar.ui.style.Colors
 import io.drullar.inventar.ui.style.roundedBorder
 import io.drullar.inventar.ui.utils.Icons
+import io.drullar.inventar.ui.viewmodel.delegates.getText
+import java.util.Currency
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -52,6 +53,7 @@ fun ProductSummarizedPreviewCard(
     onClickCallback: (ProductDTO) -> Unit,
     isSelected: Boolean = false,
     selectionIsAllowed: Boolean = true,
+    currency: Currency,
     onDeleteRequest: (ProductDTO) -> Unit,
     onEditRequest: (ProductDTO) -> Unit,
     onAddToOrderRequest: (ProductDTO) -> Unit,
@@ -66,13 +68,13 @@ fun ProductSummarizedPreviewCard(
     ContextMenuArea(
         items = {
             listOf(
-                ContextMenuItem("Delete \"${productData.name}\"") {
+                ContextMenuItem("${getText("label.delete")} \"${productData.name}\"") {
                     onDeleteRequest(productData)
                 },
-                ContextMenuItem("Edit \"${productData.name}\"") {
+                ContextMenuItem("${getText("label.edit")} \"${productData.name}\"") {
                     onEditRequest(productData)
                 },
-                ContextMenuItem("Add \"${productData.name}\" to an order") {
+                ContextMenuItem(getText("product.add", productData.name)) {
                     onAddToOrderRequest(productData)
                 }
             )
@@ -110,7 +112,7 @@ fun ProductSummarizedPreviewCard(
                     )
                     Column {
                         Text(text = productData.sellingPrice.toString())
-                        Text(text = Settings.currency.symbol)
+                        Text(text = currency.symbol)
                     }
                     Spacer(Modifier)
                 }
@@ -150,6 +152,7 @@ fun ProductSummarizedPreviewCard(
 private fun Preview() {
     ProductSummarizedPreviewCard(
         ProductDTO(2, "productName"),
+        currency = Currency.getInstance("BG"),
         onDeleteRequest = {},
         onEditRequest = {},
         onAddToOrderRequest = {},
