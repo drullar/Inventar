@@ -1,6 +1,7 @@
 package io.drullar.inventar.ui.components.views.order
 
 import androidx.compose.foundation.VerticalScrollbar
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -8,8 +9,8 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollbarAdapter
@@ -31,7 +32,7 @@ import io.drullar.inventar.ui.components.button.TextButton
 import io.drullar.inventar.ui.components.cards.SimpleOrderRow
 import io.drullar.inventar.ui.components.navigation.NavigationDestination
 import io.drullar.inventar.ui.viewmodel.OrderViewViewModel
-import io.drullar.inventar.ui.data.OrderCreationPreview
+import io.drullar.inventar.ui.data.OrderDetailsPreview
 import io.drullar.inventar.ui.style.Colors
 
 @Composable
@@ -44,70 +45,84 @@ fun OrdersView(viewModel: OrderViewViewModel) {
     val scrollState = rememberLazyListState()
 
     Column(modifier = Modifier.padding(horizontal = 10.dp)) {
-        Row(modifier = Modifier.wrapContentHeight().fillMaxWidth().padding(bottom = 10.dp)) {
+        Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
             TextButton(
-                text = "Sort by: ${sortingBy.asString}",
-                onClick = { isOrderByDropdownExtended = !isOrderByDropdownExtended }) {
-                DropdownMenu(
-                    expanded = isOrderByDropdownExtended,
-                    onDismissRequest = { isOrderByDropdownExtended = false }
+                text = "New Order",
+                onClick = { viewModel.newOrder() },
+                backgroundColor = Colors.DarkGreen,
+                borderColor = Colors.DarkGreen
+            )
+
+            Row(
+                modifier = Modifier.wrapContentHeight().wrapContentWidth().padding(bottom = 10.dp)
+            ) {
+                TextButton(
+                    text = "Sort by: ${sortingBy.asString}",
+                    onClick = { isOrderByDropdownExtended = !isOrderByDropdownExtended }) {
+                    DropdownMenu(
+                        expanded = isOrderByDropdownExtended,
+                        onDismissRequest = { isOrderByDropdownExtended = false }
+                    ) {
+                        DropdownMenuItem({ Text("Date") }, {
+                            viewModel.orderOrdersBy(OrderViewViewModel.OrderBy.DATE)
+                            isOrderByDropdownExtended = false
+                        })
+                        DropdownMenuItem({ Text("Order") }, {
+                            isOrderByDropdownExtended = false
+                            viewModel.orderOrdersBy(OrderViewViewModel.OrderBy.ID)
+                        })
+                        DropdownMenuItem({ Text("Price") }, {
+                            isOrderByDropdownExtended = false
+                            viewModel.orderOrdersBy(OrderViewViewModel.OrderBy.TOTAL_PRICE)
+                        })
+                        DropdownMenuItem({ Text("Status") }, {
+                            viewModel.orderOrdersBy(OrderViewViewModel.OrderBy.STATUS)
+                            isOrderByDropdownExtended = false
+                        })
+                    }
+                }
+
+                TextButton(
+                    text = "Order: ".plus(
+                        if (sortingOrder == SortingOrder.ASCENDING) {
+                            "Ascending"
+                        } else {
+                            "Descending"
+                        }
+                    ),
+                    onClick = {
+                        isSortingOrderDropDownExtended = !isSortingOrderDropDownExtended
+                    },
+                    modifier = Modifier.padding(start = 10.dp),
+                    backgroundColor = Color.White,
+                    textColor = Colors.BrightBlue,
+                    borderColor = Colors.BrightBlue
                 ) {
-                    DropdownMenuItem({ Text("Date") }, {
-                        viewModel.orderOrdersBy(OrderViewViewModel.OrderBy.DATE)
-                        isOrderByDropdownExtended = false
-                    })
-                    DropdownMenuItem({ Text("Order") }, {
-                        isOrderByDropdownExtended = false
-                        viewModel.orderOrdersBy(OrderViewViewModel.OrderBy.ID)
-                    })
-                    DropdownMenuItem({ Text("Price") }, {
-                        isOrderByDropdownExtended = false
-                        viewModel.orderOrdersBy(OrderViewViewModel.OrderBy.TOTAL_PRICE)
-                    })
-                    DropdownMenuItem({ Text("Status") }, {
-                        viewModel.orderOrdersBy(OrderViewViewModel.OrderBy.STATUS)
-                        isOrderByDropdownExtended = false
-                    })
+                    DropdownMenu(
+                        expanded = isSortingOrderDropDownExtended,
+                        onDismissRequest = { isSortingOrderDropDownExtended = false }
+                    ) {
+                        DropdownMenuItem(
+                            { Text("Ascending") },
+                            {
+                                isOrderByDropdownExtended = false
+                                viewModel.setSortingOrder(SortingOrder.ASCENDING)
+                            }
+                        )
+                        DropdownMenuItem(
+                            { Text("Descending") },
+                            {
+                                isOrderByDropdownExtended = false
+                                viewModel.setSortingOrder(SortingOrder.DESCENDING)
+                            }
+                        )
+                    }
                 }
             }
 
-            TextButton(
-                text = "Order: ".plus(
-                    if (sortingOrder == SortingOrder.ASCENDING) {
-                        "Ascending"
-                    } else {
-                        "Descending"
-                    }
-                ),
-                onClick = {
-                    isSortingOrderDropDownExtended = !isSortingOrderDropDownExtended
-                },
-                modifier = Modifier.padding(start = 10.dp),
-                backgroundColor = Color.White,
-                textColor = Colors.BrightBlue,
-                borderColor = Colors.BrightBlue
-            ) {
-                DropdownMenu(
-                    expanded = isSortingOrderDropDownExtended,
-                    onDismissRequest = { isSortingOrderDropDownExtended = false }
-                ) {
-                    DropdownMenuItem(
-                        { Text("Ascending") },
-                        {
-                            isOrderByDropdownExtended = false
-                            viewModel.setSortingOrder(SortingOrder.ASCENDING)
-                        }
-                    )
-                    DropdownMenuItem(
-                        { Text("Descending") },
-                        {
-                            isOrderByDropdownExtended = false
-                            viewModel.setSortingOrder(SortingOrder.DESCENDING)
-                        }
-                    )
-                }
-            }
+
         }
+
         Box {
             LazyColumn(state = scrollState, modifier = Modifier.padding(end = 12.dp)) {
                 itemsIndexed(
@@ -117,7 +132,7 @@ fun OrdersView(viewModel: OrderViewViewModel) {
                         viewModel.loadNextOrdersPage()
                     }
                     SimpleOrderRow(item, {}, { order ->
-                        viewModel.setPreview(OrderCreationPreview(order))
+                        viewModel.setPreview(OrderDetailsPreview(order))
                         viewModel.setNavigationDestination(NavigationDestination.PRODUCTS_PAGE)
                     }, true)
                 }

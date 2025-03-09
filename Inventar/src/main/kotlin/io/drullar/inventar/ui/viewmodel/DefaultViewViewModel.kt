@@ -18,7 +18,7 @@ import io.drullar.inventar.ui.viewmodel.delegates.SharedAppStateDelegate
 import io.drullar.inventar.ui.viewmodel.delegates.impl.DialogManagerImpl
 import io.drullar.inventar.ui.data.AlertType
 import io.drullar.inventar.ui.data.DetailedProductPreview
-import io.drullar.inventar.ui.data.OrderCreationPreview
+import io.drullar.inventar.ui.data.OrderDetailsPreview
 import io.drullar.inventar.ui.data.OrdersListPreview
 import io.drullar.inventar.ui.exceptions.ControlledException
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -98,11 +98,11 @@ class DefaultViewViewModel(
         val order: OrderDTO
         try {
             // If current preview is not OrderCreation and _preview change is not allowed
-            val isAllowed = validatePreviewChange { getPreview().value !is OrderCreationPreview }
+            val isAllowed = validatePreviewChange { getPreview().value !is OrderDetailsPreview }
             if (!isAllowed) return
             // If OrderCreation is already selected
-            if (getPreview().value is OrderCreationPreview) {
-                order = (getPreview().value as OrderCreationPreview).getPreviewData()
+            if (getPreview().value is OrderDetailsPreview) {
+                order = (getPreview().value as OrderDetailsPreview).getPreviewData()
                 if (order.status != OrderStatus.DRAFT) { // Currently viewed order is in a unchangeable state
                     val newOrder = ordersRepository.save(
                         OrderCreationDTO(
@@ -110,7 +110,7 @@ class DefaultViewViewModel(
                             productToQuantity = mutableMapOf(targetProduct.value!! to quantity)
                         )
                     ).getOrThrow()
-                    getPreview().value = OrderCreationPreview(newOrder)
+                    getPreview().value = OrderDetailsPreview(newOrder)
                 } else {
                     val updatedProductsMap = order.productToQuantity.toMutableMap()
                         .also { it[targetProduct.value!!] = quantity }
@@ -121,7 +121,7 @@ class DefaultViewViewModel(
                             order.copy(productToQuantity = updatedProductsMap).toOrderCreationDTO()
                         )
                         .getOrThrow()
-                    getPreview().value = OrderCreationPreview(updatedOrder)
+                    getPreview().value = OrderDetailsPreview(updatedOrder)
                 }
             } else {
                 order = ordersRepository.save(
@@ -130,7 +130,7 @@ class DefaultViewViewModel(
                         productToQuantity = mutableMapOf(targetProduct.value!! to quantity)
                     )
                 ).getOrThrow()
-                getPreview().value = OrderCreationPreview(order)
+                getPreview().value = OrderDetailsPreview(order)
                 _draftOrdersCount.value += 1
             }
         } catch (exception: ControlledException) {
@@ -141,7 +141,7 @@ class DefaultViewViewModel(
 
     fun selectOrder(orderDTO: OrderDTO) {
         validatePreviewChange { getPreview().value is OrdersListPreview }
-        getPreview().value = OrderCreationPreview(orderDTO)
+        getPreview().value = OrderDetailsPreview(orderDTO)
     }
 
     fun completeOrder(orderDTO: OrderDTO) {
@@ -162,33 +162,33 @@ class DefaultViewViewModel(
                 )
             }
 
-            is OrderCreationPreview -> {
-                val order = (getPreview().value as OrderCreationPreview).getPreviewData()
+            is OrderDetailsPreview -> {
+                val order = (getPreview().value as OrderDetailsPreview).getPreviewData()
             }
         }
     }
 
     fun removeProductFromOrder(product: ProductDTO) {
         try {
-            val order = (getPreview().value as OrderCreationPreview).getPreviewData()
+            val order = (getPreview().value as OrderDetailsPreview).getPreviewData()
             val updatedProductsMap =
                 order.productToQuantity.toMutableMap().also { it.remove(product) }
             val updatedOrder = ordersRepository.update(
                 order.orderId,
                 order.copy(productToQuantity = updatedProductsMap).toOrderCreationDTO()
             )
-            setPreview(OrderCreationPreview(updatedOrder.getOrThrow()))
+            setPreview(OrderDetailsPreview(updatedOrder.getOrThrow()))
         } catch (e: ControlledException) {
             e.message?.let { log.error(it) }
         }
     }
 
     fun changeProductQuantityInOrder(product: ProductDTO, newQuantity: Int) {
-        if (getPreview().value is OrderCreationPreview) {
-            val order = (getPreview().value as OrderCreationPreview).getPreviewData()
+        if (getPreview().value is OrderDetailsPreview) {
+            val order = (getPreview().value as OrderDetailsPreview).getPreviewData()
             val productsMap = order.productToQuantity.toMutableMap()
             productsMap[product] = newQuantity
-            setPreview(OrderCreationPreview(order.copy(productToQuantity = productsMap.toMap())))
+            setPreview(OrderDetailsPreview(order.copy(productToQuantity = productsMap.toMap())))
         }
     }
 
@@ -204,8 +204,8 @@ class DefaultViewViewModel(
     }
 
     fun getCurrentOrderTargetProductQuantity(): Int? =
-        if (preview.value is OrderCreationPreview) {
-            (preview.value as OrderCreationPreview).getPreviewData()
+        if (preview.value is OrderDetailsPreview) {
+            (preview.value as OrderDetailsPreview).getPreviewData()
                 .productToQuantity.getOrDefault(
                     targetProduct.value, null
                 )

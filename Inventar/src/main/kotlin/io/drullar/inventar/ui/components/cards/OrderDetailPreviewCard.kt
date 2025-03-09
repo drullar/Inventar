@@ -47,7 +47,7 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 @Composable
-fun OrderCreationCard(
+fun OrderDetailPreviewCard(
     order: OrderDTO,
     onTerminate: () -> Unit,
     onComplete: () -> Unit,
@@ -113,20 +113,21 @@ fun OrderCreationCard(
             }
         }
 
-        Column(modifier = Modifier.fillMaxWidth().wrapContentHeight()) {
-            Text(
-                text = "Total price: ${order.getTotalPrice()} BGN",
-                textAlign = TextAlign.Start,
-                fontWeight = FontWeight.W100,
-                fontSize = TextUnit(30f, TextUnitType.Sp)
-            ) // TODO use currency
-            Spacer(Modifier.padding(vertical = 10.dp))
-            GroupedButtons(
-                Modifier.align(Alignment.CenterHorizontally).fillMaxWidth(),
-                onTerminate,
-                onComplete
-            )
-        }
+        if (order.status == OrderStatus.DRAFT)
+            Column(modifier = Modifier.fillMaxWidth().wrapContentHeight()) {
+                Text(
+                    text = "Total price: ${order.getTotalPrice()} BGN",
+                    textAlign = TextAlign.Start,
+                    fontWeight = FontWeight.W100,
+                    fontSize = TextUnit(30f, TextUnitType.Sp)
+                ) // TODO use currency
+                Spacer(Modifier.padding(vertical = 10.dp))
+                GroupedButtons(
+                    Modifier.align(Alignment.CenterHorizontally).fillMaxWidth(),
+                    onTerminate,
+                    onComplete
+                )
+            }
 
     }
 }
@@ -215,7 +216,7 @@ private fun OrderCreationRow(
 @Preview
 @Composable
 private fun OrderCreationCardPreview() {
-    OrderCreationCard(
+    OrderDetailPreviewCard(
         OrderDTO(
             orderId = 1,
             productToQuantity = mutableMapOf(

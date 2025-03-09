@@ -2,8 +2,13 @@ package io.drullar.inventar.ui.viewmodel
 
 import io.drullar.inventar.SortingOrder
 import io.drullar.inventar.persistence.repositories.OrderRepository
+import io.drullar.inventar.shared.OrderCreationDTO
+import io.drullar.inventar.shared.OrderStatus
 import io.drullar.inventar.shared.getDataOnSuccessOrNull
+import io.drullar.inventar.shared.getOrThrow
 import io.drullar.inventar.sortedBy
+import io.drullar.inventar.ui.components.navigation.NavigationDestination
+import io.drullar.inventar.ui.data.OrderDetailsPreview
 import io.drullar.inventar.ui.viewmodel.delegates.SharedAppStateDelegate
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -47,6 +52,26 @@ class OrderViewViewModel(
         }
     }
 
+    fun loadNextOrdersPage() {
+        lastFetchedPage.value =
+            ordersRepository.getAllPaged(
+                page = (lastFetchedPage.value?.pageNumber ?: 0) + 1,
+                itemsPerPage = ordersFetchSize
+            ).getDataOnSuccessOrNull()
+
+        lastFetchedPage.value?.items?.let { newFetchedOrders ->
+            orders.value += newFetchedOrders
+        }
+    }
+
+    fun newOrder() {
+        val newOrder = ordersRepository.save(OrderCreationDTO(emptyMap(), OrderStatus.DRAFT))
+            .getOrThrow()
+
+        setPreview(OrderDetailsPreview(newOrder))
+        setNavigationDestination(NavigationDestination.PRODUCTS_PAGE)
+    }
+
     private fun sortOrders() {
         when (orderBy.value) {
             OrderBy.STATUS -> {
@@ -64,18 +89,6 @@ class OrderViewViewModel(
             OrderBy.TOTAL_PRICE -> {
                 orders.value = orders.value.sortedBy(sortingOrder.value) { it.getTotalPrice() }
             }
-        }
-    }
-
-    fun loadNextOrdersPage() {
-        lastFetchedPage.value =
-            ordersRepository.getAllPaged(
-                page = (lastFetchedPage.value?.pageNumber ?: 0) + 1,
-                itemsPerPage = ordersFetchSize
-            ).getDataOnSuccessOrNull()
-
-        lastFetchedPage.value?.items?.let { newFetchedOrders ->
-            orders.value += newFetchedOrders
         }
     }
 

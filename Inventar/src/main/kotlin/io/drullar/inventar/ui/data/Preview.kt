@@ -17,7 +17,7 @@ class DetailedProductPreview(private var selectedProductDTO: ProductDTO) :
     }
 }
 
-class OrderCreationPreview(private val order: OrderDTO) : Preview<OrderDTO>() {
+class OrderDetailsPreview(private val order: OrderDTO) : Preview<OrderDTO>() {
     override fun getPreviewData(): OrderDTO = order
 
     override fun updatePreviewData(data: OrderDTO) {

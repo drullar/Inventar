@@ -10,6 +10,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import io.drullar.inventar.ui.components.button.TextButton
+import io.drullar.inventar.ui.style.Colors
 
 @Composable
 fun ProductUtilBar(modifier: Modifier = Modifier, onNewProductButtonClick: () -> Unit) {
@@ -21,7 +22,9 @@ fun ProductUtilBar(modifier: Modifier = Modifier, onNewProductButtonClick: () ->
         TextButton(
             text = "New product",
             onClick = onNewProductButtonClick,
-            modifier = Modifier.padding(start = 10.dp)
+            modifier = Modifier.padding(start = 10.dp),
+            backgroundColor = Colors.DarkGreen,
+            borderColor = Colors.DarkGreen
         )
     }
 }

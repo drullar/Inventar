@@ -15,7 +15,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import io.drullar.inventar.ui.components.cards.OrderCreationCard
+import io.drullar.inventar.ui.components.cards.OrderDetailPreviewCard
 import io.drullar.inventar.ui.components.cards.OrdersListPreviewCard
 import io.drullar.inventar.ui.components.cards.ProductDetailedViewCard
 import io.drullar.inventar.ui.components.dialog.NewProductDialog
@@ -25,7 +25,7 @@ import io.drullar.inventar.ui.viewmodel.DefaultViewViewModel
 import io.drullar.inventar.ui.components.views.default.layout.DraftOrderButton
 import io.drullar.inventar.ui.components.views.default.layout.ProductUtilBar
 import io.drullar.inventar.ui.data.DetailedProductPreview
-import io.drullar.inventar.ui.data.OrderCreationPreview
+import io.drullar.inventar.ui.data.OrderDetailsPreview
 import io.drullar.inventar.ui.data.OrdersListPreview
 import io.drullar.inventar.ui.style.roundedBorder
 
@@ -115,15 +115,15 @@ fun DefaultView(
                         )
                     }
 
-                    is OrderCreationPreview -> {
-                        val data = (preview as OrderCreationPreview).getPreviewData()
-                        OrderCreationCard(
-                            order = data,
+                    is OrderDetailsPreview -> {
+                        val order = (preview as OrderDetailsPreview).getPreviewData()
+                        OrderDetailPreviewCard(
+                            order = order,
                             onTerminate = {
                                 //TODO
                             },
                             onComplete = {
-                                viewModel.completeOrder(data)
+                                viewModel.completeOrder(order)
                             },
                             onProductRemove = { product ->
                                 viewModel.removeProductFromOrder(product)
