@@ -31,6 +31,7 @@ dependencies {
     //Other dependencies
     implementation("org.javamoney:moneta:1.4.4")
     implementation("io.github.classgraph:classgraph:4.8.177")
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.18.3")
     //Test dependencies
     testImplementation(kotlin("test"))
     testImplementation("junit:junit:4.13.2")

@@ -1,7 +1,6 @@
 package io.drullar.inventar
 
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPlacement
 import androidx.compose.ui.window.application
@@ -16,16 +15,22 @@ import io.drullar.inventar.ui.viewmodel.delegates.impl.SharedAppStateDelegateImp
 import io.drullar.inventar.ui.utils.Icons
 import io.drullar.inventar.ui.viewmodel.SettingsViewModel
 import io.drullar.inventar.ui.viewmodel.delegates.impl.SettingsProviderImpl
-import io.drullar.inventar.utils.Bootstrapper
+import io.drullar.inventar.utils.bootstrap.ApplicationBootstrapper
+import io.drullar.inventar.utils.bootstrap.DatabaseBootstrapperImpl
+import io.drullar.inventar.utils.file.FileManager
 import java.awt.Dimension
 
 fun main() {
-    println(Locale.current.language)
-    Bootstrapper().bootstrapApplication()
+    val fileManager = FileManager()
+    ApplicationBootstrapper(
+        fileManager = fileManager,
+        databaseBootstrapperFactory = { databaseFile -> DatabaseBootstrapperImpl(databaseFile) }
+    ).bootstrap()
+
     val sharedAppStateHolder = SharedAppStateDelegateImpl(NavigationDestination.PRODUCTS_PAGE)
     val alertManagerDelegate = AlertManagerImpl()
-    val settingsProvider = SettingsProviderImpl()
-    settingsProvider.setSettings(settingsProvider.getSettings().value.copy(language = SupportedLanguage.BULGARIAN)) //TODO delete
+    val settingsProvider = SettingsProviderImpl(fileManager)
+    
     val defaultViewViewModel =
         DefaultViewViewModel(sharedAppStateHolder, alertManagerDelegate, settingsProvider)
     val orderViewViewModel = OrderViewViewModel(sharedAppStateHolder, settingsProvider)
@@ -46,7 +51,7 @@ fun main() {
                 alertManagerDelegate,
                 defaultViewViewModel,
                 orderViewViewModel,
-                settingsViewModel
+                settingsViewModel,
             )
         }
     }

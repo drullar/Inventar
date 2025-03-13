@@ -75,7 +75,7 @@ fun DefaultView(
             ) {
                 ProductsLazyGrid(
                     products = products ?: emptyList(),
-                    currency = settings.currency,
+                    currency = settings.defaultCurrency,
                     onProductSelectCallback = { clickedProductData ->
                         viewModel.selectProduct(clickedProductData)
                     },

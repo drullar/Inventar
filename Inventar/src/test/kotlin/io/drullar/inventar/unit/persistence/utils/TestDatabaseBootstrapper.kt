@@ -1,7 +1,7 @@
 package io.drullar.inventar.unit.persistence.utils
 
-import io.drullar.inventar.persistence.configuration.AbstractDatabaseBootstrapper
-import io.drullar.inventar.persistence.configuration.DatabaseConfiguration
+import io.drullar.inventar.utils.bootstrap.AbstractDatabaseBootstrapper
+import io.drullar.inventar.utils.bootstrap.DatabaseConfiguration
 
 object TestDatabaseBootstrapper : AbstractDatabaseBootstrapper() {
 

@@ -37,6 +37,8 @@ class OrderViewViewModel(
     private val lastFetchedPage by lazy {
         MutableStateFlow(ordersRepository.getAllPaged(1, 20).getDataOnSuccessOrNull())
     }
+
+    // TODO fix pagination not showing all orders
     private val orders by lazy {
         MutableStateFlow(
             lastFetchedPage.value?.items ?: emptyList()
