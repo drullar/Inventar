@@ -9,13 +9,6 @@ abstract class AbstractPersistenceTest {
 
     @Before
     fun setup() {
-        initDatabaseFile()
-        TestDatabaseBootstrapper.bootstrap()
-    }
-
-    private fun initDatabaseFile() {
-        val file = File("build/temp.db")
-        if (file.exists()) file.delete()
-        file.createNewFile()
+        TestDatabaseBootstrapper(File("build/temp.db")).bootstrap()
     }
 }

@@ -14,6 +14,8 @@ import io.drullar.inventar.shared.ProductCreationDTO
 import io.drullar.inventar.persistence.DatabaseException
 import org.junit.After
 import org.junit.Test
+import java.math.BigDecimal
+import java.math.MathContext
 
 class TestProductRepository : AbstractPersistenceTest() {
 
@@ -23,7 +25,6 @@ class TestProductRepository : AbstractPersistenceTest() {
     fun cleanup() {
         productRepository.deleteAll()
         val table = Products.autoIncColumn!!.table
-        println()
     }
 
     @Test
@@ -32,7 +33,7 @@ class TestProductRepository : AbstractPersistenceTest() {
             ProductCreationDTO(
                 name = "asdfs",
                 barcode = "021321321",
-                sellingPrice = 0.0,
+                sellingPrice = 0.0.toBigDecimal(),
                 providerPrice = null,
                 availableQuantity = 10
             )
@@ -44,7 +45,7 @@ class TestProductRepository : AbstractPersistenceTest() {
         assertThat(data!!.name).isEqualTo("asdfs")
         assertThat(data.availableQuantity).isEqualTo(10)
         assertThat(data.barcode).isEqualTo("021321321")
-        assertThat(data.sellingPrice).isEqualTo(0.0)
+        assertThat(data.sellingPrice).isEqualTo(BigDecimal("0.00"))
         assertThat(data.providerPrice).isNull()
         assertThat(data.uid).isNotNull()
     }
@@ -55,7 +56,7 @@ class TestProductRepository : AbstractPersistenceTest() {
             ProductCreationDTO(
                 name = "asdfs",
                 barcode = "021321321",
-                sellingPrice = 0.0,
+                sellingPrice = 0.0.toBigDecimal(),
                 providerPrice = null,
                 availableQuantity = 10
             )
@@ -72,8 +73,8 @@ class TestProductRepository : AbstractPersistenceTest() {
                 productId!!,
                 data.toProductCreationDTO().copy(
                     name = "new name",
-                    sellingPrice = 2.0,
-                    providerPrice = 0.0,
+                    sellingPrice = 2.0.toBigDecimal(),
+                    providerPrice = 0.0.toBigDecimal(),
                     barcode = "3213121"
                 )
             )
@@ -81,8 +82,8 @@ class TestProductRepository : AbstractPersistenceTest() {
         val updatedProduct = updateResult.getOrNull()
         assertThat(updatedProduct).isNotNull()
         assertThat(updatedProduct!!.name).isEqualTo("new name")
-        assertThat(updatedProduct.sellingPrice).isEqualTo(2.0)
-        assertThat(updatedProduct.providerPrice).isEqualTo(0.0)
+        assertThat(updatedProduct.sellingPrice).isEqualTo("2.00".toBigDecimal())
+        assertThat(updatedProduct.providerPrice).isEqualTo("0.00".toBigDecimal())
         assertThat(updatedProduct.barcode).isEqualTo("3213121")
 
         assertThat(updatedProduct.uid).isEqualTo(productId)
@@ -94,7 +95,7 @@ class TestProductRepository : AbstractPersistenceTest() {
             ProductCreationDTO(
                 name = "asdfs",
                 barcode = "021321321",
-                sellingPrice = 0.0,
+                sellingPrice = 0.0.toBigDecimal(),
                 providerPrice = null,
                 availableQuantity = 10
             )
@@ -113,7 +114,7 @@ class TestProductRepository : AbstractPersistenceTest() {
             ProductCreationDTO(
                 name = "asdfs",
                 barcode = "021321321",
-                sellingPrice = 0.0,
+                sellingPrice = 0.0.toBigDecimal(),
                 providerPrice = null,
                 availableQuantity = 10
             )
@@ -123,7 +124,7 @@ class TestProductRepository : AbstractPersistenceTest() {
             ProductCreationDTO(
                 name = "qwerty",
                 barcode = "021321321",
-                sellingPrice = 0.0,
+                sellingPrice = 0.0.toBigDecimal(),
                 providerPrice = null,
                 availableQuantity = 10
             )
@@ -136,14 +137,14 @@ class TestProductRepository : AbstractPersistenceTest() {
             ProductCreationDTO(
                 name = "asdfs",
                 barcode = "021321321",
-                sellingPrice = 0.0,
+                sellingPrice = "0.00".toBigDecimal(),
                 providerPrice = null,
                 availableQuantity = 10
             ),
             ProductCreationDTO(
                 name = "qwerty",
                 barcode = "021321321",
-                sellingPrice = 0.0,
+                sellingPrice = "0.00".toBigDecimal(),
                 providerPrice = null,
                 availableQuantity = 10
             )
@@ -156,23 +157,23 @@ class TestProductRepository : AbstractPersistenceTest() {
             ProductCreationDTO(
                 name = "asdfs",
                 barcode = "021321321",
-                sellingPrice = 0.0,
+                sellingPrice = 0.0.toBigDecimal(),
                 providerPrice = null,
                 availableQuantity = 10
             )
-        ).getOrNull()!!.uid
+        ).getOrThrow()
 
         val product2_id = productRepository.save(
             ProductCreationDTO(
                 name = "qwerty",
                 barcode = "021321321",
-                sellingPrice = 0.0,
+                sellingPrice = 0.0.toBigDecimal(),
                 providerPrice = null,
                 availableQuantity = 10
             )
-        ).getOrNull()!!.uid
+        ).getOrThrow()
 
-        assertThat(product1_id).isEqualTo(product2_id!! - 1)
+        assertThat(product1_id.uid).isEqualTo(product2_id.uid - 1)
     }
 
     @Test
@@ -181,7 +182,7 @@ class TestProductRepository : AbstractPersistenceTest() {
             ProductCreationDTO(
                 name = "asdfs",
                 barcode = "021321321",
-                sellingPrice = 0.0,
+                sellingPrice = 0.0.toBigDecimal(),
                 providerPrice = null,
                 availableQuantity = 10
             )

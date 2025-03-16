@@ -26,6 +26,7 @@ import io.drullar.inventar.ui.components.field.FormInputField
 import io.drullar.inventar.ui.components.field.IsNotEmpty
 import io.drullar.inventar.ui.components.field.NotNegativeNumber
 import io.drullar.inventar.ui.viewmodel.delegates.getText
+import java.math.BigDecimal
 
 @Composable
 fun NewProductDialog( //TODO reuse same form here and inside ProductDetailedPreviewCard
@@ -33,8 +34,8 @@ fun NewProductDialog( //TODO reuse same form here and inside ProductDetailedPrev
     onSubmit: (ProductCreationDTO) -> Unit
 ) {
     var name by remember { mutableStateOf("") }
-    var sellingPrice by remember { mutableStateOf(0.0) }
-    var providerPrice by remember { mutableStateOf<Double?>(null) }
+    var sellingPrice by remember { mutableStateOf(BigDecimal(0.0)) }
+    var providerPrice by remember { mutableStateOf<BigDecimal?>(null) }
     var availableQuantity by remember { mutableStateOf(0) }
     var barcode by remember { mutableStateOf("") }
 
@@ -64,9 +65,9 @@ fun NewProductDialog( //TODO reuse same form here and inside ProductDetailedPrev
                     label = getText("field.selling.price"),
                     defaultValue = sellingPrice.toString(),
                     onValueChange = {
-                        sellingPrice = it.toDoubleOrNull() ?: 0.0
+                        sellingPrice = it.toBigDecimalOrNull() ?: BigDecimal.valueOf(0.0)
                         sellingPriceFieldWarning =
-                            produceWarningText<Double>(
+                            produceWarningText<BigDecimal>(
                                 sellingPrice, setOf(IsNotEmpty(), NotNegativeNumber())
                             )
                     },
@@ -76,7 +77,7 @@ fun NewProductDialog( //TODO reuse same form here and inside ProductDetailedPrev
                 FormInputField(
                     label = getText("field.optional") + " " + getText("field.provider.price"),
                     defaultValue = providerPrice?.toString() ?: "",
-                    onValueChange = { providerPrice = it.toDoubleOrNull() ?: 0.0 },
+                    onValueChange = { providerPrice = it.toBigDecimalOrNull() ?: BigDecimal(0.0) },
                     inputType = Double::class
                 )
                 FormInputField(

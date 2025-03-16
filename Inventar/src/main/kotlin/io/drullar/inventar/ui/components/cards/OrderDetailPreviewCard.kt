@@ -118,21 +118,21 @@ fun OrderDetailPreviewCard(
             }
         }
 
-        if (order.status == OrderStatus.DRAFT)
-            Column(modifier = Modifier.fillMaxWidth().wrapContentHeight()) {
-                Text(
-                    text = "${getText("field.total.price")}: ${order.getTotalPrice()} BGN",
-                    textAlign = TextAlign.Start,
-                    fontWeight = FontWeight.W100,
-                    fontSize = TextUnit(30f, TextUnitType.Sp)
-                ) // TODO use currency
-                Spacer(Modifier.padding(vertical = 10.dp))
+        Column(modifier = Modifier.fillMaxWidth().wrapContentHeight()) {
+            Text(
+                text = "${getText("field.total.price")}: ${order.getTotalPrice()} BGN", //TODO currency
+                textAlign = TextAlign.Start,
+                fontWeight = FontWeight.W100,
+                fontSize = TextUnit(30f, TextUnitType.Sp)
+            ) // TODO use currency
+            Spacer(Modifier.padding(vertical = 10.dp))
+            if (order.status == OrderStatus.DRAFT)
                 GroupedButtons(
                     Modifier.align(Alignment.CenterHorizontally).fillMaxWidth(),
                     onTerminate,
                     onComplete
                 )
-            }
+        }
 
     }
 }
@@ -216,25 +216,4 @@ private fun OrderCreationRow(
                 )
         }
     }
-}
-
-@Preview
-@Composable
-private fun OrderCreationCardPreview() {
-    OrderDetailPreviewCard(
-        OrderDTO(
-            orderId = 1,
-            productToQuantity = mutableMapOf(
-                ProductDTO(1, "Name", 5.0) to 200,
-                ProductDTO(2, "ASDFS", 6.70) to 2,
-                ProductDTO(3, "Adq") to 2
-            ),
-            creationDate = LocalDateTime.now(),
-            status = OrderStatus.DRAFT
-        ),
-        {},
-        {},
-        { _, _ -> },
-        {}
-    )
 }

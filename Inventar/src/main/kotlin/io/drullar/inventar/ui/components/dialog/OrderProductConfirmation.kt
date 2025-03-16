@@ -99,16 +99,3 @@ fun OrderProductConfirmation(
         }
     }
 }
-
-@Preview
-@Composable
-private fun OrderProductConfirmationPreview() {
-    val product =
-        ProductDTO(uid = 1, name = "New product", barcode = "", providerPrice = 0.0)
-    OrderProductConfirmation(
-        product = product,
-        initialQuantity = 1,
-        onConfirm = {},
-        onCancel = {}
-    )
-}

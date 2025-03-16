@@ -3,15 +3,16 @@ package io.drullar.inventar.shared
 import io.drullar.inventar.persistence.model.Category
 import io.drullar.inventar.ui.utils.Icons
 import io.drullar.inventar.ui.viewmodel.delegates.getText
+import java.math.BigDecimal
 import java.time.LocalDateTime
 
 data class ProductDTO(
     val uid: Int,
     var name: String,
-    var sellingPrice: Double = 0.0,
+    var sellingPrice: BigDecimal = BigDecimal.valueOf(0.0),
     var availableQuantity: Int = 0,
     val iconPath: String = Icons.PRODUCTS, // TODO change default value after creating a default value image
-    var providerPrice: Double? = null,
+    var providerPrice: BigDecimal? = null,
     var barcode: String? = null,
     var categories: Set<Category> = emptySet()
 ) {
@@ -22,18 +23,18 @@ data class ProductDTO(
         iconPath = iconPath,
         providerPrice = providerPrice,
         barcode = barcode,
-        categories = categories
+        categories = categories,
     )
 }
 
 data class ProductCreationDTO(
     var name: String,
-    var sellingPrice: Double = 0.0,
+    var sellingPrice: BigDecimal = BigDecimal.valueOf(0.0),
     var availableQuantity: Int = 0,
     val iconPath: String = Icons.PRODUCTS, //  TODO change default value after creating a default value image
-    var providerPrice: Double? = null,
+    var providerPrice: BigDecimal? = null,
     var barcode: String? = null,
-    var categories: Set<Category> = emptySet()
+    var categories: Set<Category> = emptySet(),
 )
 
 data class OrderDTO(
@@ -47,9 +48,13 @@ data class OrderDTO(
         status = status
     )
 
-    fun getTotalPrice(): Double {
-        var cost = 0.0
-        productToQuantity.forEach { (product, quantity) -> cost += (product.sellingPrice * quantity) }
+    fun getTotalPrice(): BigDecimal {
+        var cost = BigDecimal.valueOf(0.0)
+        productToQuantity.forEach { (product, quantity) ->
+            cost += (product.sellingPrice.multiply(
+                BigDecimal(quantity)
+            ))
+        }
         return cost
     }
 }

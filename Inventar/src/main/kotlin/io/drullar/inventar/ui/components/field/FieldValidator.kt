@@ -1,5 +1,6 @@
 package io.drullar.inventar.ui.components.field
 
+import java.math.BigDecimal
 import javax.naming.directory.InvalidAttributesException
 
 /**
@@ -28,7 +29,7 @@ class NotNegativeNumber<T : Number> : FieldValidator<T> {
     override fun validate(value: T): Boolean = when (value) {
         is Int -> value >= 0
         is Long -> value >= 0
-        is Double -> value >= 0
+        is BigDecimal -> value >= BigDecimal.valueOf(0)
         is Float -> value >= 0
         is Byte -> value >= 0
         is Short -> value >= 0

@@ -1,12 +1,21 @@
 package io.drullar.inventar.unit.persistence.utils
 
 import io.drullar.inventar.utils.bootstrap.AbstractDatabaseBootstrapper
+import java.io.File
 
-object TestDatabaseBootstrapper : AbstractDatabaseBootstrapper() {
+class TestDatabaseBootstrapper(private val dbFile: File) : AbstractDatabaseBootstrapper() {
 
-    private const val DATABASE_URL =
-        "jdbc:sqlite:build/temp.db?foreign_keys=on" //"jdbc:h2:mem:test"
+    private val databaseUrl =
+        "jdbc:sqlite:${dbFile.absolutePath}?foreign_keys=on"
 
     override val databaseConfiguration: DatabaseConfiguration
-        get() = DatabaseConfiguration(DATABASE_URL)
+        get() = DatabaseConfiguration(databaseUrl)
+
+    override fun bootstrap() {
+        if (dbFile.exists()) {
+            dbFile.delete()
+            dbFile.createNewFile()
+        }
+        super.bootstrap()
+    }
 }

@@ -73,7 +73,7 @@ fun ProductDetailedViewCard(
                     onValueChange = { value ->
                         hasChange = true
                         stateOfProductData = stateOfProductData.copy(
-                            sellingPrice = value.toDoubleOrNull() ?: 0.0
+                            sellingPrice = value.toBigDecimalOrNull() ?: 0.0.toBigDecimal()
                         )
                         sellingPriceFieldWarning =
                             produceWarningText(
@@ -91,7 +91,9 @@ fun ProductDetailedViewCard(
                     onValueChange = {
                         hasChange = true
                         stateOfProductData =
-                            stateOfProductData.copy(providerPrice = it.toDoubleOrNull() ?: 0.0)
+                            stateOfProductData.copy(
+                                providerPrice = it.toBigDecimalOrNull() ?: 0.0.toBigDecimal()
+                            )
                         onChange()
                     },
                     inputType = Double::class
