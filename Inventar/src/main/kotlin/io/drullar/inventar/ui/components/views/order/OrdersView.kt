@@ -18,6 +18,7 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -37,9 +38,10 @@ import io.drullar.inventar.ui.data.OrderDetailsPreview
 import io.drullar.inventar.ui.style.Colors
 import io.drullar.inventar.ui.viewmodel.delegates.getText
 
+const val PAGE_SIZE = 20
+
 @Composable
 fun OrdersView(viewModel: OrderViewViewModel) {
-    val orders = viewModel._orders.collectAsState()
     val sortingOrder by viewModel._sortingOrder.collectAsState()
     val sortingBy by viewModel._sortBy.collectAsState()
     val settings by viewModel.getSettings().collectAsState()
@@ -47,8 +49,33 @@ fun OrdersView(viewModel: OrderViewViewModel) {
     var isSortingOrderDropDownExtended by remember { mutableStateOf(false) }
     val scrollState = rememberLazyListState()
 
+    var _page = remember { 1 }
+    var _orders by remember {
+        mutableStateOf(
+            viewModel.fetchOrders(
+                page = _page,
+                pageSize = PAGE_SIZE,
+                sortBy = sortingBy,
+                order = sortingOrder
+            ).getOrNull()?.items ?: emptyList()
+        )
+    }
+
+    LaunchedEffect(sortingOrder, sortingBy) {
+        _page = 1
+        _orders = viewModel.fetchOrders(
+            page = _page,
+            pageSize = PAGE_SIZE,
+            sortBy = sortingBy,
+            order = sortingOrder
+        ).getOrNull()?.items ?: emptyList()
+    }
+
     Column(modifier = Modifier.padding(horizontal = 10.dp)) {
-        Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier.fillMaxWidth()
+        ) {
             TextButton(
                 text = getText("order.new"),
                 onClick = { viewModel.newOrder() },
@@ -57,7 +84,8 @@ fun OrdersView(viewModel: OrderViewViewModel) {
             )
 
             Row(
-                modifier = Modifier.wrapContentHeight().wrapContentWidth().padding(bottom = 10.dp)
+                modifier = Modifier.wrapContentHeight().wrapContentWidth()
+                    .padding(bottom = 10.dp)
             ) {
                 TextButton(
                     text = "${getText("label.sort")}: ${sortingBy.text}",
@@ -116,17 +144,22 @@ fun OrdersView(viewModel: OrderViewViewModel) {
                     }
                 }
             }
-
-
         }
 
         Box {
             LazyColumn(state = scrollState, modifier = Modifier.padding(end = 12.dp)) {
                 itemsIndexed(
-                    items = orders.value,
+                    items = _orders,
                     key = { _, item -> item.orderId }) { index, item ->
-                    if (index == orders.value.size - 1) {
-                        viewModel.loadNextOrdersPage()
+                    if (scrollState.layoutInfo.visibleItemsInfo.lastOrNull()?.index == _orders.size - 1) {
+                        _page += 1
+                        _orders += viewModel.fetchOrders(
+                            _page,
+                            PAGE_SIZE,
+                            sortingBy,
+                            sortingOrder
+                        )
+                            .getOrNull()?.items ?: emptyList()
                     }
                     SimpleOrderRow(
                         orderDTO = item,
