@@ -30,6 +30,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import io.drullar.inventar.SortingOrder
 import io.drullar.inventar.persistence.repositories.OrderRepository
+import io.drullar.inventar.shared.OrderStatus
 import io.drullar.inventar.ui.components.button.TextButton
 import io.drullar.inventar.ui.components.cards.SimpleOrderRow
 import io.drullar.inventar.ui.components.navigation.NavigationDestination
@@ -49,7 +50,7 @@ fun OrdersView(viewModel: OrderViewViewModel) {
     var isSortingOrderDropDownExtended by remember { mutableStateOf(false) }
     val scrollState = rememberLazyListState()
 
-    var _page = remember { 1 }
+    var _page by remember { mutableStateOf(1) }
     var _orders by remember {
         mutableStateOf(
             viewModel.fetchOrders(
@@ -58,7 +59,9 @@ fun OrdersView(viewModel: OrderViewViewModel) {
                 sortBy = sortingBy,
                 order = sortingOrder
             ).getOrNull()?.items ?: emptyList()
-        )
+        ).also {
+            println(it.value.size)
+        }
     }
 
     LaunchedEffect(sortingOrder, sortingBy) {
@@ -88,7 +91,7 @@ fun OrdersView(viewModel: OrderViewViewModel) {
                     .padding(bottom = 10.dp)
             ) {
                 TextButton(
-                    text = "${getText("label.sort")}: ${sortingBy.text}",
+                    text = "${getText("label.sort")}: ${getText(sortingBy.text)}",
                     onClick = { isOrderByDropdownExtended = !isOrderByDropdownExtended }) {
                     DropdownMenu(
                         expanded = isOrderByDropdownExtended,
@@ -114,7 +117,7 @@ fun OrdersView(viewModel: OrderViewViewModel) {
                 }
 
                 TextButton(
-                    text = "${getText("label.sorting.order")}:  ${sortingOrder.text}",
+                    text = "${getText("label.sorting.order")}:  ${getText(sortingOrder.text)}",
                     onClick = {
                         isSortingOrderDropDownExtended = !isSortingOrderDropDownExtended
                     },
@@ -150,7 +153,7 @@ fun OrdersView(viewModel: OrderViewViewModel) {
             LazyColumn(state = scrollState, modifier = Modifier.padding(end = 12.dp)) {
                 itemsIndexed(
                     items = _orders,
-                    key = { _, item -> item.orderId }) { index, item ->
+                    key = { _, item -> item.orderId.toString().plus(item.status) }) { index, item ->
                     if (scrollState.layoutInfo.visibleItemsInfo.lastOrNull()?.index == _orders.size - 1) {
                         _page += 1
                         _orders += viewModel.fetchOrders(
@@ -158,14 +161,19 @@ fun OrdersView(viewModel: OrderViewViewModel) {
                             PAGE_SIZE,
                             sortingBy,
                             sortingOrder
-                        )
-                            .getOrNull()?.items ?: emptyList()
+                        ).getOrNull()?.items ?: emptyList()
                     }
                     SimpleOrderRow(
                         orderDTO = item,
                         activeLocale = settings.language.locale,
                         onComplete = {
-                            //TODO implement
+                            val itemIndex = _orders.indexOf(item)
+                            viewModel.changeOrderStatus(item, OrderStatus.COMPLETED)
+                                .getOrNull()?.let { updatedItem ->
+                                    _orders = _orders.toMutableList().also {
+                                        it[itemIndex] = updatedItem
+                                    }
+                                }
                         },
                         onSelect = { order ->
                             viewModel.setPreview(OrderDetailsPreview(order))

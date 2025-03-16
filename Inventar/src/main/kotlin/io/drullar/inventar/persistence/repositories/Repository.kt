@@ -95,7 +95,7 @@ abstract class AbstractRepository<T : Table, R, C, ID, S>(val table: T) :
     ): Result<Page<R>> {
         val total = getCount().getOrThrow()
         val items = withTransaction {
-            table.selectAll().limit(itemsPerPage, ((page - 1) * itemsPerPage).toLong())
+            table.selectAll().limit(itemsPerPage, (((page - 1) * itemsPerPage)).toLong())
                 .orderBy(buildOrderByExpression(sortBy) to if (order == SortingOrder.ASCENDING) SortOrder.ASC else SortOrder.DESC)
                 .map { row -> transformResultRowToModel(row) }
         }

@@ -202,7 +202,7 @@ object OrderRepository :
             }
         }
     }
-    
+
     private fun getProductToSoldAmountAssociation(orderId: Int): Map<ProductDTO, Int> =
         withTransaction {
             productOrderAssociationTable.selectAll()
@@ -213,9 +213,9 @@ object OrderRepository :
         }
 
     enum class SortBy(val text: String) {
-        NUMBER("Number"),
-        CREATION_DATE("Date"),
-        STATUS("Status"),
-        // TOTAL_SUM TODO figure it out
+        NUMBER("field.number"),
+        CREATION_DATE("field.date"),
+        STATUS("field.status"),
+        // TOTAL_SUM TODO figure it out. SQL join?
     }
 }

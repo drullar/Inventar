@@ -3,6 +3,7 @@ package io.drullar.inventar.ui.viewmodel
 import io.drullar.inventar.SortingOrder
 import io.drullar.inventar.persistence.repositories.OrderRepository
 import io.drullar.inventar.shared.OrderCreationDTO
+import io.drullar.inventar.shared.OrderDTO
 import io.drullar.inventar.shared.OrderStatus
 import io.drullar.inventar.ui.components.navigation.NavigationDestination
 import io.drullar.inventar.ui.data.OrderDetailsPreview
@@ -44,4 +45,7 @@ class OrderViewViewModel(
 
     fun fetchOrders(page: Int, pageSize: Int, sortBy: OrderRepository.SortBy, order: SortingOrder) =
         ordersRepository.getPaged(page, pageSize, sortBy, order)
+
+    fun changeOrderStatus(order: OrderDTO, status: OrderStatus) =
+        ordersRepository.update(order.orderId, order.copy(status = status).toOrderCreationDTO())
 }

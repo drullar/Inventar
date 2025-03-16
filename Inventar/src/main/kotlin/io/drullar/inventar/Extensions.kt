@@ -21,6 +21,6 @@ inline fun <T, R : Comparable<R>> Iterable<T>.sortedBy(
 }
 
 enum class SortingOrder(val text: String) {
-    ASCENDING("Ascending"),
-    DESCENDING("Descending")
+    ASCENDING("order.ascending"),
+    DESCENDING("order.descending")
 }
