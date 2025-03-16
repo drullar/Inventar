@@ -25,7 +25,6 @@ import kotlinx.coroutines.flow.asStateFlow
 /**
  * View-Model used by [DefaultView] to persist UI state and handle business logic
  */
-//TODO split some of the responsibilities of the ViewModel to delegates
 class DefaultViewViewModel(
     sharedAppStateDelegate: SharedAppStateDelegate,
     alertManagerDelegate: AlertManager,
@@ -96,7 +95,6 @@ class DefaultViewViewModel(
     }
 
     fun addProductToOrder(quantity: Int) {
-        // TODO handle case where product is already in the order. Show to the user a prompt to modify the already added amount
         val order: OrderDTO
         try {
             // If current preview is not OrderCreation and _preview change is not allowed

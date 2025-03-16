@@ -138,7 +138,7 @@ fun SimpleOrderRow(
                 fontSize = TextUnit(20f, TextUnitType.Sp),
                 modifier = Modifier.fillMaxWidth(0.2f)
             )
-            if (orderDTO.status != OrderStatus.COMPLETED) {
+            if (orderDTO.status != OrderStatus.DRAFT) {
                 TextButton(getText("label.complete"), onClick = { onComplete(orderDTO) })
                 TextButton(getText("label.terminate"), onClick = { onTerminate(orderDTO) })
             }

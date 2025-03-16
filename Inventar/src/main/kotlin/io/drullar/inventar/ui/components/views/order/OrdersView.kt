@@ -21,6 +21,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -30,6 +31,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import io.drullar.inventar.SortingOrder
 import io.drullar.inventar.persistence.repositories.OrderRepository
+import io.drullar.inventar.shared.OrderDTO
 import io.drullar.inventar.shared.OrderStatus
 import io.drullar.inventar.ui.components.button.TextButton
 import io.drullar.inventar.ui.components.cards.SimpleOrderRow
@@ -51,27 +53,30 @@ fun OrdersView(viewModel: OrderViewViewModel) {
     val scrollState = rememberLazyListState()
 
     var _page by remember { mutableStateOf(1) }
-    var _orders by remember {
-        mutableStateOf(
+    var _orders = remember {
+        mutableStateListOf<OrderDTO>().apply {
+            addAll(
+                viewModel.fetchOrders(
+                    page = _page,
+                    pageSize = PAGE_SIZE,
+                    sortBy = sortingBy,
+                    order = sortingOrder
+                ).getOrNull()?.items ?: emptyList()
+            )
+        }
+    }
+
+    LaunchedEffect(sortingOrder, sortingBy) {
+        _page = 1
+        _orders.clear()
+        _orders.addAll(
             viewModel.fetchOrders(
                 page = _page,
                 pageSize = PAGE_SIZE,
                 sortBy = sortingBy,
                 order = sortingOrder
             ).getOrNull()?.items ?: emptyList()
-        ).also {
-            println(it.value.size)
-        }
-    }
-
-    LaunchedEffect(sortingOrder, sortingBy) {
-        _page = 1
-        _orders = viewModel.fetchOrders(
-            page = _page,
-            pageSize = PAGE_SIZE,
-            sortBy = sortingBy,
-            order = sortingOrder
-        ).getOrNull()?.items ?: emptyList()
+        )
     }
 
     Column(modifier = Modifier.padding(horizontal = 10.dp)) {
@@ -131,16 +136,16 @@ fun OrdersView(viewModel: OrderViewViewModel) {
                         onDismissRequest = { isSortingOrderDropDownExtended = false }
                     ) {
                         DropdownMenuItem(
-                            { Text(SortingOrder.ASCENDING.text) },
+                            { Text(getText(SortingOrder.ASCENDING.text)) },
                             {
-                                isOrderByDropdownExtended = false
+                                isSortingOrderDropDownExtended = false
                                 viewModel.setSortingOrder(SortingOrder.ASCENDING)
                             }
                         )
                         DropdownMenuItem(
-                            { Text(SortingOrder.DESCENDING.text) },
+                            { Text(getText(SortingOrder.DESCENDING.text)) },
                             {
-                                isOrderByDropdownExtended = false
+                                isSortingOrderDropDownExtended = false
                                 viewModel.setSortingOrder(SortingOrder.DESCENDING)
                             }
                         )
@@ -168,19 +173,23 @@ fun OrdersView(viewModel: OrderViewViewModel) {
                         activeLocale = settings.language.locale,
                         onComplete = {
                             val itemIndex = _orders.indexOf(item)
-                            viewModel.changeOrderStatus(item, OrderStatus.COMPLETED)
-                                .getOrNull()?.let { updatedItem ->
-                                    _orders = _orders.toMutableList().also {
-                                        it[itemIndex] = updatedItem
-                                    }
-                                }
+                            val updateItem =
+                                viewModel.changeOrderStatus(item, OrderStatus.COMPLETED)
+
+                            if (updateItem.isSuccess)
+                                updateItem(_orders, itemIndex, updateItem.getOrNull()!!)
                         },
                         onSelect = { order ->
                             viewModel.setPreview(OrderDetailsPreview(order))
                             viewModel.setNavigationDestination(NavigationDestination.PRODUCTS_PAGE)
                         },
                         onTerminate = {
-                            //TODO implement
+                            val itemIndex = _orders.indexOf(item)
+                            val updateItem =
+                                viewModel.changeOrderStatus(item, OrderStatus.TERMINATED)
+
+                            if (updateItem.isSuccess)
+                                updateItem(_orders, itemIndex, updateItem.getOrNull()!!)
                         },
                         showOrderStatus = true
                     )
@@ -195,4 +204,8 @@ fun OrdersView(viewModel: OrderViewViewModel) {
             )
         }
     }
+}
+
+fun updateItem(orders: MutableList<OrderDTO>, itemIndex: Int, updateWith: OrderDTO) {
+    orders[itemIndex] = orders[itemIndex].copy(status = updateWith.status)
 }

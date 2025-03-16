@@ -148,7 +148,7 @@ fun DefaultView(
                                 viewModel.selectOrder(selectedOrder)
                             },
                             onOrderTermination = { terminatedOrder ->
-                                //TODO implement
+                                //TODO
                             })
                     }
                 }
