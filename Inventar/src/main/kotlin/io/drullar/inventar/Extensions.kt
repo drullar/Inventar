@@ -1,6 +1,14 @@
 package io.drullar.inventar
 
-import io.drullar.inventar.ui.viewmodel.delegates.getText
+import kotlin.Result.Companion.failure
+import kotlin.Result.Companion.success
+
+fun <T> result(block: () -> T) =
+    try {
+        success(block())
+    } catch (t: Throwable) {
+        failure(t)
+    }
 
 inline fun <T, R : Comparable<R>> Iterable<T>.sortedBy(
     order: SortingOrder,
@@ -13,6 +21,6 @@ inline fun <T, R : Comparable<R>> Iterable<T>.sortedBy(
 }
 
 enum class SortingOrder(val text: String) {
-    ASCENDING(getText("order.ascending")),
-    DESCENDING(getText("order.descending"));
+    ASCENDING("Ascending"),
+    DESCENDING("Descending")
 }

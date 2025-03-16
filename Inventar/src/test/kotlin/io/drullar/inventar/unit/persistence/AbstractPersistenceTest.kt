@@ -10,7 +10,7 @@ abstract class AbstractPersistenceTest {
     @Before
     fun setup() {
         initDatabaseFile()
-        TestDatabaseBootstrapper.initiateDatabase()
+        TestDatabaseBootstrapper.bootstrap()
     }
 
     private fun initDatabaseFile() {

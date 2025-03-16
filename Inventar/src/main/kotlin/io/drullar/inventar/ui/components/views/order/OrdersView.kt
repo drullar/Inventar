@@ -28,6 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import io.drullar.inventar.SortingOrder
+import io.drullar.inventar.persistence.repositories.OrderRepository
 import io.drullar.inventar.ui.components.button.TextButton
 import io.drullar.inventar.ui.components.cards.SimpleOrderRow
 import io.drullar.inventar.ui.components.navigation.NavigationDestination
@@ -40,7 +41,7 @@ import io.drullar.inventar.ui.viewmodel.delegates.getText
 fun OrdersView(viewModel: OrderViewViewModel) {
     val orders = viewModel._orders.collectAsState()
     val sortingOrder by viewModel._sortingOrder.collectAsState()
-    val sortingBy by viewModel._orderBy.collectAsState()
+    val sortingBy by viewModel._sortBy.collectAsState()
     val settings by viewModel.getSettings().collectAsState()
     var isOrderByDropdownExtended by remember { mutableStateOf(false) }
     var isSortingOrderDropDownExtended by remember { mutableStateOf(false) }
@@ -66,19 +67,19 @@ fun OrdersView(viewModel: OrderViewViewModel) {
                         onDismissRequest = { isOrderByDropdownExtended = false }
                     ) {
                         DropdownMenuItem({ Text(getText("field.date")) }, {
-                            viewModel.orderOrdersBy(OrderViewViewModel.OrderBy.DATE)
+                            viewModel.sortOrdersBy(OrderRepository.SortBy.CREATION_DATE)
                             isOrderByDropdownExtended = false
                         })
                         DropdownMenuItem({ Text(getText("field.number")) }, {
                             isOrderByDropdownExtended = false
-                            viewModel.orderOrdersBy(OrderViewViewModel.OrderBy.ID)
+                            viewModel.sortOrdersBy(OrderRepository.SortBy.NUMBER)
                         })
-                        DropdownMenuItem({ Text(getText("field.total.price")) }, {
-                            isOrderByDropdownExtended = false
-                            viewModel.orderOrdersBy(OrderViewViewModel.OrderBy.TOTAL_PRICE)
-                        })
+//                        DropdownMenuItem({ Text(getText("field.total.price")) }, {
+//                            isOrderByDropdownExtended = false
+//                            viewModel.sortOrdersBy(OrderViewViewModel.OrderBy.TOTAL_PRICE)
+//                        })
                         DropdownMenuItem({ Text(getText("field.status")) }, {
-                            viewModel.orderOrdersBy(OrderViewViewModel.OrderBy.STATUS)
+                            viewModel.sortOrdersBy(OrderRepository.SortBy.STATUS)
                             isOrderByDropdownExtended = false
                         })
                     }

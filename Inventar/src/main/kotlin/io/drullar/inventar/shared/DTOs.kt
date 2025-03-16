@@ -59,8 +59,8 @@ data class OrderCreationDTO(
     val status: OrderStatus
 )
 
-enum class OrderStatus(val text: String) {
-    COMPLETED(getText("label.completed")),
-    TERMINATED(getText("label.terminated")),
-    DRAFT(getText("label.draft"))
+enum class OrderStatus(val text: Lazy<String>) {
+    COMPLETED(lazy { getText("label.completed") }),
+    TERMINATED(lazy { getText("label.terminated") }),
+    DRAFT(lazy { getText("label.draft") })
 }

@@ -7,19 +7,20 @@ import assertk.assertions.containsExactlyInAnyOrder
 import assertk.assertions.extracting
 import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
+import assertk.assertions.isFailure
 import assertk.assertions.isFalse
-import assertk.assertions.isInstanceOf
 import assertk.assertions.isNotNull
+import assertk.assertions.isSameInstanceAs
 import assertk.assertions.isTrue
+import io.drullar.inventar.SortingOrder
 import io.drullar.inventar.persistence.repositories.OrderRepository
 import io.drullar.inventar.persistence.repositories.ProductsRepository
 import io.drullar.inventar.shared.OrderCreationDTO
 import io.drullar.inventar.shared.OrderStatus
 import io.drullar.inventar.shared.ProductCreationDTO
 import io.drullar.inventar.shared.ProductDTO
-import io.drullar.inventar.shared.RepositoryResponse
-import io.drullar.inventar.shared.getDataOnSuccessOrNull
 import io.drullar.inventar.persistence.DatabaseException
+import org.jetbrains.exposed.sql.SortOrder
 import org.junit.After
 import org.junit.Test
 
@@ -40,7 +41,7 @@ class TestOrderRepository : AbstractPersistenceTest() {
                 productToQuantity = emptyMap(),
                 status = OrderStatus.DRAFT
             )
-        ).getDataOnSuccessOrNull()
+        ).getOrNull()
 
         assertThat(result).isNotNull()
         assertThat(result!!.status).isEqualTo(OrderStatus.DRAFT)
@@ -52,9 +53,10 @@ class TestOrderRepository : AbstractPersistenceTest() {
             )
         )
 
-        assertThat(completedOrderWithoutProducts).isInstanceOf(RepositoryResponse.Failure::class)
-        val exception = (completedOrderWithoutProducts as RepositoryResponse.Failure).exception
-        assertThat(exception).isInstanceOf(DatabaseException.InvalidOperationException::class)
+        assertThat(completedOrderWithoutProducts).isFailure()
+
+        val exception = completedOrderWithoutProducts.exceptionOrNull()!!
+        assertThat(exception::class.java).isEqualTo(DatabaseException.InvalidOperationException::class.java)
         assertThat(exception.message).isEqualTo("Can not save an order without selected products.")
     }
 
@@ -63,7 +65,7 @@ class TestOrderRepository : AbstractPersistenceTest() {
         val products = mutableMapOf<ProductDTO, Int>()
         for (i in 0..10) {
             val product =
-                productRepository.save(ProductCreationDTO("Product$i")).getDataOnSuccessOrNull()
+                productRepository.save(ProductCreationDTO("Product$i")).getOrNull()
             assertThat(product).isNotNull()
             products.put(product!!, i + 1)
         }
@@ -73,7 +75,7 @@ class TestOrderRepository : AbstractPersistenceTest() {
                 productToQuantity = products,
                 status = OrderStatus.DRAFT,
             )
-        ).getDataOnSuccessOrNull()
+        ).getOrNull()
 
         assertThat(result).isNotNull()
         assertThat(result!!.status).isEqualTo(OrderStatus.DRAFT)
@@ -84,11 +86,11 @@ class TestOrderRepository : AbstractPersistenceTest() {
     fun update() {
         val products = listOf(
             productRepository.save(ProductCreationDTO("Product1", availableQuantity = 30))
-                .getDataOnSuccessOrNull()!!,
+                .getOrNull()!!,
             productRepository.save(ProductCreationDTO("Product2", availableQuantity = 30))
-                .getDataOnSuccessOrNull()!!,
+                .getOrNull()!!,
             productRepository.save(ProductCreationDTO("Product3", availableQuantity = 30))
-                .getDataOnSuccessOrNull()!!
+                .getOrNull()!!
         )
 
         val productsQuantityAssociation = products.withIndex().associate {
@@ -100,7 +102,7 @@ class TestOrderRepository : AbstractPersistenceTest() {
                 productToQuantity = emptyMap(),
                 status = OrderStatus.DRAFT
             )
-        ).getDataOnSuccessOrNull()
+        ).getOrNull()
 
         assertThat(initialOrderSave).isNotNull()
         assertThat(initialOrderSave!!.productToQuantity).isEmpty()
@@ -109,7 +111,7 @@ class TestOrderRepository : AbstractPersistenceTest() {
             initialOrderSave.orderId,
             initialOrderSave.toOrderCreationDTO()
                 .copy(productToQuantity = productsQuantityAssociation)
-        ).getDataOnSuccessOrNull()
+        ).getOrNull()
 
         assertThat(updatedOrderWithProducts).isNotNull()
         assertThat(updatedOrderWithProducts!!.orderId).isEqualTo(initialOrderSave.orderId)
@@ -125,7 +127,7 @@ class TestOrderRepository : AbstractPersistenceTest() {
                 productToQuantity = productsQuantityAssociation,
                 status = OrderStatus.COMPLETED
             )
-        ).getDataOnSuccessOrNull()
+        ).getOrNull()
 
         assertThat(updatedAndCompletedOrder).isNotNull()
         assertThat(updatedAndCompletedOrder!!.orderId).isEqualTo(initialOrderSave.orderId)
@@ -137,7 +139,7 @@ class TestOrderRepository : AbstractPersistenceTest() {
         // Validate association table consistency
         val associatedProducts =
             orderRepository.getAllProductsAssociatedWithOrder(initialOrderSave.orderId)
-                .getDataOnSuccessOrNull()
+                .getOrNull()
 
         assertThat(associatedProducts!!.size).isEqualTo(2)
         assertThat(associatedProducts).extracting { it.uid }
@@ -148,38 +150,38 @@ class TestOrderRepository : AbstractPersistenceTest() {
             updatedAndCompletedOrder.toOrderCreationDTO()
         )
 
-        assertThat(failedUpdateOfCompletedOrder).isInstanceOf(RepositoryResponse.Failure::class)
-        val exception = (failedUpdateOfCompletedOrder as RepositoryResponse.Failure).exception
-        assertThat(exception.message).isEqualTo("Can not update order which has already been completed")
+        assertThat(failedUpdateOfCompletedOrder).isFailure()
+        val exception = failedUpdateOfCompletedOrder.exceptionOrNull()
+        assertThat(exception!!.message).isEqualTo("Can not update order which has already been completed")
     }
 
     @Test
     fun getAllByStatus() {
         var product =
             productRepository.save(ProductCreationDTO("Product", availableQuantity = 1))
-                .getDataOnSuccessOrNull()!!
+                .getOrNull()!!
 
         val draftOrders = listOf(
             orderRepository.save(OrderCreationDTO(emptyMap(), OrderStatus.DRAFT))
-                .getDataOnSuccessOrNull(),
+                .getOrNull(),
             orderRepository.save(OrderCreationDTO(emptyMap(), OrderStatus.DRAFT))
-                .getDataOnSuccessOrNull()
+                .getOrNull()
         )
 
         val canceledOrder =
             orderRepository.save(OrderCreationDTO(emptyMap(), OrderStatus.TERMINATED))
-                .getDataOnSuccessOrNull()
+                .getOrNull()
 
         val completedOrder =
             orderRepository.save(OrderCreationDTO(mapOf(product to 1), OrderStatus.COMPLETED))
-                .getDataOnSuccessOrNull()
-        product = productRepository.getById(product.uid).getDataOnSuccessOrNull()!!
+                .getOrNull()
+        product = productRepository.getById(product.uid).getOrNull()!!
 
-        val getAllDraft = orderRepository.getAllByStatus(OrderStatus.DRAFT).getDataOnSuccessOrNull()
+        val getAllDraft = orderRepository.getAllByStatus(OrderStatus.DRAFT).getOrNull()
         val getAllCanceled =
-            orderRepository.getAllByStatus(OrderStatus.TERMINATED).getDataOnSuccessOrNull()
+            orderRepository.getAllByStatus(OrderStatus.TERMINATED).getOrNull()
         val getAllCompleted =
-            orderRepository.getAllByStatus(OrderStatus.COMPLETED).getDataOnSuccessOrNull()
+            orderRepository.getAllByStatus(OrderStatus.COMPLETED).getOrNull()
 
         assertThat(getAllDraft!!).extracting { it.orderId }
             .containsExactlyInAnyOrder(*draftOrders.map { it!!.orderId }.toTypedArray())
@@ -197,7 +199,7 @@ class TestOrderRepository : AbstractPersistenceTest() {
             orderRepository.save(OrderCreationDTO(emptyMap(), OrderStatus.DRAFT))
         }
 
-        assertThat(orderRepository.getAll().getDataOnSuccessOrNull()!!.size).isEqualTo(10)
+        assertThat(orderRepository.getAll().getOrNull()!!.size).isEqualTo(10)
     }
 
     @Test
@@ -206,9 +208,9 @@ class TestOrderRepository : AbstractPersistenceTest() {
             orderRepository.save(OrderCreationDTO(emptyMap(), OrderStatus.DRAFT))
         }
 
-        assertThat(orderRepository.getAll().getDataOnSuccessOrNull()!!.size).isEqualTo(10)
+        assertThat(orderRepository.getAll().getOrNull()!!.size).isEqualTo(10)
         orderRepository.deleteAll()
-        assertThat(orderRepository.getAll().getDataOnSuccessOrNull()!!.size).isEqualTo(0)
+        assertThat(orderRepository.getAll().getOrNull()!!.size).isEqualTo(0)
     }
 
     @Test
@@ -216,11 +218,11 @@ class TestOrderRepository : AbstractPersistenceTest() {
         repeat(10) {
             orderRepository.save(OrderCreationDTO(emptyMap(), OrderStatus.DRAFT))
         }
-        assertThat(orderRepository.getCount().getDataOnSuccessOrNull()).isEqualTo(10)
+        assertThat(orderRepository.getCount().getOrNull()).isEqualTo(10)
         orderRepository.deleteAll()
-        assertThat(orderRepository.getCount().getDataOnSuccessOrNull()).isEqualTo(0)
+        assertThat(orderRepository.getCount().getOrNull()).isEqualTo(0)
         orderRepository.save(OrderCreationDTO(emptyMap(), OrderStatus.DRAFT))
-        assertThat(orderRepository.getCount().getDataOnSuccessOrNull()).isEqualTo(1)
+        assertThat(orderRepository.getCount().getOrNull()).isEqualTo(1)
     }
 
     @Test
@@ -229,7 +231,14 @@ class TestOrderRepository : AbstractPersistenceTest() {
             orderRepository.save(OrderCreationDTO(emptyMap(), OrderStatus.DRAFT))
         }
 
-        val firstPage = orderRepository.getAllPaged(1, 25).getDataOnSuccessOrNull()
+        val firstPage =
+            orderRepository.getPaged(
+                1,
+                25,
+                OrderRepository.SortBy.CREATION_DATE,
+                SortingOrder.ASCENDING
+            )
+                .getOrNull()
         assertAll {
             assertThat(firstPage).isNotNull()
             assertThat(firstPage!!.isLastPage).isFalse()
@@ -239,7 +248,14 @@ class TestOrderRepository : AbstractPersistenceTest() {
             assertThat(firstPage.totalItems).isEqualTo(40)
         }
 
-        val secondPage = orderRepository.getAllPaged(2, 25).getDataOnSuccessOrNull()
+        val secondPage =
+            orderRepository.getPaged(
+                2,
+                25,
+                OrderRepository.SortBy.CREATION_DATE,
+                SortingOrder.ASCENDING
+            )
+                .getOrNull()
         assertAll {
             assertThat(secondPage).isNotNull()
             assertThat(secondPage!!.isLastPage).isTrue()

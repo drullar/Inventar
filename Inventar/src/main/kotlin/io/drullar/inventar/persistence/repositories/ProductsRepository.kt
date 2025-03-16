@@ -8,17 +8,18 @@ import io.drullar.inventar.persistence.schema.Products.barcode
 import io.drullar.inventar.persistence.schema.Products.name
 import io.drullar.inventar.persistence.schema.Products.providerPrice
 import io.drullar.inventar.persistence.schema.Products.sellingPrice
+import io.drullar.inventar.result
 import io.drullar.inventar.shared.ProductCreationDTO
 import io.drullar.inventar.shared.ProductDTO
-import io.drullar.inventar.shared.RepositoryResponse
-import io.drullar.inventar.shared.response
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 
 object ProductsRepository :
-    AbstractRepository<Products, ProductDTO, ProductCreationDTO, Int>(Products) {
+    AbstractRepository<Products, ProductDTO, ProductCreationDTO, Int, ProductsRepository.SortBy>(
+        Products
+    ) {
 
-    override fun save(dto: ProductCreationDTO) = response {
+    override fun save(dto: ProductCreationDTO) = result {
         withTransaction {
             table.insert {
                 it[name] = dto.name
@@ -36,7 +37,7 @@ object ProductsRepository :
     override fun update(
         id: Int,
         model: ProductCreationDTO
-    ): RepositoryResponse<ProductDTO> {
+    ): Result<ProductDTO> {
         withTransaction {
             table.update(where = { table.uid.eq(id) }) {
                 it[name] = model.name
@@ -49,7 +50,7 @@ object ProductsRepository :
         return getById(id)
     }
 
-    override fun getById(id: Int): RepositoryResponse<ProductDTO> = response {
+    override fun getById(id: Int) = result {
         withTransaction {
             table.selectAll().where { table.uid.eq(id) }.firstOrNull()
                 ?.let { transformResultRowToModel(it) }
@@ -57,11 +58,33 @@ object ProductsRepository :
             ?: throw DatabaseException.NoSuchElementFoundException("Couldn't find product with id $id")
     }
 
-    override fun deleteById(id: Int) = response {
+    override fun deleteById(id: Int) = result {
         withTransaction {
             table.deleteWhere { table.uid.eq(id) }
         }
-        return@response Unit
+        return@result Unit
+    }
+
+    override fun buildOrderByExpression(sortBy: SortBy): Expression<*> = when (sortBy) {
+        SortBy.NAME -> {
+            table.name
+        }
+
+        SortBy.ID -> {
+            table.uid
+        }
+
+        SortBy.AVAILABLE_QUANTITY -> {
+            table.availableQuantity
+        }
+
+        SortBy.PROVIDER_PRICE -> {
+            table.providerPrice
+        }
+
+        SortBy.SELLING_PRICE -> {
+            table.sellingPrice
+        }
     }
 
     override fun transformResultRowToModel(row: ResultRow): ProductDTO =
@@ -73,4 +96,12 @@ object ProductsRepository :
             sellingPrice = row[sellingPrice],
             barcode = row[barcode]
         )
+
+    enum class SortBy {
+        NAME,
+        ID,
+        AVAILABLE_QUANTITY,
+        PROVIDER_PRICE,
+        SELLING_PRICE
+    }
 }

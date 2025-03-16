@@ -5,6 +5,9 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPlacement
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
+import io.drullar.inventar.persistence.repositories.OrderRepository
+import io.drullar.inventar.shared.OrderCreationDTO
+import io.drullar.inventar.shared.OrderStatus
 import io.drullar.inventar.shared.SupportedLanguage
 import io.drullar.inventar.ui.App
 import io.drullar.inventar.ui.components.navigation.NavigationDestination
@@ -30,7 +33,7 @@ fun main() {
     val sharedAppStateHolder = SharedAppStateDelegateImpl(NavigationDestination.PRODUCTS_PAGE)
     val alertManagerDelegate = AlertManagerImpl()
     val settingsProvider = SettingsProviderImpl(fileManager)
-    
+
     val defaultViewViewModel =
         DefaultViewViewModel(sharedAppStateHolder, alertManagerDelegate, settingsProvider)
     val orderViewViewModel = OrderViewViewModel(sharedAppStateHolder, settingsProvider)

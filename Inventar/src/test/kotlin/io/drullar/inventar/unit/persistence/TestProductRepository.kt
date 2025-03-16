@@ -4,14 +4,13 @@ import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.containsExactly
 import assertk.assertions.isEqualTo
-import assertk.assertions.isInstanceOf
+import assertk.assertions.isFailure
 import assertk.assertions.isNotNull
 import assertk.assertions.isNull
+import assertk.assertions.isSuccess
 import io.drullar.inventar.persistence.repositories.ProductsRepository
 import io.drullar.inventar.persistence.schema.Products
 import io.drullar.inventar.shared.ProductCreationDTO
-import io.drullar.inventar.shared.RepositoryResponse
-import io.drullar.inventar.shared.getDataOnSuccessOrNull
 import io.drullar.inventar.persistence.DatabaseException
 import org.junit.After
 import org.junit.Test
@@ -38,9 +37,9 @@ class TestProductRepository : AbstractPersistenceTest() {
                 availableQuantity = 10
             )
         )
-        assertThat(result).isInstanceOf(RepositoryResponse.Success::class)
+        assertThat(result).isSuccess()
 
-        val data = result.getDataOnSuccessOrNull()
+        val data = result.getOrNull()
         assertThat(data).isNotNull()
         assertThat(data!!.name).isEqualTo("asdfs")
         assertThat(data.availableQuantity).isEqualTo(10)
@@ -61,9 +60,9 @@ class TestProductRepository : AbstractPersistenceTest() {
                 availableQuantity = 10
             )
         )
-        assertThat(createResult).isInstanceOf(RepositoryResponse.Success::class)
+        assertThat(createResult).isSuccess()
 
-        val data = createResult.getDataOnSuccessOrNull()
+        val data = createResult.getOrNull()
         assertThat(data).isNotNull()
         val productId = data!!.uid
         assertThat(productId).isNotNull()
@@ -79,7 +78,7 @@ class TestProductRepository : AbstractPersistenceTest() {
                 )
             )
 
-        val updatedProduct = updateResult.getDataOnSuccessOrNull()
+        val updatedProduct = updateResult.getOrNull()
         assertThat(updatedProduct).isNotNull()
         assertThat(updatedProduct!!.name).isEqualTo("new name")
         assertThat(updatedProduct.sellingPrice).isEqualTo(2.0)
@@ -100,12 +99,12 @@ class TestProductRepository : AbstractPersistenceTest() {
                 availableQuantity = 10
             )
         )
-        val id = result.getDataOnSuccessOrNull()!!.uid
+        val id = result.getOrNull()!!.uid
         assertThat(id).isNotNull()
 
         assertThat(
-            productRepository.getById(id!!).getDataOnSuccessOrNull()
-        ).isEqualTo(result.getDataOnSuccessOrNull())
+            productRepository.getById(id!!).getOrNull()
+        ).isEqualTo(result.getOrNull())
     }
 
     @Test
@@ -130,7 +129,7 @@ class TestProductRepository : AbstractPersistenceTest() {
             )
         )
 
-        val allProductsResult = productRepository.getAll().getDataOnSuccessOrNull()
+        val allProductsResult = productRepository.getAll().getOrNull()
         assertThat(allProductsResult).isNotNull()
 
         assertThat(allProductsResult!!.map { it.toProductCreationDTO() }).containsExactly(
@@ -161,7 +160,7 @@ class TestProductRepository : AbstractPersistenceTest() {
                 providerPrice = null,
                 availableQuantity = 10
             )
-        ).getDataOnSuccessOrNull()!!.uid
+        ).getOrNull()!!.uid
 
         val product2_id = productRepository.save(
             ProductCreationDTO(
@@ -171,7 +170,7 @@ class TestProductRepository : AbstractPersistenceTest() {
                 providerPrice = null,
                 availableQuantity = 10
             )
-        ).getDataOnSuccessOrNull()!!.uid
+        ).getOrNull()!!.uid
 
         assertThat(product1_id).isEqualTo(product2_id!! - 1)
     }
@@ -186,14 +185,14 @@ class TestProductRepository : AbstractPersistenceTest() {
                 providerPrice = null,
                 availableQuantity = 10
             )
-        ).getDataOnSuccessOrNull()!!.uid!!
+        ).getOrNull()!!.uid!!
 
-        assertThat(productRepository.getById(id).getDataOnSuccessOrNull()).isNotNull()
+        assertThat(productRepository.getById(id).getOrNull()).isNotNull()
         productRepository.deleteById(id)
         val getAfterDeletion = productRepository.getById(id)
-        assertThat(getAfterDeletion).isInstanceOf(RepositoryResponse.Failure::class)
-        val exception = (getAfterDeletion as RepositoryResponse.Failure).exception
-        assertThat(exception).isInstanceOf(DatabaseException.NoSuchElementFoundException::class)
-        assertThat(exception.message!!).contains("Couldn't find product with id")
+        assertThat(getAfterDeletion).isFailure()
+        val exception = getAfterDeletion.exceptionOrNull()!!
+        assertThat(exception::class).isEqualTo(DatabaseException.NoSuchElementFoundException::class)
+        assertThat(exception!!.message!!).contains("Couldn't find product with id")
     }
 }

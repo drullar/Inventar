@@ -8,9 +8,6 @@ import io.drullar.inventar.shared.OrderCreationDTO
 import io.drullar.inventar.shared.OrderDTO
 import io.drullar.inventar.shared.ProductCreationDTO
 import io.drullar.inventar.shared.ProductDTO
-import io.drullar.inventar.shared.RepositoryResponse
-import io.drullar.inventar.shared.getDataOnSuccessOrNull
-import io.drullar.inventar.shared.getOrThrow
 import io.drullar.inventar.ui.viewmodel.delegates.AlertManager
 import io.drullar.inventar.ui.viewmodel.delegates.DialogManager
 import io.drullar.inventar.ui.data.DialogType
@@ -45,7 +42,7 @@ class DefaultViewViewModel(
     val previewChangeIsAllowed = _previewChangeIsAllowed.asStateFlow()
 
     private val _products = MutableStateFlow(
-        productsRepository.getAll().getDataOnSuccessOrNull()?.toMutableList()
+        productsRepository.getAll().getOrNull()?.toMutableList()
     )
     val products = _products.asStateFlow()
 
@@ -81,15 +78,15 @@ class DefaultViewViewModel(
 
     fun addNewProduct(product: ProductCreationDTO) {
         val persistedObject: ProductDTO =
-            productsRepository.save(product).getDataOnSuccessOrNull()!!
+            productsRepository.save(product).getOrNull()!!
         _products.value = (_products.value?.plus(persistedObject))?.toMutableList()
     }
 
     fun showDraftOrders() {
         if (_previewChangeIsAllowed.value) {
             val draftOrders = ordersRepository.getAllByStatus(OrderStatus.DRAFT);
-            if (draftOrders is RepositoryResponse.Failure) throw (draftOrders as RepositoryResponse.Failure).exception
-            else setPreview(OrdersListPreview(draftOrders.getDataOnSuccessOrNull()!!))
+            if (draftOrders.isFailure) throw draftOrders.exceptionOrNull()!!
+            else setPreview(OrdersListPreview(draftOrders.getOrNull()!!))
         }
     }
 
@@ -114,7 +111,7 @@ class DefaultViewViewModel(
                             status = OrderStatus.DRAFT,
                             productToQuantity = mutableMapOf(targetProduct.value!! to quantity)
                         )
-                    ).getOrThrow()
+                    ).getOrThrow()!!
                     getPreview().value = OrderDetailsPreview(newOrder)
                 } else {
                     val updatedProductsMap = order.productToQuantity.toMutableMap()
@@ -134,7 +131,7 @@ class DefaultViewViewModel(
                         status = OrderStatus.DRAFT,
                         productToQuantity = mutableMapOf(targetProduct.value!! to quantity)
                     )
-                ).getOrThrow()
+                ).getOrThrow()!!
                 getPreview().value = OrderDetailsPreview(order)
                 _draftOrdersCount.value += 1
             }

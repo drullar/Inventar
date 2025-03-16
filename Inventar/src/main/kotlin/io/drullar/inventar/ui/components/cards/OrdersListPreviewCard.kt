@@ -110,7 +110,7 @@ fun SimpleOrderRow(
             )
             if (showOrderStatus) {
                 Text(
-                    text = orderDTO.status.text.uppercase(),
+                    text = orderDTO.status.text.value.uppercase(),
                     color = when (orderDTO.status) {
                         OrderStatus.COMPLETED -> Colors.DarkGreen
                         else -> Color.Gray

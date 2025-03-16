@@ -10,22 +10,21 @@ import io.drullar.inventar.persistence.schema.associative.ProductOrderAssociatio
 import io.drullar.inventar.persistence.schema.associative.ProductOrderAssociation.orderedAmount
 import io.drullar.inventar.persistence.schema.associative.ProductOrderAssociation.productUid
 import io.drullar.inventar.persistence.schema.associative.ProductOrderAssociation.sellingPrice
+import io.drullar.inventar.result
 import io.drullar.inventar.shared.OrderCreationDTO
 import io.drullar.inventar.shared.OrderDTO
 import io.drullar.inventar.shared.OrderStatus
 import io.drullar.inventar.shared.ProductDTO
-import io.drullar.inventar.shared.RepositoryResponse
-import io.drullar.inventar.shared.getDataOnSuccessOrNull
-import io.drullar.inventar.shared.response
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 
-object OrderRepository : AbstractRepository<Orders, OrderDTO, OrderCreationDTO, Int>(Orders) {
+object OrderRepository :
+    AbstractRepository<Orders, OrderDTO, OrderCreationDTO, Int, OrderRepository.SortBy>(Orders) {
     private val productRepository = ProductsRepository
     private val productOrderAssociationTable = ProductOrderAssociation
 
-    override fun save(dto: OrderCreationDTO): RepositoryResponse<OrderDTO> = response {
+    override fun save(dto: OrderCreationDTO): Result<OrderDTO?> = result {
         withTransaction {
             val orderId =
                 table.insert { it[orderStatus] = dto.status }.resultedValues?.first()?.let {
@@ -44,12 +43,12 @@ object OrderRepository : AbstractRepository<Orders, OrderDTO, OrderCreationDTO, 
                 )
             }
 
-            return@withTransaction getById(orderId).getDataOnSuccessOrNull()!!
+            return@withTransaction getById(orderId).getOrNull()
         }
     }
 
-    override fun deleteById(id: Int): RepositoryResponse<Unit> = response {
-        val order = getById(id).getDataOnSuccessOrNull()
+    override fun deleteById(id: Int): Result<Unit> = result {
+        val order = getById(id).getOrNull()
         if (order != null && order.status == OrderStatus.COMPLETED)
             throw DatabaseException.InvalidOperationException("Can not delete an order which has already been completed.")
 
@@ -58,7 +57,7 @@ object OrderRepository : AbstractRepository<Orders, OrderDTO, OrderCreationDTO, 
         }
     }
 
-    override fun getById(id: Int): RepositoryResponse<OrderDTO> = response {
+    override fun getById(id: Int): Result<OrderDTO> = result {
         withTransaction {
             table.selectAll().where { table.id.eq(id) }.first().let {
                 transformResultRowToModel(it)
@@ -66,8 +65,8 @@ object OrderRepository : AbstractRepository<Orders, OrderDTO, OrderCreationDTO, 
         }
     }
 
-    override fun update(id: Int, dto: OrderCreationDTO): RepositoryResponse<OrderDTO> = response {
-        val preUpdateOrder = getById(id).getDataOnSuccessOrNull()
+    override fun update(id: Int, dto: OrderCreationDTO): Result<OrderDTO> = result {
+        val preUpdateOrder = getById(id).getOrNull()
             ?: throw DatabaseException.NoSuchElementFoundException("No order with id $id found.")
 
         if (preUpdateOrder.status == OrderStatus.COMPLETED)
@@ -85,7 +84,7 @@ object OrderRepository : AbstractRepository<Orders, OrderDTO, OrderCreationDTO, 
             performPostOrderCompletionOperations(id)
         }
 
-        return@response getById(id).getDataOnSuccessOrNull()!!
+        return@result getById(id).getOrNull()!!
     }
 
     override fun transformResultRowToModel(row: ResultRow): OrderDTO = OrderDTO(
@@ -95,7 +94,7 @@ object OrderRepository : AbstractRepository<Orders, OrderDTO, OrderCreationDTO, 
         creationDate = row[creationDate]
     )
 
-    fun getAllByStatus(status: OrderStatus): RepositoryResponse<List<OrderDTO>> = response {
+    fun getAllByStatus(status: OrderStatus): Result<List<OrderDTO>> = result {
         withTransaction {
             table.selectAll().where { table.orderStatus.eq(status) }
                 .orderBy(table.creationDate)
@@ -103,15 +102,33 @@ object OrderRepository : AbstractRepository<Orders, OrderDTO, OrderCreationDTO, 
         }
     }
 
-    fun getAllProductsAssociatedWithOrder(orderId: Int): RepositoryResponse<List<ProductDTO>> =
-        response {
+    fun getAllProductsAssociatedWithOrder(orderId: Int): Result<List<ProductDTO>> =
+        result {
             withTransaction {
                 productOrderAssociationTable.selectAll()
                     .where { productOrderAssociationTable.orderUid.eq(orderId) }.map {
-                        productRepository.getById(it[productUid]).getDataOnSuccessOrNull()!!
+                        productRepository.getById(it[productUid]).getOrNull()!!
                     }
             }
         }
+
+    fun getCountByStatus(status: OrderStatus) = withTransaction {
+        table.selectAll().where { table.orderStatus.eq(status) }.count()
+    }
+
+    override fun buildOrderByExpression(sortBy: SortBy): Expression<*> = when (sortBy) {
+        SortBy.NUMBER -> {
+            table.id
+        }
+
+        SortBy.CREATION_DATE -> {
+            table.creationDate
+        }
+
+        SortBy.STATUS -> {
+            table.orderStatus
+        }
+    }
 
     private fun associateOrderWithProduct(
         orderId: Int,
@@ -124,10 +141,10 @@ object OrderRepository : AbstractRepository<Orders, OrderDTO, OrderCreationDTO, 
             this[orderedAmount] = quantity
             this[sellingPrice] = product.sellingPrice
             this[productUid] = product.uid
-        }.filter { productRepository.getById(it[productUid]).getDataOnSuccessOrNull() != null }
+        }.filter { productRepository.getById(it[productUid]).getOrNull() != null }
             .associate {
                 productRepository.getById(it[productUid])
-                    .getDataOnSuccessOrNull()!! to it[orderedAmount]
+                    .getOrNull()!! to it[orderedAmount]
             }
 
     private fun disassociateOrderWithProducts(orderId: Int, products: Set<ProductDTO>) {
@@ -138,9 +155,9 @@ object OrderRepository : AbstractRepository<Orders, OrderDTO, OrderCreationDTO, 
     }
 
     private fun performPostOrderCompletionOperations(id: Int) {
-        val order = getById(id).getDataOnSuccessOrNull()!!
+        val order = getById(id).getOrNull()!!
         order.productToQuantity.forEach { (orderedProduct, orderedAmount) ->
-            val product = productRepository.getById(orderedProduct.uid).getDataOnSuccessOrNull()!!
+            val product = productRepository.getById(orderedProduct.uid).getOrNull()!!
             if (product.availableQuantity - orderedAmount < 0) throw DatabaseException.InvalidOperationException(
                 "Insufficient amount from ${product.name}. The available quantity from this product is: ${product.availableQuantity}"
             )
@@ -184,19 +201,21 @@ object OrderRepository : AbstractRepository<Orders, OrderDTO, OrderCreationDTO, 
                 associateOrderWithProduct(orderId, newProducts)
             }
         }
-
     }
-
+    
     private fun getProductToSoldAmountAssociation(orderId: Int): Map<ProductDTO, Int> =
         withTransaction {
             productOrderAssociationTable.selectAll()
                 .where { productOrderAssociationTable.orderUid.eq(orderId) }.associate {
                     productRepository.getById(it[productUid])
-                        .getDataOnSuccessOrNull()!! to it[orderedAmount]
+                        .getOrNull()!! to it[orderedAmount]
                 }
         }
 
-    fun getCountByStatus(status: OrderStatus) = withTransaction {
-        table.selectAll().where { table.orderStatus.eq(status) }.count()
+    enum class SortBy(val text: String) {
+        NUMBER("Number"),
+        CREATION_DATE("Date"),
+        STATUS("Status"),
+        // TOTAL_SUM TODO figure it out
     }
 }

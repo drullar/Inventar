@@ -4,14 +4,11 @@ import io.drullar.inventar.SortingOrder
 import io.drullar.inventar.persistence.repositories.OrderRepository
 import io.drullar.inventar.shared.OrderCreationDTO
 import io.drullar.inventar.shared.OrderStatus
-import io.drullar.inventar.shared.getDataOnSuccessOrNull
-import io.drullar.inventar.shared.getOrThrow
 import io.drullar.inventar.sortedBy
 import io.drullar.inventar.ui.components.navigation.NavigationDestination
 import io.drullar.inventar.ui.data.OrderDetailsPreview
 import io.drullar.inventar.ui.viewmodel.delegates.SettingsProvider
 import io.drullar.inventar.ui.viewmodel.delegates.SharedAppStateDelegate
-import io.drullar.inventar.ui.viewmodel.delegates.getText
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
@@ -29,13 +26,18 @@ class OrderViewViewModel(
     }
     val _sortingOrder by lazy { sortingOrder.asStateFlow() }
 
-    private val orderBy by lazy {
-        MutableStateFlow(OrderBy.DATE) // getAll by default sorts by this
-    }
-    val _orderBy by lazy { orderBy.asStateFlow() }
+    private val sortBy by lazy { MutableStateFlow(OrderRepository.SortBy.CREATION_DATE) }
+    val _sortBy by lazy { sortBy.asStateFlow() }
 
     private val lastFetchedPage by lazy {
-        MutableStateFlow(ordersRepository.getAllPaged(1, 20).getDataOnSuccessOrNull())
+        MutableStateFlow(
+            ordersRepository.getPaged(
+                1,
+                ordersFetchSize,
+                sortBy.value,
+                sortingOrder.value
+            ).getOrNull()
+        )
     }
 
     // TODO fix pagination not showing all orders
@@ -46,8 +48,8 @@ class OrderViewViewModel(
     }
     val _orders by lazy { orders.asStateFlow() }
 
-    fun orderOrdersBy(orderBy: OrderBy) {
-        this.orderBy.value = orderBy
+    fun sortOrdersBy(sortBy: OrderRepository.SortBy) {
+        this.sortBy.value = sortBy
         sortOrders()
     }
 
@@ -60,10 +62,12 @@ class OrderViewViewModel(
 
     fun loadNextOrdersPage() {
         lastFetchedPage.value =
-            ordersRepository.getAllPaged(
+            ordersRepository.getPaged(
                 page = (lastFetchedPage.value?.pageNumber ?: 0) + 1,
-                itemsPerPage = ordersFetchSize
-            ).getDataOnSuccessOrNull()
+                itemsPerPage = ordersFetchSize,
+                sortBy = sortBy.value,
+                order = sortingOrder.value
+            ).getOrNull()
 
         lastFetchedPage.value?.items?.let { newFetchedOrders ->
             orders.value += newFetchedOrders
@@ -72,36 +76,29 @@ class OrderViewViewModel(
 
     fun newOrder() {
         val newOrder = ordersRepository.save(OrderCreationDTO(emptyMap(), OrderStatus.DRAFT))
-            .getOrThrow()
+            .getOrThrow()!!
 
         setPreview(OrderDetailsPreview(newOrder))
         setNavigationDestination(NavigationDestination.PRODUCTS_PAGE)
     }
 
     private fun sortOrders() {
-        when (orderBy.value) {
-            OrderBy.STATUS -> {
+        when (sortBy.value) {
+            OrderRepository.SortBy.STATUS -> {
                 orders.value = orders.value.sortedBy(sortingOrder.value) { it.status }
             }
 
-            OrderBy.ID -> {
+            OrderRepository.SortBy.NUMBER -> {
                 orders.value = orders.value.sortedBy(sortingOrder.value) { it.orderId }
             }
 
-            OrderBy.DATE -> {
+            OrderRepository.SortBy.CREATION_DATE -> {
                 orders.value = orders.value.sortedBy(sortingOrder.value) { it.creationDate }
             }
 
-            OrderBy.TOTAL_PRICE -> {
-                orders.value = orders.value.sortedBy(sortingOrder.value) { it.getTotalPrice() }
-            }
+//            OrderBy.TOTAL_PRICE -> {
+//                orders.value = orders.value.sortedBy(sortingOrder.value) { it.getTotalPrice() }
+//            }
         }
-    }
-
-    enum class OrderBy(val text: String) {
-        DATE(getText("field.date")),
-        ID("field.number"),
-        TOTAL_PRICE("field.total.price"),
-        STATUS("field.status")
     }
 }
