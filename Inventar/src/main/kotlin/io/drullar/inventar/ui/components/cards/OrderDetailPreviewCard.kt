@@ -1,6 +1,5 @@
 package io.drullar.inventar.ui.components.cards
 
-import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -44,7 +43,6 @@ import io.drullar.inventar.ui.components.button.TextButton
 import io.drullar.inventar.ui.style.Colors
 import io.drullar.inventar.ui.style.roundedBorderShape
 import io.drullar.inventar.ui.viewmodel.delegates.getText
-import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 @Composable
@@ -200,7 +198,7 @@ private fun OrderCreationRow(
             Spacer(modifier = Modifier.padding(horizontal = 5.dp).align(Alignment.CenterVertically))
             Text(
                 productDTO.name,
-                modifier = Modifier.fillMaxWidth(0.8f)
+                modifier = Modifier.fillMaxWidth(0.4f)
                     .align(Alignment.CenterVertically),
                 maxLines = 1,
                 overflow = TextOverflow.Clip

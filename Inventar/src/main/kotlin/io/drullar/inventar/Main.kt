@@ -5,10 +5,6 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPlacement
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
-import io.drullar.inventar.persistence.repositories.OrderRepository
-import io.drullar.inventar.shared.OrderCreationDTO
-import io.drullar.inventar.shared.OrderStatus
-import io.drullar.inventar.shared.SupportedLanguage
 import io.drullar.inventar.ui.App
 import io.drullar.inventar.ui.components.navigation.NavigationDestination
 import io.drullar.inventar.ui.viewmodel.DefaultViewViewModel
@@ -40,12 +36,12 @@ fun main() {
     val settingsViewModel = SettingsViewModel(settingsProvider)
 
     application {
+        val windowState = rememberWindowState(placement = WindowPlacement.Maximized)
+
         Window(
             ::exitApplication,
             title = "Inventar",
-            state = rememberWindowState(
-                placement = WindowPlacement.Maximized
-            ),
+            state = windowState,
             icon = painterResource(Icons.APP_ICON)
         ) {
             window.minimumSize = Dimension(800, 600)
@@ -55,6 +51,7 @@ fun main() {
                 defaultViewViewModel,
                 orderViewViewModel,
                 settingsViewModel,
+                windowState.size
             )
         }
     }

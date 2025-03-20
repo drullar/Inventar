@@ -27,6 +27,7 @@ class FileManager {
     fun setupMandatoryFiles() {
         applicationFiles.values.forEach {
             if (!it.exists()) it.create()
+            else it.validateFileIntegrity()
         }
     }
 

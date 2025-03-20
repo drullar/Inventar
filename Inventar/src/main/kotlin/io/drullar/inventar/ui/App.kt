@@ -15,7 +15,9 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.WindowState
 import io.drullar.inventar.shared.SupportedLanguage
 import io.drullar.inventar.ui.components.button.IconButton
 import io.drullar.inventar.ui.components.dialog.SingleActionAlertDialog
@@ -34,6 +36,7 @@ import io.drullar.inventar.ui.utils.Icons
 import io.drullar.inventar.ui.viewmodel.SettingsViewModel
 import io.drullar.inventar.ui.viewmodel.delegates.getText
 import io.drullar.inventar.ui.viewmodel.delegates.impl.TextProviderImpl
+import java.awt.Dimension
 
 @Composable
 fun App(
@@ -41,12 +44,13 @@ fun App(
     alertManager: AlertManager,
     defaultViewViewModel: DefaultViewViewModel,
     orderViewViewModel: OrderViewViewModel,
-    settingsViewModel: SettingsViewModel
+    settingsViewModel: SettingsViewModel,
+    windowSize: DpSize
 ) {
+    println(windowSize)
     val settingsState = settingsViewModel.getSettings().collectAsState()
     val activeLanguage = settingsState.value.language
-//    TextProviderImpl(activeLanguage) // Init TextProvider so that the `getText(textId)` extension func can he used
-    TextProviderImpl(SupportedLanguage.BULGARIAN)
+    TextProviderImpl(activeLanguage)
 
     val currentView = sharedAppState.getNavigationDestination().collectAsState()
     val activeAlert = alertManager.getActiveAlert().collectAsState()
