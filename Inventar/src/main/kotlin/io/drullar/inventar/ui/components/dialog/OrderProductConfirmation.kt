@@ -1,6 +1,5 @@
 package io.drullar.inventar.ui.components.dialog
 
-import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -35,7 +34,7 @@ import androidx.compose.ui.unit.dp
 import io.drullar.inventar.shared.ProductDTO
 import io.drullar.inventar.ui.components.button.TextButton
 import io.drullar.inventar.ui.style.roundedBorderShape
-import io.drullar.inventar.ui.viewmodel.delegates.getText
+import io.drullar.inventar.ui.provider.getText
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

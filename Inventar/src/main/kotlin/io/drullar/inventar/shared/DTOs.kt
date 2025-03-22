@@ -2,7 +2,7 @@ package io.drullar.inventar.shared
 
 import io.drullar.inventar.persistence.model.Category
 import io.drullar.inventar.ui.utils.Icons
-import io.drullar.inventar.ui.viewmodel.delegates.getText
+import io.drullar.inventar.ui.provider.getText
 import java.math.BigDecimal
 import java.time.LocalDateTime
 

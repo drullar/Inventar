@@ -25,7 +25,7 @@ import io.drullar.inventar.ui.components.field.FieldValidator
 import io.drullar.inventar.ui.components.field.FormInputField
 import io.drullar.inventar.ui.components.field.IsNotEmpty
 import io.drullar.inventar.ui.components.field.NotNegativeNumber
-import io.drullar.inventar.ui.viewmodel.delegates.getText
+import io.drullar.inventar.ui.provider.getText
 import java.math.BigDecimal
 
 @Composable

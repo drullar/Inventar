@@ -1,8 +1,8 @@
-package io.drullar.inventar.ui.viewmodel.delegates.impl
+package io.drullar.inventar.ui.provider.impl
 
 import io.drullar.inventar.shared.SupportedLanguage
-import io.drullar.inventar.ui.viewmodel.delegates.TextProvider
-import io.drullar.inventar.ui.viewmodel.delegates.TextProvider.Companion.singleton
+import io.drullar.inventar.ui.provider.TextProvider
+import io.drullar.inventar.ui.provider.TextProvider.Companion.singleton
 import java.util.ResourceBundle
 
 class TextProviderImpl(
@@ -21,8 +21,8 @@ class TextProviderImpl(
     }
 
     override fun getText(textId: String): String =
-        resourceBundle.getString(textId)
+        resourceBundle.getString(textId.trim())
 
     override fun getText(textId: String, pluggableValue: Any): String =
-        getText(textId).format(pluggableValue)
+        getText(textId.trim()).format(pluggableValue)
 }

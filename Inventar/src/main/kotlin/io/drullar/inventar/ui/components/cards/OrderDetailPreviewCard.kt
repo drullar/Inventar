@@ -42,7 +42,7 @@ import io.drullar.inventar.shared.ProductDTO
 import io.drullar.inventar.ui.components.button.TextButton
 import io.drullar.inventar.ui.style.Colors
 import io.drullar.inventar.ui.style.roundedBorderShape
-import io.drullar.inventar.ui.viewmodel.delegates.getText
+import io.drullar.inventar.ui.provider.getText
 import java.time.format.DateTimeFormatter
 
 @Composable

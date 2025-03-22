@@ -1,16 +1,6 @@
-package io.drullar.inventar.ui.viewmodel.delegates
+package io.drullar.inventar.ui.provider
 
-import io.drullar.inventar.shared.SupportedLanguage
-
-interface TextProvider {
-    fun setActiveLanguage(language: SupportedLanguage)
-    fun getText(textId: String): String
-    fun getText(textId: String, pluggableValue: Any): String
-
-    companion object {
-        lateinit var singleton: TextProvider
-    }
-}
+import io.drullar.inventar.ui.style.AppStyle
 
 fun getText(textId: String) = try {
     TextProvider.singleton.getText(textId)
@@ -23,3 +13,5 @@ fun getText(textId: String, pluggableValue: Any) = try {
 } catch (_: UninitializedPropertyAccessException) {
     "Text provider error" // Needed because of unit tests and the use of getText in some enums
 }
+
+fun getAppStyle(): AppStyle = AppStyleProvider.singleton.getActiveStyle()

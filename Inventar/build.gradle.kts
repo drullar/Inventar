@@ -29,7 +29,6 @@ dependencies {
     implementation("org.jetbrains.compose.material3:material3:1.6.11")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.5")
     //Other dependencies
-    implementation("org.javamoney:moneta:1.4.4")
     implementation("io.github.classgraph:classgraph:4.8.177")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.18.3")
     //Test dependencies

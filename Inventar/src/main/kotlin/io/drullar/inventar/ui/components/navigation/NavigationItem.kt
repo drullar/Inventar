@@ -6,6 +6,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -26,7 +27,7 @@ import io.drullar.inventar.ui.style.Colors
 import io.drullar.inventar.ui.style.roundedBorder
 import io.drullar.inventar.ui.style.roundedBorderShape
 import io.drullar.inventar.ui.utils.Icons
-import io.drullar.inventar.ui.viewmodel.delegates.getText
+import io.drullar.inventar.ui.provider.getText
 
 @Preview
 @Composable
@@ -43,6 +44,7 @@ fun NavigationItem(
             .height(navItemHeight)
             .wrapContentWidth()
             .roundedBorder()
+            .wrapContentWidth()
             .background(
                 color = if (isSelected) onSelectBgColor else defaultBgColor,
                 shape = roundedBorderShape()
@@ -62,20 +64,8 @@ fun NavigationItem(
             textAlign = TextAlign.Center,
             fontSize = TextUnit(10f, TextUnitType.Unspecified),
             fontFamily = FontFamily.SansSerif,
-            modifier = Modifier.align(Alignment.CenterVertically),
+            modifier = Modifier.align(Alignment.CenterVertically).padding(horizontal = 10.dp),
             textDecoration = if (isSelected) TextDecoration.Underline else TextDecoration.None,
         )
     }
-}
-
-@Preview
-@Composable
-private fun NavigationItemPreviewContainer() {
-    NavigationItem(
-        NavigationItemDetails(
-            iconPath = Icons.PRODUCTS,
-            textIdentifier = getText("label.products"),
-        ),
-        true,
-    ) {}
 }

@@ -27,6 +27,7 @@ import io.drullar.inventar.ui.components.views.default.layout.ProductUtilBar
 import io.drullar.inventar.ui.data.DetailedProductPreview
 import io.drullar.inventar.ui.data.OrderDetailsPreview
 import io.drullar.inventar.ui.data.OrdersListPreview
+import io.drullar.inventar.ui.provider.getAppStyle
 import io.drullar.inventar.ui.style.roundedBorder
 
 @Composable
@@ -140,6 +141,7 @@ fun DefaultView(
                         val draftOrders = (preview as OrdersListPreview).getPreviewData()
                         OrdersListPreviewCard(
                             orders = draftOrders,
+                            style = getAppStyle(),
                             activeLocale = settings.language.locale,
                             onOrderCompletion = { completedOrder ->
                                 viewModel.completeOrder(completedOrder)

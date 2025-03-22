@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
@@ -17,7 +16,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.WindowState
 import io.drullar.inventar.shared.SupportedLanguage
 import io.drullar.inventar.ui.components.button.IconButton
 import io.drullar.inventar.ui.components.dialog.SingleActionAlertDialog
@@ -32,11 +30,13 @@ import io.drullar.inventar.ui.viewmodel.OrderViewViewModel
 import io.drullar.inventar.ui.viewmodel.delegates.AlertManager
 import io.drullar.inventar.ui.viewmodel.delegates.SharedAppStateDelegate
 import io.drullar.inventar.ui.data.AlertType
+import io.drullar.inventar.ui.provider.getAppStyle
 import io.drullar.inventar.ui.utils.Icons
 import io.drullar.inventar.ui.viewmodel.SettingsViewModel
-import io.drullar.inventar.ui.viewmodel.delegates.getText
-import io.drullar.inventar.ui.viewmodel.delegates.impl.TextProviderImpl
-import java.awt.Dimension
+import io.drullar.inventar.ui.provider.getText
+import io.drullar.inventar.ui.provider.impl.TextProviderImpl
+import io.drullar.inventar.ui.provider.impl.AppStyleProviderImpl
+import io.drullar.inventar.ui.style.AppStyle
 
 @Composable
 fun App(
@@ -47,26 +47,35 @@ fun App(
     settingsViewModel: SettingsViewModel,
     windowSize: DpSize
 ) {
-    println(windowSize)
     val settingsState = settingsViewModel.getSettings().collectAsState()
     val activeLanguage = settingsState.value.language
-    TextProviderImpl(activeLanguage)
+
+    initializeProviders(activeLanguage, windowSize)
+    println(getAppStyle())
 
     val currentView = sharedAppState.getNavigationDestination().collectAsState()
     val activeAlert = alertManager.getActiveAlert().collectAsState()
 
     Column(modifier = Modifier.fillMaxWidth().fillMaxHeight()) {
-        Row(modifier = Modifier.fillMaxWidth().padding(10.dp)) {
-            NavigationBar(
-                selectedView = currentView.value,
-                modifier = Modifier.heightIn(30.dp, 40.dp).widthIn(100.dp, 300.dp),
-                onNavigationChange = { sharedAppState.setNavigationDestination(it) }
-            )
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(10.dp)
+        ) {
+            Row(
+                Modifier.fillMaxWidth(
+                    0.7f
+                )
+            ) {
+                NavigationBar(
+                    selectedView = currentView.value,
+                    modifier = Modifier.fillMaxWidth(if (getAppStyle() == AppStyle.NORMAL) 0.3f else 0.5f),
+                    onNavigationChange = { sharedAppState.setNavigationDestination(it) }
+                )
 
-            SearchBar(
-                modifier = Modifier.heightIn(30.dp, 40.dp).fillMaxWidth(0.5f),
-                onSearchSubmit = { /*TODO search implementation*/ }
-            )
+                SearchBar(
+                    modifier = Modifier.heightIn(30.dp, 40.dp).fillMaxWidth(0.5f),
+                    onSearchSubmit = { /*TODO search implementation*/ }
+                )
+            }
 
             IconButton(
                 onClick = { sharedAppState.setNavigationDestination(NavigationDestination.SETTINGS_PAGE) },
@@ -114,4 +123,12 @@ fun App(
             else -> {}
         }
     }
+}
+
+private fun initializeProviders(
+    activeLanguage: SupportedLanguage,
+    windowSize: DpSize
+) {
+    TextProviderImpl(activeLanguage)
+    AppStyleProviderImpl(windowSize)
 }

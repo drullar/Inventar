@@ -3,9 +3,9 @@ package io.drullar.inventar.unit.delegates
 import assertk.assertThat
 import assertk.assertions.isEqualTo
 import io.drullar.inventar.shared.SupportedLanguage
-import io.drullar.inventar.ui.viewmodel.delegates.TextProvider
-import io.drullar.inventar.ui.viewmodel.delegates.impl.TextProviderImpl
-import io.drullar.inventar.ui.viewmodel.delegates.getText
+import io.drullar.inventar.ui.provider.TextProvider
+import io.drullar.inventar.ui.provider.impl.TextProviderImpl
+import io.drullar.inventar.ui.provider.getText
 import org.junit.*
 
 class TestTextProvider {

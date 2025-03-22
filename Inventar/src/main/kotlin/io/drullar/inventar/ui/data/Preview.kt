@@ -31,5 +31,4 @@ class OrdersListPreview(private var orders: List<OrderDTO>) : Preview<List<Order
     override fun updatePreviewData(data: List<OrderDTO>) {
         TODO("Not yet implemented")
     }
-
 }

@@ -11,7 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import io.drullar.inventar.ui.components.button.TextButton
 import io.drullar.inventar.ui.style.Colors
-import io.drullar.inventar.ui.viewmodel.delegates.getText
+import io.drullar.inventar.ui.provider.getText
 
 @Composable
 fun ProductUtilBar(modifier: Modifier = Modifier, onNewProductButtonClick: () -> Unit) {

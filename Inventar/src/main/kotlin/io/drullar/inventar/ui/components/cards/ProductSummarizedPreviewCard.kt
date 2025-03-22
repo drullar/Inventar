@@ -43,7 +43,7 @@ import io.drullar.inventar.shared.ProductDTO
 import io.drullar.inventar.ui.style.Colors
 import io.drullar.inventar.ui.style.roundedBorder
 import io.drullar.inventar.ui.utils.Icons
-import io.drullar.inventar.ui.viewmodel.delegates.getText
+import io.drullar.inventar.ui.provider.getText
 import java.util.Currency
 
 @OptIn(ExperimentalMaterial3Api::class)

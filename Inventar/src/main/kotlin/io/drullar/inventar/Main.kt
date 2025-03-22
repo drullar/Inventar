@@ -17,9 +17,33 @@ import io.drullar.inventar.ui.viewmodel.delegates.impl.SettingsProviderImpl
 import io.drullar.inventar.utils.bootstrap.ApplicationBootstrapper
 import io.drullar.inventar.utils.bootstrap.DatabaseBootstrapperImpl
 import io.drullar.inventar.utils.file.FileManager
+import java.awt.Button
+import java.awt.Dialog
 import java.awt.Dimension
+import java.awt.FlowLayout
+import java.awt.Frame
+import java.awt.Label
 
 fun main() {
+    Thread.setDefaultUncaughtExceptionHandler { _, e ->
+        Dialog(Frame(), e.message ?: "Error").apply {
+            layout = FlowLayout()
+            val label = Label(e.stackTraceToString())
+            add(label)
+            val button = Button("OK").apply {
+                addActionListener {
+                    dispose()
+                    Thread.currentThread().interrupt()
+                }
+            }
+            add(button)
+            setSize(300, 300)
+            isVisible = true
+        }
+        
+        e.printStackTrace()
+    }
+
     val fileManager = FileManager()
     ApplicationBootstrapper(
         fileManager = fileManager,
@@ -37,9 +61,10 @@ fun main() {
 
     application {
         val windowState = rememberWindowState(placement = WindowPlacement.Maximized)
-
         Window(
-            ::exitApplication,
+            {
+                exitApplication()
+            },
             title = "Inventar",
             state = windowState,
             icon = painterResource(Icons.APP_ICON)

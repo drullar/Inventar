@@ -23,7 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.drullar.inventar.ui.style.roundedBorderShape
 import io.drullar.inventar.ui.utils.Icons
-import io.drullar.inventar.ui.viewmodel.delegates.getText
+import io.drullar.inventar.ui.provider.getText
 
 @Composable
 fun SearchBar(

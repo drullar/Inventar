@@ -34,12 +34,12 @@ import io.drullar.inventar.persistence.repositories.OrderRepository
 import io.drullar.inventar.shared.OrderDTO
 import io.drullar.inventar.shared.OrderStatus
 import io.drullar.inventar.ui.components.button.TextButton
-import io.drullar.inventar.ui.components.cards.SimpleOrderRow
+import io.drullar.inventar.ui.components.cards.NormalOrderPreviewRow
 import io.drullar.inventar.ui.components.navigation.NavigationDestination
 import io.drullar.inventar.ui.viewmodel.OrderViewViewModel
 import io.drullar.inventar.ui.data.OrderDetailsPreview
 import io.drullar.inventar.ui.style.Colors
-import io.drullar.inventar.ui.viewmodel.delegates.getText
+import io.drullar.inventar.ui.provider.getText
 
 const val PAGE_SIZE = 20
 
@@ -168,7 +168,7 @@ fun OrdersView(viewModel: OrderViewViewModel) {
                             sortingOrder
                         ).getOrNull()?.items ?: emptyList()
                     }
-                    SimpleOrderRow(
+                    NormalOrderPreviewRow(
                         orderDTO = item,
                         activeLocale = settings.language.locale,
                         onComplete = {

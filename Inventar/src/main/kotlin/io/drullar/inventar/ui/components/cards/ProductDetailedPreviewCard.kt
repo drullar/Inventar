@@ -29,7 +29,7 @@ import io.drullar.inventar.ui.components.dialog.produceWarningText
 import io.drullar.inventar.ui.components.field.FormInputField
 import io.drullar.inventar.ui.components.field.IsNotEmpty
 import io.drullar.inventar.ui.components.field.NotNegativeNumber
-import io.drullar.inventar.ui.viewmodel.delegates.getText
+import io.drullar.inventar.ui.provider.getText
 
 @Composable
 fun ProductDetailedViewCard(

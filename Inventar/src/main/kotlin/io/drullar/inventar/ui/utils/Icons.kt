@@ -11,4 +11,7 @@ object Icons {
     const val ADD = "icons/add.svg"
     const val NEW_WINDOW = "icons/new-window.svg"
     const val COG_WHEEL = "/icons/cog.svg"
+    const val EDIT_SIGN = "/icons/edit-sign.svg"
+    const val POSITIVE_SIGN = "/icons/positive-sign.svg"
+    const val NEGATIVE_SIGN = "/icons/negative-sign.png"
 }

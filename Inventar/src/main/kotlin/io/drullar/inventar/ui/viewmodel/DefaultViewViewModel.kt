@@ -85,7 +85,7 @@ class DefaultViewViewModel(
         if (_previewChangeIsAllowed.value) {
             val draftOrders = ordersRepository.getAllByStatus(OrderStatus.DRAFT);
             if (draftOrders.isFailure) throw draftOrders.exceptionOrNull()!!
-            else setPreview(OrdersListPreview(draftOrders.getOrNull()!!))
+            else setPreview(OrdersListPreview(draftOrders.getOrThrow().items))
         }
     }
 
@@ -158,7 +158,7 @@ class DefaultViewViewModel(
                 draftOrders.remove(orderDTO)
 
                 getPreview().value = OrdersListPreview(
-                    ordersRepository.getAllByStatus(OrderStatus.DRAFT).getOrThrow()
+                    ordersRepository.getAllByStatus(OrderStatus.DRAFT).getOrThrow().items
                 )
             }
 
