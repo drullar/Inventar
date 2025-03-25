@@ -34,12 +34,15 @@ import io.drullar.inventar.persistence.repositories.OrderRepository
 import io.drullar.inventar.shared.OrderDTO
 import io.drullar.inventar.shared.OrderStatus
 import io.drullar.inventar.ui.components.button.TextButton
+import io.drullar.inventar.ui.components.cards.CompactOrderPreviewRow
 import io.drullar.inventar.ui.components.cards.NormalOrderPreviewRow
 import io.drullar.inventar.ui.components.navigation.NavigationDestination
 import io.drullar.inventar.ui.viewmodel.OrderViewViewModel
 import io.drullar.inventar.ui.data.OrderDetailsPreview
+import io.drullar.inventar.ui.provider.getLayoutStyle
 import io.drullar.inventar.ui.style.Colors
 import io.drullar.inventar.ui.provider.getText
+import io.drullar.inventar.ui.style.LayoutStyle
 
 const val PAGE_SIZE = 20
 
@@ -168,9 +171,35 @@ fun OrdersView(viewModel: OrderViewViewModel) {
                             sortingOrder
                         ).getOrNull()?.items ?: emptyList()
                     }
-                    NormalOrderPreviewRow(
+
+                    if (getLayoutStyle() == LayoutStyle.NORMAL)
+                        NormalOrderPreviewRow(
+                            orderDTO = item,
+                            activeLocale = settings.language.locale,
+                            onComplete = {
+                                val itemIndex = _orders.indexOf(item)
+                                val updateItem =
+                                    viewModel.changeOrderStatus(item, OrderStatus.COMPLETED)
+
+                                if (updateItem.isSuccess)
+                                    updateItem(_orders, itemIndex, updateItem.getOrNull()!!)
+                            },
+                            onSelect = { order ->
+                                viewModel.setPreview(OrderDetailsPreview(order))
+                                viewModel.setNavigationDestination(NavigationDestination.PRODUCTS_PAGE)
+                            },
+                            onTerminate = {
+                                val itemIndex = _orders.indexOf(item)
+                                val updateItem =
+                                    viewModel.changeOrderStatus(item, OrderStatus.TERMINATED)
+
+                                if (updateItem.isSuccess)
+                                    updateItem(_orders, itemIndex, updateItem.getOrNull()!!)
+                            },
+                            showOrderStatus = true
+                        )
+                    else CompactOrderPreviewRow(
                         orderDTO = item,
-                        activeLocale = settings.language.locale,
                         onComplete = {
                             val itemIndex = _orders.indexOf(item)
                             val updateItem =

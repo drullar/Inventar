@@ -1,6 +1,6 @@
 package io.drullar.inventar.ui.style
 
-enum class AppStyle {
+enum class LayoutStyle {
     COMPACT,
     NORMAL;
 }

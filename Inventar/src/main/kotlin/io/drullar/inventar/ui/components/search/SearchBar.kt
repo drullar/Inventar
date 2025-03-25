@@ -25,6 +25,8 @@ import io.drullar.inventar.ui.style.roundedBorderShape
 import io.drullar.inventar.ui.utils.Icons
 import io.drullar.inventar.ui.provider.getText
 
+
+//TODO implement in future version
 @Composable
 fun SearchBar(
     modifier: Modifier = Modifier,

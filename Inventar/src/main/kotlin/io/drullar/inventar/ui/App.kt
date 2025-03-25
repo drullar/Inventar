@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.Icon
@@ -24,19 +23,18 @@ import io.drullar.inventar.ui.components.navigation.NavigationDestination
 import io.drullar.inventar.ui.components.views.order.OrdersView
 import io.drullar.inventar.ui.viewmodel.DefaultViewViewModel
 import io.drullar.inventar.ui.components.views.default.DefaultView
-import io.drullar.inventar.ui.components.search.SearchBar
 import io.drullar.inventar.ui.components.views.settings.SettingsView
 import io.drullar.inventar.ui.viewmodel.OrderViewViewModel
 import io.drullar.inventar.ui.viewmodel.delegates.AlertManager
 import io.drullar.inventar.ui.viewmodel.delegates.SharedAppStateDelegate
 import io.drullar.inventar.ui.data.AlertType
-import io.drullar.inventar.ui.provider.getAppStyle
+import io.drullar.inventar.ui.provider.getLayoutStyle
 import io.drullar.inventar.ui.utils.Icons
 import io.drullar.inventar.ui.viewmodel.SettingsViewModel
 import io.drullar.inventar.ui.provider.getText
 import io.drullar.inventar.ui.provider.impl.TextProviderImpl
-import io.drullar.inventar.ui.provider.impl.AppStyleProviderImpl
-import io.drullar.inventar.ui.style.AppStyle
+import io.drullar.inventar.ui.provider.impl.LayoutStyleProviderImpl
+import io.drullar.inventar.ui.style.LayoutStyle
 
 @Composable
 fun App(
@@ -51,7 +49,11 @@ fun App(
     val activeLanguage = settingsState.value.language
 
     initializeProviders(activeLanguage, windowSize)
-    println(getAppStyle())
+
+    //TODO remove below
+    println(getLayoutStyle())
+    println(windowSize)
+    // TODO remove above
 
     val currentView = sharedAppState.getNavigationDestination().collectAsState()
     val activeAlert = alertManager.getActiveAlert().collectAsState()
@@ -67,13 +69,8 @@ fun App(
             ) {
                 NavigationBar(
                     selectedView = currentView.value,
-                    modifier = Modifier.fillMaxWidth(if (getAppStyle() == AppStyle.NORMAL) 0.3f else 0.5f),
+                    modifier = Modifier.fillMaxWidth(if (getLayoutStyle() == LayoutStyle.NORMAL) 0.3f else 0.5f),
                     onNavigationChange = { sharedAppState.setNavigationDestination(it) }
-                )
-
-                SearchBar(
-                    modifier = Modifier.heightIn(30.dp, 40.dp).fillMaxWidth(0.5f),
-                    onSearchSubmit = { /*TODO search implementation*/ }
                 )
             }
 
@@ -130,5 +127,5 @@ private fun initializeProviders(
     windowSize: DpSize
 ) {
     TextProviderImpl(activeLanguage)
-    AppStyleProviderImpl(windowSize)
+    LayoutStyleProviderImpl(windowSize)
 }

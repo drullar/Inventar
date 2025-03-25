@@ -1,8 +1,10 @@
 package io.drullar.inventar.shared
 
+import androidx.compose.ui.graphics.Color
 import io.drullar.inventar.persistence.model.Category
 import io.drullar.inventar.ui.utils.Icons
 import io.drullar.inventar.ui.provider.getText
+import io.drullar.inventar.ui.style.Colors
 import java.math.BigDecimal
 import java.time.LocalDateTime
 
@@ -64,8 +66,8 @@ data class OrderCreationDTO(
     val status: OrderStatus
 )
 
-enum class OrderStatus(val text: Lazy<String>) {
-    COMPLETED(lazy { getText("label.completed") }),
-    TERMINATED(lazy { getText("label.terminated") }),
-    DRAFT(lazy { getText("label.draft") })
+enum class OrderStatus(val text: Lazy<String>, val associatedColor: Lazy<Color>) {
+    COMPLETED(lazy { getText("label.completed") }, lazy { Colors.DarkGreen }),
+    TERMINATED(lazy { getText("label.terminated") }, lazy { Color.Red }),
+    DRAFT(lazy { getText("label.draft") }, lazy { Color.Gray })
 }

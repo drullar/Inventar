@@ -1,6 +1,5 @@
 package io.drullar.inventar.ui.components.cards
 
-import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ContextMenuArea
 import androidx.compose.foundation.ContextMenuItem
@@ -44,6 +43,7 @@ import io.drullar.inventar.ui.style.Colors
 import io.drullar.inventar.ui.style.roundedBorder
 import io.drullar.inventar.ui.utils.Icons
 import io.drullar.inventar.ui.provider.getText
+import io.drullar.inventar.ui.style.appTypography
 import java.util.Currency
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -111,8 +111,14 @@ fun ProductSummarizedPreviewCard(
                             .size(width / 2, height / 2)
                     )
                     Column {
-                        Text(text = productData.sellingPrice.toString())
-                        Text(text = currency.symbol)
+                        Text(
+                            text = productData.sellingPrice.toString(),
+                            style = appTypography().labelMedium
+                        )
+                        Text(
+                            text = currency.symbol,
+                            style = appTypography().labelMedium
+                        )
                     }
                     Spacer(Modifier)
                 }
@@ -123,7 +129,8 @@ fun ProductSummarizedPreviewCard(
                     TooltipBox(
                         positionProvider = TooltipDefaults.rememberRichTooltipPositionProvider(),
                         tooltip = { PlainTooltip { Text(productData.name) } },
-                        state = TooltipState(isHoveredOn)
+                        state = TooltipState(isHoveredOn),
+                        modifier = Modifier.fillMaxWidth(0.8f)
                     ) {
                         Text(
                             text = productData.name,
@@ -131,13 +138,14 @@ fun ProductSummarizedPreviewCard(
                                 .hoverable(interactionSource, selectionIsAllowed),
                             textAlign = TextAlign.Center,
                             maxLines = 2,
-                            overflow = TextOverflow.Ellipsis
+                            overflow = TextOverflow.Ellipsis,
+                            style = appTypography().labelMedium
                         )
                     }
                     FilledTonalIconButton(
                         onClick = { onAddToOrderRequest(productData) },
                         colors = IconButtonDefaults.filledTonalIconButtonColors()
-                            .copy(containerColor = Colors.Green)
+                            .copy(containerColor = Colors.Green),
                     ) {
                         Icon(painterResource(Icons.ADD), null)
                     }
@@ -145,16 +153,4 @@ fun ProductSummarizedPreviewCard(
             }
         }
     }
-}
-
-@Preview
-@Composable
-private fun Preview() {
-    ProductSummarizedPreviewCard(
-        ProductDTO(2, "productName"),
-        currency = Currency.getInstance("BG"),
-        onDeleteRequest = {},
-        onEditRequest = {},
-        onAddToOrderRequest = {},
-        onClickCallback = {})
 }

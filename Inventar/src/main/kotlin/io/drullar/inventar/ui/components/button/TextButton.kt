@@ -8,11 +8,10 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.TextUnit
-import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import io.drullar.inventar.ui.style.Colors
+import io.drullar.inventar.ui.style.appTypography
+import io.drullar.inventar.ui.style.highlightedLabelLarge
 import androidx.compose.material3.Button as MaterialButton
 
 @Composable
@@ -35,8 +34,7 @@ fun TextButton(
         Text(
             text,
             color = textColor,
-            fontWeight = FontWeight.W400,
-            fontSize = TextUnit(16f, TextUnitType.Sp)
+            style = appTypography().highlightedLabelLarge
         )
         content?.let { content -> content() }
     }

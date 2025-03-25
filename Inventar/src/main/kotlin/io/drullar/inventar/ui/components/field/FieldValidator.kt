@@ -1,5 +1,6 @@
 package io.drullar.inventar.ui.components.field
 
+import io.drullar.inventar.ui.provider.getText
 import java.math.BigDecimal
 import javax.naming.directory.InvalidAttributesException
 
@@ -36,10 +37,10 @@ class NotNegativeNumber<T : Number> : FieldValidator<T> {
         else -> throw InvalidAttributesException("Unsupported type ${value::class.java}")
     }
 
-    override fun validationErrorMessage(): String = "The provided value can not be negative."
+    override fun validationErrorMessage(): String = getText("warning.validation.negative")
 }
 
 class IsNotEmpty<T> : FieldValidator<T> {
     override fun validate(value: T): Boolean = value.toString().isNotBlank()
-    override fun validationErrorMessage(): String = "The provided value should not be empty."
+    override fun validationErrorMessage(): String = getText("warning.validation.isEmpty")
 }

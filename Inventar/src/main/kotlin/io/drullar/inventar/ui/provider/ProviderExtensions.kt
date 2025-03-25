@@ -1,6 +1,6 @@
 package io.drullar.inventar.ui.provider
 
-import io.drullar.inventar.ui.style.AppStyle
+import io.drullar.inventar.ui.style.LayoutStyle
 
 fun getText(textId: String) = try {
     TextProvider.singleton.getText(textId)
@@ -14,4 +14,4 @@ fun getText(textId: String, pluggableValue: Any) = try {
     "Text provider error" // Needed because of unit tests and the use of getText in some enums
 }
 
-fun getAppStyle(): AppStyle = AppStyleProvider.singleton.getActiveStyle()
+fun getLayoutStyle(): LayoutStyle = LayoutStyleProvider.singleton.getActiveStyle()

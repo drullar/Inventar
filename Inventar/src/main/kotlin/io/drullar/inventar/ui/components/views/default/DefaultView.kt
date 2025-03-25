@@ -10,24 +10,34 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import io.drullar.inventar.shared.OrderDTO
+import io.drullar.inventar.shared.ProductDTO
 import io.drullar.inventar.ui.components.cards.OrderDetailPreviewCard
 import io.drullar.inventar.ui.components.cards.OrdersListPreviewCard
 import io.drullar.inventar.ui.components.cards.ProductDetailedViewCard
 import io.drullar.inventar.ui.components.dialog.NewProductDialog
-import io.drullar.inventar.ui.data.DialogType
+import io.drullar.inventar.ui.components.dialog.OrderPreviewDialog
+import io.drullar.inventar.ui.data.DialogWindowType
 import io.drullar.inventar.ui.components.dialog.OrderProductConfirmation
 import io.drullar.inventar.ui.viewmodel.DefaultViewViewModel
 import io.drullar.inventar.ui.components.views.default.layout.DraftOrderButton
 import io.drullar.inventar.ui.components.views.default.layout.ProductUtilBar
 import io.drullar.inventar.ui.data.DetailedProductPreview
+import io.drullar.inventar.ui.data.EmptyPayload
+import io.drullar.inventar.ui.data.ExternalWindowType
 import io.drullar.inventar.ui.data.OrderDetailsPreview
 import io.drullar.inventar.ui.data.OrdersListPreview
-import io.drullar.inventar.ui.provider.getAppStyle
+import io.drullar.inventar.ui.provider.getLayoutStyle
+import io.drullar.inventar.ui.style.LayoutStyle
 import io.drullar.inventar.ui.style.roundedBorder
 
 @Composable
@@ -35,12 +45,16 @@ fun DefaultView(
     viewModel: DefaultViewViewModel,
     modifier: Modifier = Modifier
 ) {
+    val layout by remember { mutableStateOf(getLayoutStyle()) }
     val products by viewModel.products.collectAsState()
-    val dialog by viewModel.getActiveDialog().collectAsState()
+    val activeDialogWindow by viewModel.getActiveDialog().collectAsState()
+    val activeExternalWindow by viewModel.getActiveWindow().collectAsState()
     val preview by viewModel.preview.collectAsState()
     val previewChangeIsAllowed = viewModel.previewChangeIsAllowed.collectAsState()
     val draftOrdersCount = viewModel.draftOrdersCount.collectAsState()
     val settings by viewModel.getSettings().collectAsState()
+
+//    handleLayoutChange(layout, viewModel)
 
     Column(modifier = modifier) {
         Row(modifier = Modifier.fillMaxWidth().heightIn(30.dp, 70.dp)) {
@@ -49,8 +63,8 @@ fun DefaultView(
                     .wrapContentWidth()
                     .align(Alignment.CenterVertically),
                 onNewProductButtonClick = {
-                    if (viewModel.getActiveDialog().value == null) {
-                        viewModel.setActiveDialog(DialogType.NEW_PRODUCT)
+                    if (!viewModel.hasActiveDialogWindow()) {
+                        viewModel.setActiveDialog(DialogWindowType.NEW_PRODUCT, EmptyPayload())
                     }
                 }
             )
@@ -60,7 +74,6 @@ fun DefaultView(
                 draftOrdersCount = draftOrdersCount.value,
                 onClick = { viewModel.showDraftOrders() })
         }
-
 
         // Main content
         Row(
@@ -88,7 +101,7 @@ fun DefaultView(
                         viewModel.deleteProduct(productDTO)
                     },
                     onAddProductToOrderRequest = {
-                        viewModel.showOrderProductDialog(it)
+                        viewModel.showAddProductToOrderDialog(it)
                     }
                 )
             }
@@ -129,7 +142,7 @@ fun DefaultView(
                                 viewModel.completeOrder(order)
                             },
                             onProductRemove = { product ->
-                                viewModel.removeProductFromOrder(product)
+                                viewModel.removeProductFromOrder(product, order)
                             },
                             onProductValueChange = { product, newQuantity ->
                                 viewModel.changeProductQuantityInOrder(product, newQuantity)
@@ -141,7 +154,7 @@ fun DefaultView(
                         val draftOrders = (preview as OrdersListPreview).getPreviewData()
                         OrdersListPreviewCard(
                             orders = draftOrders,
-                            style = getAppStyle(),
+                            style = getLayoutStyle(),
                             activeLocale = settings.language.locale,
                             onOrderCompletion = { completedOrder ->
                                 viewModel.completeOrder(completedOrder)
@@ -158,30 +171,88 @@ fun DefaultView(
         }
     }
 
-    when (dialog) {
-        DialogType.NEW_PRODUCT -> NewProductDialog(
-            onClose = { viewModel.setActiveDialog(null) },
+    handleDialogWindowRender(activeDialogWindow, viewModel)
+    handleActiveExternalWindowRender(activeExternalWindow, viewModel)
+}
+
+@Composable
+private fun handleDialogWindowRender(
+    activeDialogWindow: DialogWindowType?,
+    viewModel: DefaultViewViewModel
+) {
+    when (activeDialogWindow) {
+        DialogWindowType.NEW_PRODUCT -> NewProductDialog(
+            onClose = { viewModel.closeDialogWindow() },
             onSubmit = {
                 viewModel.addNewProduct(it)
-                viewModel.setActiveDialog(null)
+                viewModel.closeDialogWindow()
             }
         )
 
-        DialogType.ADD_PRODUCT_TO_ORDER -> {
+        DialogWindowType.ADD_PRODUCT_TO_ORDER -> {
+            val product = viewModel.getActiveDialogPayload<ProductDTO>().getData()
             OrderProductConfirmation(
-                viewModel.targetProduct.value!!,
-                viewModel.getCurrentOrderTargetProductQuantity() ?: 1,
+                product = product,
+                initialQuantity = viewModel.getCurrentOrderTargetProductQuantity(product) ?: 1,
                 onConfirm = { quantity ->
-                    viewModel.addProductToOrder(quantity)
-                    viewModel.setActiveDialog(null)
+                    viewModel.addProductToOrder(product, quantity)
+                    viewModel.closeDialogWindow()
                 },
                 onCancel = {
-                    viewModel.targetProduct.value = null
-                    viewModel.setActiveDialog(null)
+                    viewModel.closeDialogWindow()
                 }
             )
         }
 
-        else -> Unit
+        null -> Unit
+    }
+}
+
+@Composable
+private fun handleActiveExternalWindowRender(
+    activeExternalWindowType: ExternalWindowType?,
+    viewModel: DefaultViewViewModel
+) {
+    when (activeExternalWindowType) {
+        ExternalWindowType.ORDER_PREVIEW -> {
+            OrderPreviewDialog(
+                orderDTO = viewModel.getActiveWindowPayload<OrderDTO>().getData(),
+                onClose = { viewModel.closeExternalWindow() },
+                onTerminate = { /* TODO implement */ },
+                onComplete = {
+                    viewModel.completeOrder(it)
+                    viewModel.closeExternalWindow()
+                },
+                onProductValueChange = { product, quantity ->
+                    viewModel.changeProductQuantityInOrder(
+                        product,
+                        quantity
+                    )
+                },
+                onProductRemove = { product, order ->
+                    viewModel.removeProductFromOrder(
+                        product,
+                        order
+                    )
+                }
+            )
+        }
+
+        null -> Unit
+    }
+
+}
+
+private fun handleLayoutChange(updatedLayout: LayoutStyle, viewModel: DefaultViewViewModel) {
+    val activeWindow = viewModel.getActiveWindow()
+    val preview = viewModel.getPreview().value
+    when (updatedLayout) {
+        LayoutStyle.COMPACT -> {
+
+        }
+
+        LayoutStyle.NORMAL -> {
+
+        }
     }
 }

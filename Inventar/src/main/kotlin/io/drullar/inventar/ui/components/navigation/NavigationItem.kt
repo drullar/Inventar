@@ -6,7 +6,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -24,10 +23,9 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import io.drullar.inventar.ui.style.Colors
+import io.drullar.inventar.ui.style.appTypography
 import io.drullar.inventar.ui.style.roundedBorder
 import io.drullar.inventar.ui.style.roundedBorderShape
-import io.drullar.inventar.ui.utils.Icons
-import io.drullar.inventar.ui.provider.getText
 
 @Preview
 @Composable
@@ -62,10 +60,9 @@ fun NavigationItem(
         Text(
             text = details.textIdentifier,
             textAlign = TextAlign.Center,
-            fontSize = TextUnit(10f, TextUnitType.Unspecified),
-            fontFamily = FontFamily.SansSerif,
             modifier = Modifier.align(Alignment.CenterVertically).padding(horizontal = 10.dp),
             textDecoration = if (isSelected) TextDecoration.Underline else TextDecoration.None,
+            style = appTypography().labelMedium
         )
     }
 }

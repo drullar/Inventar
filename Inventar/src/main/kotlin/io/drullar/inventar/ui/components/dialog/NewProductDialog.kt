@@ -1,6 +1,5 @@
 package io.drullar.inventar.ui.components.dialog
 
-import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -67,7 +66,7 @@ fun NewProductDialog( //TODO reuse same form here and inside ProductDetailedPrev
                     onValueChange = {
                         sellingPrice = it.toBigDecimalOrNull() ?: BigDecimal.valueOf(0.0)
                         sellingPriceFieldWarning =
-                            produceWarningText<BigDecimal>(
+                            produceWarningText(
                                 sellingPrice, setOf(IsNotEmpty(), NotNegativeNumber())
                             )
                     },
@@ -86,7 +85,7 @@ fun NewProductDialog( //TODO reuse same form here and inside ProductDetailedPrev
                     onValueChange = {
                         availableQuantity = it.toIntOrNull() ?: 0
                         availableQuantityFieldWarning =
-                            produceWarningText(
+                            produceWarningText<Int>(
                                 availableQuantity,
                                 setOf(IsNotEmpty(), NotNegativeNumber())
                             )
@@ -125,6 +124,7 @@ fun NewProductDialog( //TODO reuse same form here and inside ProductDetailedPrev
 }
 
 private fun concatValidationIssues(issueTexts: List<String>) = issueTexts.joinToString(" ")
+
 fun <T> produceWarningText(
     value: T,
     validators: Set<FieldValidator<T>>
@@ -133,10 +133,4 @@ fun <T> produceWarningText(
         .map { it.validationErrorMessage() }
     return if (validationIssues.isNotEmpty()) concatValidationIssues(validationIssues)
     else null
-}
-
-@Composable
-@Preview
-private fun NewProductDialogPreview() {
-    NewProductDialog({}, {})
 }
