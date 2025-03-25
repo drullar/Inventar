@@ -1,5 +1,6 @@
 package io.drullar.inventar.ui.components.views.default
 
+import androidx.annotation.Nullable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,7 +11,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -18,16 +18,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import io.drullar.inventar.shared.OrderDTO
 import io.drullar.inventar.shared.ProductDTO
 import io.drullar.inventar.ui.components.cards.OrderDetailPreviewCard
 import io.drullar.inventar.ui.components.cards.OrdersListPreviewCard
 import io.drullar.inventar.ui.components.cards.ProductDetailedViewCard
-import io.drullar.inventar.ui.components.dialog.NewProductDialog
-import io.drullar.inventar.ui.components.dialog.OrderPreviewDialog
+import io.drullar.inventar.ui.components.window.dialog.NewProductDialog
+import io.drullar.inventar.ui.components.window.external.OrderPreviewWindow
 import io.drullar.inventar.ui.data.DialogWindowType
-import io.drullar.inventar.ui.components.dialog.OrderProductConfirmation
+import io.drullar.inventar.ui.components.window.dialog.OrderProductConfirmation
 import io.drullar.inventar.ui.viewmodel.DefaultViewViewModel
 import io.drullar.inventar.ui.components.views.default.layout.DraftOrderButton
 import io.drullar.inventar.ui.components.views.default.layout.ProductUtilBar
@@ -190,7 +189,7 @@ private fun handleDialogWindowRender(
         )
 
         DialogWindowType.ADD_PRODUCT_TO_ORDER -> {
-            val product = viewModel.getActiveDialogPayload<ProductDTO>().getData()
+            val product = viewModel.getActiveDialogPayload<ProductDTO>().value!!.getData()
             OrderProductConfirmation(
                 product = product,
                 initialQuantity = viewModel.getCurrentOrderTargetProductQuantity(product) ?: 1,
@@ -213,10 +212,12 @@ private fun handleActiveExternalWindowRender(
     activeExternalWindowType: ExternalWindowType?,
     viewModel: DefaultViewViewModel
 ) {
+    val payload by viewModel.getActiveWindowPayload<Nullable>().collectAsState()
+
     when (activeExternalWindowType) {
         ExternalWindowType.ORDER_PREVIEW -> {
-            OrderPreviewDialog(
-                orderDTO = viewModel.getActiveWindowPayload<OrderDTO>().getData(),
+            OrderPreviewWindow(
+                orderDTO = payload!!.getData() as OrderDTO,
                 onClose = { viewModel.closeExternalWindow() },
                 onTerminate = { /* TODO implement */ },
                 onComplete = {

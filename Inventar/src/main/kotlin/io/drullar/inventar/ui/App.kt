@@ -17,7 +17,7 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import io.drullar.inventar.shared.SupportedLanguage
 import io.drullar.inventar.ui.components.button.IconButton
-import io.drullar.inventar.ui.components.dialog.SingleActionAlertDialog
+import io.drullar.inventar.ui.components.window.dialog.SingleActionAlertDialog
 import io.drullar.inventar.ui.components.navigation.NavigationBar
 import io.drullar.inventar.ui.components.navigation.NavigationDestination
 import io.drullar.inventar.ui.components.views.order.OrdersView

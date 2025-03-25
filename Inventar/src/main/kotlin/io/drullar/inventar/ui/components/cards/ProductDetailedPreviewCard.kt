@@ -25,7 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import io.drullar.inventar.persistence.schema.BARCODE_LENGTH
 import io.drullar.inventar.shared.ProductDTO
-import io.drullar.inventar.ui.components.dialog.produceWarningText
+import io.drullar.inventar.ui.components.window.dialog.produceWarningText
 import io.drullar.inventar.ui.components.field.FormInputField
 import io.drullar.inventar.ui.components.field.IsNotEmpty
 import io.drullar.inventar.ui.components.field.NotNegativeNumber

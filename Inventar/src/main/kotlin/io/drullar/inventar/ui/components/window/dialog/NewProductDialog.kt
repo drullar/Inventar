@@ -1,4 +1,4 @@
-package io.drullar.inventar.ui.components.dialog
+package io.drullar.inventar.ui.components.window.dialog
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight

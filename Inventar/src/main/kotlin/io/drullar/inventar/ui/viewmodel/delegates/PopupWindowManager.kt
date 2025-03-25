@@ -17,7 +17,7 @@ interface PopupWindowManager<T : WindowTypeInterface> {
      * Not every window type requires a payload, hence the nullability of [payload].
      * [type] should be set to NULL if there shouldn't be an active window
      */
-    fun <D> setActiveWindow(type: T?, payload: WindowPayload<D>?)
+    fun <D> setActiveWindow(type: T?, payload: WindowPayload<D>)
 
     /**
      * Get a the active window type as state flow
@@ -28,13 +28,13 @@ interface PopupWindowManager<T : WindowTypeInterface> {
      * [D] - payload data type.
      * Set the payload that accompanies the active window
      */
-    fun <D> setWindowPayload(payload: WindowPayload<D>?)
+    fun <D> setWindowPayload(payload: WindowPayload<D>)
 
     /**
      * [D] - payload data type.
      * Get the payload for the active window.
      */
-    fun <D> getWindowPayload(): WindowPayload<D>
+    fun <D> getWindowPayload(): StateFlow<WindowPayload<D>>
 
     /**
      * Returns whether there is an active window

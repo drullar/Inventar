@@ -14,7 +14,7 @@ class WindowManagerFacadeImpl(
 
     override fun <T> setActiveDialog(
         dialogWindowType: DialogWindowType?,
-        payload: WindowPayload<T>?
+        payload: WindowPayload<T>
     ) {
         dialogWindowManager.setActiveWindow(dialogWindowType, payload)
     }
@@ -23,11 +23,11 @@ class WindowManagerFacadeImpl(
         return dialogWindowManager.getActiveWindow()
     }
 
-    override fun <T> getActiveDialogPayload(): WindowPayload<T> {
+    override fun <T> getActiveDialogPayload(): StateFlow<WindowPayload<T>> {
         return dialogWindowManager.getWindowPayload()
     }
 
-    override fun <T> setActiveWindow(dialogType: ExternalWindowType?, payload: WindowPayload<T>?) {
+    override fun <T> setActiveWindow(dialogType: ExternalWindowType?, payload: WindowPayload<T>) {
         externalWindowManager.setActiveWindow(dialogType, payload)
     }
 
@@ -39,7 +39,7 @@ class WindowManagerFacadeImpl(
         return externalWindowManager.getActiveWindow()
     }
 
-    override fun <T> getActiveWindowPayload(): WindowPayload<T> {
+    override fun <T> getActiveWindowPayload(): StateFlow<WindowPayload<T>> {
         return externalWindowManager.getWindowPayload()
     }
 

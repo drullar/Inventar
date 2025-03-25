@@ -1,6 +1,9 @@
 package io.drullar.inventar.ui.components.cards
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.LocalScrollbarStyle
+import androidx.compose.foundation.ScrollbarStyle
+import androidx.compose.foundation.VerticalScrollbar
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -19,6 +22,8 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollbarAdapter
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
@@ -95,25 +100,39 @@ fun OrderDetailPreviewCard(
 
             Spacer(Modifier.padding(10.dp))
 
-            LazyColumn(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                items(
-                    items = productsMap.keys.toList(),
-                    key = { it.uid }
-                ) { product ->
-                    OrderCreationRow(
-                        productDTO = product,
-                        isModifiable = order.status == OrderStatus.DRAFT,
-                        quantity = productsMap[product]!!,
-                        onSelectCallback = { /*TODO*/ },
-                        onQuantityChangeCallback = { newQuantity ->
-                            onProductValueChange(product, newQuantity)
-                        },
-                        onRemoveCallback = { onProductRemove(it) },
-                    )
+            Box {
+
+                val scrollState = rememberLazyListState()
+                LazyColumn(Modifier.fillMaxHeight(0.6f).padding(end = 12.dp), scrollState) {
+                    items(
+                        items = productsMap.keys.toList(),
+                        key = { it.uid }
+                    ) { product ->
+                        OrderCreationRow(
+                            productDTO = product,
+                            isModifiable = order.status == OrderStatus.DRAFT,
+                            quantity = productsMap[product]!!,
+                            onSelectCallback = { /*TODO*/ },
+                            onQuantityChangeCallback = { newQuantity ->
+                                onProductValueChange(product, newQuantity)
+                            },
+                            onRemoveCallback = { onProductRemove(it) },
+                        )
+                    }
                 }
+                VerticalScrollbar(
+                    modifier = Modifier.align(Alignment.CenterEnd)
+                        .fillMaxHeight(0.6f),
+                    adapter = rememberScrollbarAdapter(
+                        scrollState = scrollState
+                    ),
+                    style = LocalScrollbarStyle.current.copy(
+                        thickness = 10.dp,
+                        unhoverColor = Colors.PlatinumGray, hoverColor = Color.DarkGray
+                    )
+                )
             }
+
         }
 
         Column(modifier = Modifier.fillMaxWidth().wrapContentHeight()) {

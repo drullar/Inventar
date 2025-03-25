@@ -1,4 +1,4 @@
-package io.drullar.inventar.ui.components.dialog
+package io.drullar.inventar.ui.components.window.external
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -16,7 +16,7 @@ import io.drullar.inventar.ui.provider.getText
 import io.drullar.inventar.ui.utils.Icons
 
 @Composable
-fun OrderPreviewDialog(
+fun OrderPreviewWindow(
     orderDTO: OrderDTO,
     onClose: () -> Unit,
     onTerminate: (OrderDTO) -> Unit,
@@ -26,7 +26,7 @@ fun OrderPreviewDialog(
 ) {
     Window(
         title = "${getText("label.order")} #${orderDTO.orderId} preview",
-        resizable = false,
+        resizable = true,
         onCloseRequest = { onClose() },
         icon = painterResource(Icons.APP_ICON),
         state = rememberWindowState(
