@@ -1,5 +1,6 @@
 package io.drullar.inventar.ui.viewmodel
 
+import io.drullar.inventar.SortingOrder
 import io.drullar.inventar.logging.LoggerImpl
 import io.drullar.inventar.shared.OrderStatus
 import io.drullar.inventar.persistence.repositories.OrderRepository
@@ -46,12 +47,19 @@ class DefaultViewViewModel(
     private val _previewChangeIsAllowed = MutableStateFlow(true)
     val previewChangeIsAllowed = _previewChangeIsAllowed.asStateFlow()
 
+    //TODO review and refactor product state vars
     private val _products = MutableStateFlow(
         productsRepository.getAll().getOrNull()?.toMutableList()
     )
     val products = _products.asStateFlow()
 
     private var _selectedProductIndex: Int? = null
+
+    private val sortingOrder = MutableStateFlow(SortingOrder.ASCENDING)
+    val _sortingOrder = sortingOrder.asStateFlow()
+
+    private val sortBy = MutableStateFlow(ProductsRepository.SortBy.NAME)
+    val _sortBy = sortBy.asStateFlow()
 
     var preview = getPreview().asStateFlow()
 
@@ -60,13 +68,11 @@ class DefaultViewViewModel(
             ordersRepository.getCountByStatus(OrderStatus.DRAFT)
         )
     }
-
     val draftOrdersCount by lazy { _draftOrdersCount.asStateFlow() }
 
-    fun updateProduct(product: ProductDTO) {
-        productsRepository.update(product.uid, product.toProductCreationDTO())
-        _products.value?.set(_selectedProductIndex!!, product)
+    fun updateProduct(product: ProductDTO): ProductDTO {
         _previewChangeIsAllowed.value = true
+        return productsRepository.update(product.uid, product.toProductCreationDTO()).getOrThrow()
     }
 
     fun selectProduct(product: ProductDTO) {
@@ -80,17 +86,15 @@ class DefaultViewViewModel(
         _previewChangeIsAllowed.value = doAllow
     }
 
-    fun addNewProduct(product: ProductCreationDTO) {
-        val persistedObject: ProductDTO =
-            productsRepository.save(product).getOrNull()!!
-        _products.value = (_products.value?.plus(persistedObject))?.toMutableList()
+    fun saveProduct(product: ProductCreationDTO): ProductDTO {
+        return productsRepository.save(product).getOrThrow()
     }
 
     fun showDraftOrders() {
         if (_previewChangeIsAllowed.value) {
             val draftOrders = ordersRepository.getAllByStatus(OrderStatus.DRAFT);
             if (draftOrders.isFailure) throw draftOrders.exceptionOrNull()!!
-            else setPreview(OrdersListPreview(draftOrders.getOrThrow().items))
+            else setPreview(OrdersListPreview(draftOrders.getOrThrow()))
         }
     }
 
@@ -168,7 +172,7 @@ class DefaultViewViewModel(
                 draftOrders.remove(orderDTO)
 
                 getPreview().value = OrdersListPreview(
-                    ordersRepository.getAllByStatus(OrderStatus.DRAFT).getOrThrow().items
+                    ordersRepository.getAllByStatus(OrderStatus.DRAFT).getOrThrow()
                 )
             }
 
@@ -225,7 +229,6 @@ class DefaultViewViewModel(
         if (isProductBeingEdited(product)) {
             // TODO set show alert dialog
         } else {
-            _products.value = (_products.value!! - product).toMutableList()
             productsRepository.deleteById(product.uid)
         }
         //TODO validate whether the product is in any Draft order
@@ -243,6 +246,13 @@ class DefaultViewViewModel(
         val activeOrder = getSelectedOrderFromNormalLayout() ?: getSelectedOrderFromCompactLayout()
         return activeOrder?.let { it.productToQuantity[product] }
     }
+
+    fun fetchProducts(
+        page: Int,
+        pageSize: Int,
+        sortBy: ProductsRepository.SortBy,
+        order: SortingOrder
+    ) = productsRepository.getPaged(page, pageSize, sortBy, order).getOrThrow()
 
     private fun isProductBeingEdited(product: ProductDTO) =
         getPreview().value is DetailedProductPreview &&

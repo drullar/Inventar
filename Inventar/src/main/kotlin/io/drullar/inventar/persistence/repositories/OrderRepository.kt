@@ -95,21 +95,11 @@ object OrderRepository :
         creationDate = row[creationDate]
     )
 
-    fun getAllByStatus(status: OrderStatus): Result<Page<OrderDTO>> = result {
+    fun getAllByStatus(status: OrderStatus): Result<List<OrderDTO>> = result {
         withTransaction {
             table.selectAll().where { table.orderStatus.eq(status) }
-                .limit(20)
                 .orderBy(table.creationDate)
                 .map { transformResultRowToModel(it) }
-                .let {
-                    Page(
-                        pageNumber = 1,
-                        itemsPerPage = 20,
-                        items = it,
-                        totalItems = getCountByStatus(status),
-                        isLastPage = false // TODO do proper pagination
-                    )
-                }
         }
     }
 

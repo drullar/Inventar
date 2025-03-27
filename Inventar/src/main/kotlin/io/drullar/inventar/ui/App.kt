@@ -95,7 +95,7 @@ fun App(
         val viewModifier = Modifier.fillMaxWidth().fillMaxHeight()
         when (currentView.value) {
             NavigationDestination.PRODUCTS_PAGE -> {
-                DefaultView(defaultViewViewModel, viewModifier)
+                DefaultView(defaultViewViewModel, viewModifier, getLayoutStyle())
             }
 
             NavigationDestination.ORDERS_PAGE -> {

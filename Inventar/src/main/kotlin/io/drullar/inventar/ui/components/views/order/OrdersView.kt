@@ -116,7 +116,7 @@ fun OrdersView(viewModel: OrderViewViewModel) {
 //                        DropdownMenuItem({ Text(getText("field.total.price")) }, {
 //                            isOrderByDropdownExtended = false
 //                            viewModel.sortOrdersBy(OrderViewViewModel.OrderBy.TOTAL_PRICE)
-//                        })
+//                        }) TODO implement
                         DropdownMenuItem({ Text(getText("field.status")) }, {
                             viewModel.sortOrdersBy(OrderRepository.SortBy.STATUS)
                             isOrderByDropdownExtended = false
