@@ -14,7 +14,6 @@ import io.drullar.inventar.result
 import io.drullar.inventar.shared.OrderCreationDTO
 import io.drullar.inventar.shared.OrderDTO
 import io.drullar.inventar.shared.OrderStatus
-import io.drullar.inventar.shared.Page
 import io.drullar.inventar.shared.ProductDTO
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
@@ -80,7 +79,6 @@ object OrderRepository :
         }
 
         updateOrderProductAssociations(id, preUpdateOrder.productToQuantity, dto.productToQuantity)
-
         if (dto.status == OrderStatus.COMPLETED) {
             performPostOrderCompletionOperations(id)
         }
@@ -157,17 +155,7 @@ object OrderRepository :
 
     private fun performPostOrderCompletionOperations(id: Int) {
         val order = getById(id).getOrNull()!!
-        order.productToQuantity.forEach { (orderedProduct, orderedAmount) ->
-            val product = productRepository.getById(orderedProduct.uid).getOrNull()!!
-            if (product.availableQuantity - orderedAmount < 0) throw DatabaseException.InvalidOperationException(
-                "Insufficient amount from ${product.name}. The available quantity from this product is: ${product.availableQuantity}"
-            )
-            productRepository.update(
-                product.uid,
-                product.copy(availableQuantity = product.availableQuantity - orderedAmount)
-                    .toProductCreationDTO()
-            )
-        }
+        updateProductsQuantityOnCompletion(order.productToQuantity)
     }
 
     private fun updateOrderProductAssociations(
@@ -212,6 +200,17 @@ object OrderRepository :
                         .getOrNull()!! to it[orderedAmount]
                 }
         }
+
+    private fun updateProductsQuantityOnCompletion(productsToSoldQuantity: Map<ProductDTO, Int>) {
+        productsToSoldQuantity.keys.forEach { product ->
+            val soldQuantity = productsToSoldQuantity[product]!!
+            val updatedAvailability = (product.availableQuantity - soldQuantity).coerceAtLeast(0)
+            productRepository.update(
+                product.uid,
+                product.copy(availableQuantity = updatedAvailability).toProductCreationDTO()
+            )
+        }
+    }
 
     enum class SortBy(val text: String) {
         NUMBER("field.number"),

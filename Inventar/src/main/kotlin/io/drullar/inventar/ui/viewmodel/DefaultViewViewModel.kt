@@ -53,6 +53,10 @@ class DefaultViewViewModel(
     )
     val products = _products.asStateFlow()
 
+
+    private val selectedProductId = MutableStateFlow<Int?>(null)
+    val _selectedProductId = selectedProductId.asStateFlow()
+
     private var _selectedProductIndex: Int? = null
 
     private val sortingOrder = MutableStateFlow(SortingOrder.ASCENDING)
@@ -78,7 +82,7 @@ class DefaultViewViewModel(
     fun selectProduct(product: ProductDTO) {
         if (_previewChangeIsAllowed.value) {
             setPreview(DetailedProductPreview(product))
-            _selectedProductIndex = _products.value?.indexOf(product)
+            selectedProductId.value = product.uid
         }
     }
 

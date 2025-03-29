@@ -1,6 +1,8 @@
 package io.drullar.inventar.ui.components.window.dialog
 
 import androidx.compose.desktop.ui.tooling.preview.Preview
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -15,9 +17,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material3.BasicAlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -29,6 +29,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import io.drullar.inventar.ui.components.button.TextButton
+import io.drullar.inventar.ui.provider.getText
+import io.drullar.inventar.ui.style.Colors
 import io.drullar.inventar.ui.style.roundedBorderShape
 import io.drullar.inventar.ui.utils.Icons
 
@@ -37,7 +39,7 @@ import io.drullar.inventar.ui.utils.Icons
 fun AlertDialog(
     text: String,
     resolveButtonText: String,
-    cancelButtonText: String = "Cancel",
+    cancelButtonText: String = getText("label.cancel"),
     headerIconPainter: Painter? = null,
     onResolve: () -> Unit,
     onCancel: () -> Unit
@@ -52,12 +54,12 @@ fun AlertDialog(
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
                 if (headerIconPainter != null) {
-                    Icon(
+                    Image(
                         painter = headerIconPainter,
                         contentDescription = "AlertIcon",
                         modifier = Modifier.size(50.dp).padding(2.dp)
                     )
-                }
+                } else Spacer(Modifier.height(25.dp))
 
                 Text(
                     text,
@@ -68,13 +70,19 @@ fun AlertDialog(
                     modifier = Modifier.align(Alignment.CenterHorizontally),
                     verticalAlignment = Alignment.Bottom
                 ) {
-                    Button(onClick = onCancel) {
-                        Text(cancelButtonText)
-                    }
+                    TextButton(
+                        cancelButtonText,
+                        onClick = onCancel,
+                        backgroundColor = Color.Red,
+                        borderColor = Color.Red
+                    )
                     Spacer(modifier = Modifier.width(20.dp))
-                    Button(onClick = onResolve) {
-                        Text(resolveButtonText)
-                    }
+                    TextButton(
+                        resolveButtonText,
+                        onClick = onResolve,
+                        backgroundColor = Colors.DarkGreen,
+                        borderColor = Colors.DarkGreen
+                    )
                 }
             }
         }
@@ -132,6 +140,18 @@ private fun UnsavedChangesAlertDialogPreview() {
                 "Save or revert the changes in order to select to continue",
         resolveButtonText = "Save changes",
         headerIconPainter = painterResource(Icons.ERROR),
+        onResolve = { },
+        onCancel = { }
+    )
+}
+
+@Composable
+@Preview
+private fun OrderProductQuantityDialog() {
+    AlertDialog(
+        text = "The order has products with insufficient quantity.\n Would you like to complete the order anyways?",
+        resolveButtonText = "Save changes",
+        cancelButtonText = "Cancel",
         onResolve = { },
         onCancel = { }
     )

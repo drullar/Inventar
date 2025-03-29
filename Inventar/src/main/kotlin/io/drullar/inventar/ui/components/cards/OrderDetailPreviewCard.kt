@@ -1,8 +1,8 @@
 package io.drullar.inventar.ui.components.cards
 
+import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.LocalScrollbarStyle
-import androidx.compose.foundation.ScrollbarStyle
 import androidx.compose.foundation.VerticalScrollbar
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -54,7 +54,7 @@ import java.time.format.DateTimeFormatter
 fun OrderDetailPreviewCard(
     order: OrderDTO,
     onTerminate: () -> Unit,
-    onComplete: () -> Unit,
+    onComplete: (Boolean) -> Unit,
     onProductValueChange: (ProductDTO, Int) -> Unit,
     onProductRemove: (ProductDTO) -> Unit
 ) {
@@ -101,22 +101,27 @@ fun OrderDetailPreviewCard(
             Spacer(Modifier.padding(10.dp))
 
             Box {
-
                 val scrollState = rememberLazyListState()
-                LazyColumn(Modifier.fillMaxHeight(0.6f).padding(end = 12.dp), scrollState) {
+                val isDraftOrder = order.status == OrderStatus.DRAFT
+                LazyColumn(
+                    Modifier.fillMaxWidth().fillMaxHeight(0.6f),
+                    scrollState
+                ) {
                     items(
                         items = productsMap.keys.toList(),
                         key = { it.uid }
                     ) { product ->
+                        val quantity = productsMap[product]!!
                         OrderCreationRow(
                             productDTO = product,
-                            isModifiable = order.status == OrderStatus.DRAFT,
-                            quantity = productsMap[product]!!,
+                            isModifiable = isDraftOrder,
+                            quantity = quantity,
                             onSelectCallback = { /*TODO*/ },
                             onQuantityChangeCallback = { newQuantity ->
                                 onProductValueChange(product, newQuantity)
                             },
                             onRemoveCallback = { onProductRemove(it) },
+                            showQuantityWarning = (isDraftOrder && product.availableQuantity < quantity)
                         )
                     }
                 }
@@ -132,7 +137,6 @@ fun OrderDetailPreviewCard(
                     )
                 )
             }
-
         }
 
         Column(modifier = Modifier.fillMaxWidth().wrapContentHeight()) {
@@ -143,33 +147,25 @@ fun OrderDetailPreviewCard(
                 fontSize = TextUnit(30f, TextUnitType.Sp)
             ) // TODO use currency
             Spacer(Modifier.padding(vertical = 10.dp))
-            if (order.status == OrderStatus.DRAFT)
-                GroupedButtons(
-                    Modifier.align(Alignment.CenterHorizontally).fillMaxWidth(),
-                    onTerminate,
-                    onComplete
-                )
+            if (order.status == OrderStatus.DRAFT) {
+                Row(
+                    modifier = Modifier.align(Alignment.CenterHorizontally).fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceAround
+                ) {
+                    TextButton(
+                        getText("label.complete"),
+                        { onComplete(hasQuantityIssue(productsMap)) }
+                    )
+                    TextButton(
+                        getText("label.terminate"),
+                        onTerminate,
+                        backgroundColor = Color.White,
+                        textColor = Color.Red,
+                        borderColor = Color.Red
+                    )
+                }
+            }
         }
-
-    }
-}
-
-@Composable
-private fun GroupedButtons(
-    modifier: Modifier = Modifier,
-    onTerminate: () -> Unit,
-    onComplete: () -> Unit,
-) {
-    Row(modifier = modifier, horizontalArrangement = Arrangement.SpaceAround) {
-        TextButton(getText("label.complete"), onComplete)
-
-        TextButton(
-            getText("label.terminate"),
-            onTerminate,
-            backgroundColor = Color.White,
-            textColor = Color.Red,
-            borderColor = Color.Red
-        )
     }
 }
 
@@ -178,50 +174,61 @@ private fun OrderCreationRow(
     productDTO: ProductDTO,
     isModifiable: Boolean,
     quantity: Int,
+    showQuantityWarning: Boolean,
     onSelectCallback: () -> Unit,
     onQuantityChangeCallback: (Int) -> Unit,
     onRemoveCallback: (ProductDTO) -> Unit
 ) {
-    Box(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .heightIn(50.dp, 75.dp)
             .border(1.dp, Color.Black)
-            .clickable(onClick = onSelectCallback)
+            .height(75.dp)
+            .clickable(onClick = onSelectCallback),
+        verticalArrangement = Arrangement.SpaceAround
     ) {
-        Row(modifier = Modifier.padding(5.dp)) {
-            BasicTextField(
-                value = if (quantity > 0) quantity.toString() else "",
-                onValueChange = { value ->
-                    if (isModifiable) {
-                        if (value.isEmpty()) onQuantityChangeCallback(0)
-                        else value.toIntOrNull()?.let {
-                            onQuantityChangeCallback(it)
+        Row(
+            modifier = Modifier.padding(5.dp).fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(Modifier) {
+                BasicTextField(
+                    value = if (quantity > 0) quantity.toString() else "",
+                    onValueChange = { value ->
+                        if (isModifiable) {
+                            if (value.isEmpty()) onQuantityChangeCallback(0)
+                            else value.toIntOrNull()?.let {
+                                onQuantityChangeCallback(it)
+                            }
                         }
-                    }
-                },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                singleLine = true,
-                textStyle = TextStyle.Default.copy(textAlign = TextAlign.Center),
-                modifier = Modifier
-                    .background(color = Colors.PlatinumGray)
-                    .border(BorderStroke(0.1.dp, Color.Black), RoundedCornerShape(3.dp))
-                    .widthIn(15.dp, 25.dp)
-                    .wrapContentWidth()
-                    .align(Alignment.CenterVertically)
-            )
-            Text(
-                "x",
-                Modifier.align(Alignment.CenterVertically).height(15.dp).padding(start = 2.dp)
-            )
-            Spacer(modifier = Modifier.padding(horizontal = 5.dp).align(Alignment.CenterVertically))
-            Text(
-                productDTO.name,
-                modifier = Modifier.fillMaxWidth(0.4f)
-                    .align(Alignment.CenterVertically),
-                maxLines = 1,
-                overflow = TextOverflow.Clip
-            )
+                    },
+                    enabled = isModifiable,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    singleLine = true,
+                    textStyle = TextStyle.Default.copy(textAlign = TextAlign.Center),
+                    modifier = Modifier
+                        .background(color = Colors.PlatinumGray)
+                        .border(BorderStroke(0.1.dp, Color.Black), RoundedCornerShape(3.dp))
+                        .widthIn(15.dp, 25.dp)
+                        .align(Alignment.CenterVertically)
+                        .wrapContentWidth()
+                )
+                Text(
+                    "x",
+                    Modifier.align(Alignment.CenterVertically).height(15.dp).padding(start = 2.dp)
+                )
+                Spacer(
+                    modifier = Modifier.padding(horizontal = 5.dp).align(Alignment.CenterVertically)
+                )
+                Text(
+                    productDTO.name,
+                    modifier = Modifier.fillMaxWidth(0.4f)
+                        .align(Alignment.CenterVertically),
+                    maxLines = 1,
+                    overflow = TextOverflow.Clip
+                )
+            }
             if (isModifiable)
                 TextButton(
                     text = getText("label.remove"),
@@ -232,5 +239,27 @@ private fun OrderCreationRow(
                     borderColor = Color.Red
                 )
         }
+        if (showQuantityWarning) {
+            Text(
+                text = getText("warning.product.quantity", productDTO.availableQuantity),
+                color = Color.Red,
+                modifier = Modifier.align(Alignment.Start)
+            )
+        }
     }
+}
+
+/**
+ * Returns whether any specified product has a greater specified quantity that the available one
+ */
+private fun hasQuantityIssue(productsToQuantity: Map<ProductDTO, Int>) = productsToQuantity.any {
+    val product = it.key
+    val specifiedQuantity = it.value
+    product.availableQuantity < specifiedQuantity
+}
+
+@Composable
+@Preview
+private fun OrderCreationRowPreview() {
+    OrderCreationRow(ProductDTO(1, "name", 2.0.toBigDecimal()), true, 3, true, {}, {}, {})
 }

@@ -28,6 +28,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -49,6 +51,10 @@ fun OrderProductConfirmation(
     BasicAlertDialog(
         onDismissRequest = onCancel,
         modifier = Modifier.border(1.dp, Color.Black, roundedBorderShape())
+            .semantics {
+                contentDescription =
+                    "Dialog that allows you to specify the amount of a given product to add to an order"
+            }
     ) {
         OutlinedCard(modifier = Modifier.wrapContentWidth().height(200.dp)) {
             Column(
@@ -74,7 +80,11 @@ fun OrderProductConfirmation(
                         singleLine = true,
                         textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
                         shape = roundedBorderShape(),
-                        modifier = Modifier.widthIn(30.dp, 70.dp),
+                        modifier = Modifier.widthIn(30.dp, 70.dp)
+                            .semantics {
+                                contentDescription =
+                                    "Test field to input quantity which is to be added to the order"
+                            },
                     )
                 }
                 Row(

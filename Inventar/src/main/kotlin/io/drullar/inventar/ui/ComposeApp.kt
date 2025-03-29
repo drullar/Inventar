@@ -37,7 +37,7 @@ import io.drullar.inventar.ui.provider.impl.LayoutStyleProviderImpl
 import io.drullar.inventar.ui.style.LayoutStyle
 
 @Composable
-fun App(
+fun ComposeApp(
     sharedAppState: SharedAppStateDelegate,
     alertManager: AlertManager,
     defaultViewViewModel: DefaultViewViewModel,

@@ -25,8 +25,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import io.drullar.inventar.SortingOrder
-import io.drullar.inventar.persistence.repositories.ProductsRepository
 import io.drullar.inventar.shared.OrderDTO
 import io.drullar.inventar.shared.ProductCreationDTO
 import io.drullar.inventar.shared.ProductDTO
@@ -41,12 +39,14 @@ import io.drullar.inventar.ui.components.window.dialog.OrderProductConfirmation
 import io.drullar.inventar.ui.viewmodel.DefaultViewViewModel
 import io.drullar.inventar.ui.components.views.default.layout.DraftOrderButton
 import io.drullar.inventar.ui.components.views.default.layout.ProductUtilBar
+import io.drullar.inventar.ui.components.window.dialog.AlertDialog
 import io.drullar.inventar.ui.data.DetailedProductPreview
 import io.drullar.inventar.ui.data.EmptyPayload
 import io.drullar.inventar.ui.data.ExternalWindowType
 import io.drullar.inventar.ui.data.OrderDetailsPreview
 import io.drullar.inventar.ui.data.OrderWindowPayload
 import io.drullar.inventar.ui.data.OrdersListPreview
+import io.drullar.inventar.ui.provider.getText
 import io.drullar.inventar.ui.style.LayoutStyle
 import io.drullar.inventar.ui.style.roundedBorder
 
@@ -62,8 +62,9 @@ fun DefaultView(
     val previewChangeIsAllowed by viewModel.previewChangeIsAllowed.collectAsState()
     val draftOrdersCount = viewModel.draftOrdersCount.collectAsState()
     val settings by viewModel.getSettings().collectAsState()
+    val selectedProductId =
+        remember { (preview as? DetailedProductPreview)?.getPreviewData()?.uid }
 
-    var selectedProduct by remember { mutableStateOf<ProductDTO?>(null) }
     var page by remember { mutableStateOf(1) }
     val sortBy by viewModel._sortBy.collectAsState()
     val sortingOrder by viewModel._sortingOrder.collectAsState()
@@ -137,11 +138,8 @@ fun DefaultView(
                         ProductSummarizedPreviewCard(
                             product,
                             currency = settings.defaultCurrency,
-                            onClickCallback = {
-                                viewModel.selectProduct(it)
-                                selectedProduct = it
-                            },
-                            isSelected = product == selectedProduct,
+                            onClickCallback = { viewModel.selectProduct(it) },
+                            isSelected = product.uid == selectedProductId,
                             selectionIsAllowed = previewChangeIsAllowed,
                             onEditRequest = { viewModel.selectProduct(it) },
                             onDeleteRequest = {
@@ -176,6 +174,7 @@ fun DefaultView(
                                 val updatedValue = viewModel.updateProduct(updatedProductDTO)
                                 val originalProductIndex = products.indexOf(product)
                                 products[originalProductIndex] = updatedValue
+                                viewModel.setPreview<Unit>(null)
                             },
                             modifier = Modifier.padding(5.dp)
                         )
@@ -188,8 +187,15 @@ fun DefaultView(
                             onTerminate = {
                                 //TODO
                             },
-                            onComplete = {
-                                viewModel.completeOrder(order)
+                            onComplete = { hasQuantityIssues ->
+                                if (hasQuantityIssues) {
+                                    viewModel.setActiveDialog(
+                                        DialogWindowType.ORDER_QUANTITY_ISSUES_ALERT,
+                                        OrderWindowPayload(order)
+                                    )
+                                } else {
+                                    viewModel.completeOrder(order)
+                                }
                             },
                             onProductRemove = { product ->
                                 viewModel.removeProductFromOrder(product, order)
@@ -224,9 +230,10 @@ fun DefaultView(
     handleDialogWindowRender(
         activeDialogWindow,
         viewModel,
-        { productCreationDTO ->
+        onAddNewProduct = { productCreationDTO ->
             products.add(viewModel.saveProduct(productCreationDTO))
             viewModel.closeDialogWindow()
+            //TODO consider triggering reorder of [products]
         }
     )
     handleActiveExternalWindowRender(activeExternalWindow, viewModel)
@@ -245,7 +252,7 @@ private fun handleDialogWindowRender(
         )
 
         DialogWindowType.ADD_PRODUCT_TO_ORDER -> {
-            val product = viewModel.getActiveDialogPayload<ProductDTO>().value!!.getData()
+            val product = viewModel.getActiveDialogPayload<ProductDTO>().value.getData()
             OrderProductConfirmation(
                 product = product,
                 initialQuantity = viewModel.getCurrentOrderTargetProductQuantity(product) ?: 1,
@@ -256,6 +263,20 @@ private fun handleDialogWindowRender(
                 onCancel = {
                     viewModel.closeDialogWindow()
                 }
+            )
+        }
+
+        DialogWindowType.ORDER_QUANTITY_ISSUES_ALERT -> {
+            val order = viewModel.getActiveDialogPayload<OrderDTO>().value.getData()
+            AlertDialog(
+                text = getText("warning.order.quantity"),
+                resolveButtonText = getText("label.continue.anyway"),
+                cancelButtonText = getText("label.cancel"),
+                onResolve = {
+                    viewModel.completeOrder(order)
+                    viewModel.closeDialogWindow()
+                },
+                onCancel = { viewModel.closeDialogWindow() }
             )
         }
 
@@ -322,14 +343,4 @@ private fun swapOrderPreviewToCompactLayout(viewModel: DefaultViewViewModel) {
         )
         viewModel.setPreview<Unit>(null)
     }
-}
-
-private fun reorderProducts(
-    products: MutableList<ProductDTO>,
-    sortBy: ProductsRepository.SortBy,
-    order: SortingOrder
-) {
-//    products.sortedBy(order) {
-//
-//    } TODO
 }

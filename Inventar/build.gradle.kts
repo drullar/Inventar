@@ -36,6 +36,7 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
     testImplementation("com.willowtreeapps.assertk:assertk:0.28.1")
     testImplementation(compose.desktop.uiTestJUnit4)
+
 }
 
 tasks.test {
@@ -55,4 +56,25 @@ compose.desktop {
             packageVersion = "1.0.0"
         }
     }
+}
+
+sourceSets {
+    create("integrationTest") {
+        kotlin.srcDirs("src/integrationTest/kotlin")
+        resources.srcDirs("src/integrationTest/resources")
+        compileClasspath += sourceSets["main"].output + configurations["testRuntimeClasspath"]
+        runtimeClasspath += output + compileClasspath
+    }
+}
+
+tasks.register<Test>("integrationTest") {
+    description = "Runs integration tests."
+    group = "verification"
+    testClassesDirs = sourceSets["integrationTest"].output.classesDirs
+    classpath = sourceSets["integrationTest"].runtimeClasspath
+    shouldRunAfter(tasks.test)
+}
+
+tasks.check {
+    dependsOn(tasks.named("integrationTest"))
 }
