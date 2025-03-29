@@ -4,7 +4,7 @@ plugins {
     kotlin("jvm")
     id("org.jetbrains.compose")
     id("org.jetbrains.kotlin.plugin.compose")
-    kotlin("plugin.serialization") version "2.0.21"
+    kotlin("plugin.serialization") version "1.7.10"
 }
 
 group = "io.drullar.inventar"
@@ -35,7 +35,7 @@ dependencies {
     testImplementation(kotlin("test"))
     testImplementation("junit:junit:4.13.2")
     testImplementation("com.willowtreeapps.assertk:assertk:0.28.1")
-    testImplementation("androidx.compose.ui:ui-test-junit4:1.6.8")
+    testImplementation(compose.desktop.uiTestJUnit4)
 }
 
 tasks.test {
