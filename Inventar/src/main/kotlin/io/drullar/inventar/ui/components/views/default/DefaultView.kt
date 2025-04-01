@@ -35,7 +35,7 @@ import io.drullar.inventar.ui.components.cards.ProductSummarizedPreviewCard
 import io.drullar.inventar.ui.components.window.dialog.NewProductDialog
 import io.drullar.inventar.ui.components.window.external.OrderPreviewWindow
 import io.drullar.inventar.ui.data.DialogWindowType
-import io.drullar.inventar.ui.components.window.dialog.OrderProductConfirmation
+import io.drullar.inventar.ui.components.window.dialog.OrderProductConfirmationDialog
 import io.drullar.inventar.ui.viewmodel.DefaultViewViewModel
 import io.drullar.inventar.ui.components.views.default.layout.DraftOrderButton
 import io.drullar.inventar.ui.components.views.default.layout.ProductUtilBar
@@ -253,7 +253,7 @@ private fun handleDialogWindowRender(
 
         DialogWindowType.ADD_PRODUCT_TO_ORDER -> {
             val product = viewModel.getActiveDialogPayload<ProductDTO>().value.getData()
-            OrderProductConfirmation(
+            OrderProductConfirmationDialog(
                 product = product,
                 initialQuantity = viewModel.getCurrentOrderTargetProductQuantity(product) ?: 1,
                 onConfirm = { quantity ->

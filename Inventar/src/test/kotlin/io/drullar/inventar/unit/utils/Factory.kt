@@ -4,8 +4,8 @@ import io.drullar.inventar.shared.ProductDTO
 import java.math.BigDecimal
 import kotlin.random.Random
 
-object DTOFactory {
-    fun product(
+object Factory {
+    fun createProductDTO(
         uid: Int = Random.nextInt(),
         name: String = "Product1",
         availableQuantity: Int = 1,

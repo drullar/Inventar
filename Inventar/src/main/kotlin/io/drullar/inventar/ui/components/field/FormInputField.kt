@@ -11,13 +11,17 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
+import io.drullar.inventar.isNumeric
 import io.drullar.inventar.ui.style.appTypography
 import io.drullar.inventar.ui.style.highlightedLabelSmall
 import io.drullar.inventar.ui.style.roundedBorder
 import kotlin.reflect.KClass
+import kotlin.reflect.full.isSubclassOf
 
 @Composable
 fun <T : Any> FormInputField(
@@ -26,18 +30,21 @@ fun <T : Any> FormInputField(
     inputType: KClass<T>,
     onValueChange: (value: String) -> Unit,
     warningMessage: String? = null,
-    characterLimit: Int? = null
+    characterLimit: Int? = null,
+    fieldSemanticDescription: String
 ) {
     val isWarningVisible = !warningMessage.isNullOrEmpty()
-
     BasicTextField(
         value = defaultValue,
         textStyle = appTypography().bodySmall,
         onValueChange = { changedValue ->
             if (characterLimit != null && changedValue.length > characterLimit) return@BasicTextField
+            // Check whether desired inputType is number and whether the inputed value is numeric. If it's empty string the change should be allowed.
+            if (inputType.isSubclassOf(Number::class) && !isNumeric(changedValue) && changedValue.isNotBlank()) return@BasicTextField
             onValueChange(changedValue)
         },
-        modifier = Modifier.fillMaxWidth().roundedBorder().heightIn(50.dp, 70.dp),
+        modifier = Modifier.fillMaxWidth().roundedBorder().heightIn(50.dp, 70.dp)
+            .semantics { contentDescription = fieldSemanticDescription },
         keyboardOptions = KeyboardOptions(
             keyboardType = when (inputType) {
                 Double::class, Float::class -> KeyboardType.Decimal

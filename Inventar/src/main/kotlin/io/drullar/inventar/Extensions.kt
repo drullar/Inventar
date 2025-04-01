@@ -20,7 +20,12 @@ inline fun <T, R : Comparable<R>> Iterable<T>.sortedBy(
         sortedByDescending(selector)
 }
 
+fun isNumeric(value: String): Boolean = value.toDoubleOrNull()?.let { true } ?: false
+
+//TODo move to some other place
 enum class SortingOrder(val text: String) {
     ASCENDING("order.ascending"),
     DESCENDING("order.descending")
 }
+
+fun verifyValuesAreNotEmpty(vararg values: String) = values.none { it.isBlank() }

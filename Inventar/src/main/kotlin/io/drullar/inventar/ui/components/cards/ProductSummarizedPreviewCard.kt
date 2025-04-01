@@ -35,6 +35,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -60,8 +62,6 @@ fun ProductSummarizedPreviewCard(
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isHoveredOn by interactionSource.collectIsHoveredAsState()
-    val isSelectedState by remember { mutableStateOf(isSelected) }
-
     val width = 300.dp
     val height = 180.dp
 
@@ -86,7 +86,7 @@ fun ProductSummarizedPreviewCard(
             ),
             border = BorderStroke(
                 width = 2.dp,
-                color = if (isSelectedState) Colors.INDIGO else Colors.BABY_BLUE
+                color = if (isSelected) Colors.INDIGO else Colors.BABY_BLUE
             ),
             modifier = Modifier
                 .size(width = width, height = height)
@@ -94,6 +94,9 @@ fun ProductSummarizedPreviewCard(
                     if (selectionIsAllowed && !isSelected) {
                         onClickCallback(productData)
                     }
+                }
+                .semantics {
+                    contentDescription = "Summarized preview of ${productData.name} contents"
                 }
         ) {
             Column(
@@ -106,14 +109,17 @@ fun ProductSummarizedPreviewCard(
                 ) {
                     Image(
                         painter = painterResource(productData.iconPath),
-                        contentDescription = productData.name,
+                        contentDescription = "${productData.name} image",
                         Modifier.roundedBorder()
                             .size(width / 2, height / 2)
                     )
                     Column {
                         Text(
                             text = productData.sellingPrice.toString(),
-                            style = appTypography().labelMedium
+                            style = appTypography().labelMedium,
+                            modifier = Modifier.semantics {
+                                contentDescription = "${productData.name} selling price"
+                            }
                         )
                         Text(
                             text = currency.symbol,
@@ -147,7 +153,7 @@ fun ProductSummarizedPreviewCard(
                         colors = IconButtonDefaults.filledTonalIconButtonColors()
                             .copy(containerColor = Colors.Green),
                     ) {
-                        Icon(painterResource(Icons.ADD), null)
+                        Icon(painterResource(Icons.ADD), "${productData.name} add to order button")
                     }
                 }
             }

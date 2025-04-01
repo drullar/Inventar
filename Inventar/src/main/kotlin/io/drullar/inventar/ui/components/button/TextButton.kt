@@ -22,6 +22,7 @@ fun TextButton(
     textColor: Color = Color.White,
     borderColor: Color? = null,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
     content: (@Composable () -> Unit)? = null
 ) {
     MaterialButton(
@@ -29,6 +30,7 @@ fun TextButton(
         colors = ButtonDefaults.buttonColors().copy(containerColor = backgroundColor),
         border = borderColor?.let { color -> BorderStroke(1.dp, color) },
         shape = RoundedCornerShape(5.dp),
+        enabled = enabled,
         modifier = modifier
     ) {
         Text(

@@ -4,8 +4,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -18,13 +16,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogWindow
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.rememberDialogState
+import io.drullar.inventar.isNumeric
 import io.drullar.inventar.persistence.schema.BARCODE_LENGTH
 import io.drullar.inventar.shared.ProductCreationDTO
+import io.drullar.inventar.ui.components.button.TextButton
 import io.drullar.inventar.ui.components.field.FieldValidator
 import io.drullar.inventar.ui.components.field.FormInputField
 import io.drullar.inventar.ui.components.field.IsNotEmpty
-import io.drullar.inventar.ui.components.field.NotNegativeNumber
 import io.drullar.inventar.ui.provider.getText
+import io.drullar.inventar.ui.utils.ContentDescription
+import io.drullar.inventar.verifyValuesAreNotEmpty
 import java.math.BigDecimal
 
 @Composable
@@ -32,11 +33,11 @@ fun NewProductDialog( //TODO reuse same form here and inside ProductDetailedPrev
     onClose: () -> Unit,
     onSubmit: (ProductCreationDTO) -> Unit
 ) {
-    var name by remember { mutableStateOf("") }
-    var sellingPrice by remember { mutableStateOf(BigDecimal(0.0)) }
-    var providerPrice by remember { mutableStateOf<BigDecimal?>(null) }
-    var availableQuantity by remember { mutableStateOf(0) }
-    var barcode by remember { mutableStateOf("") }
+    var nameField by remember { mutableStateOf("") }
+    var sellingPriceField by remember { mutableStateOf("") }
+    var providerPriceField by remember { mutableStateOf<String>("") }
+    var availableQuantityField by remember { mutableStateOf("") }
+    var barcodeField by remember { mutableStateOf("") }
 
     var nameFieldWarning by remember { mutableStateOf<String?>(null) }
     var sellingPriceFieldWarning by remember { mutableStateOf<String?>(null) }
@@ -52,73 +53,89 @@ fun NewProductDialog( //TODO reuse same form here and inside ProductDetailedPrev
             Column(modifier = Modifier.fillMaxWidth().wrapContentHeight()) {
                 FormInputField(
                     label = getText("field.name"),
-                    defaultValue = name,
+                    defaultValue = nameField,
                     onValueChange = { value ->
-                        nameFieldWarning = produceWarningText(value, setOf(IsNotEmpty()))
-                        name = value
+                        nameFieldWarning = produceWarningText<String>(value, setOf(IsNotEmpty()))
+                        nameField = value
                     },
                     warningMessage = nameFieldWarning,
-                    inputType = String::class
+                    inputType = String::class,
+                    fieldSemanticDescription = ContentDescription.NEW_PRODUCT_NAME
                 )
                 FormInputField(
                     label = getText("field.selling.price"),
-                    defaultValue = sellingPrice.toString(),
+                    defaultValue = sellingPriceField,
                     onValueChange = {
-                        sellingPrice = it.toBigDecimalOrNull() ?: BigDecimal.valueOf(0.0)
-                        sellingPriceFieldWarning =
-                            produceWarningText(
-                                sellingPrice, setOf(IsNotEmpty(), NotNegativeNumber())
-                            )
+                        sellingPriceField = it
+                        sellingPriceFieldWarning = produceWarningText<String>(
+                            it, setOf(IsNotEmpty())
+                        )
                     },
                     warningMessage = sellingPriceFieldWarning,
-                    inputType = Double::class
+                    inputType = Double::class,
+                    fieldSemanticDescription = ContentDescription.NEW_PRODUCT_SELLING
                 )
                 FormInputField(
                     label = getText("field.optional") + " " + getText("field.provider.price"),
-                    defaultValue = providerPrice?.toString() ?: "",
-                    onValueChange = { providerPrice = it.toBigDecimalOrNull() ?: BigDecimal(0.0) },
-                    inputType = Double::class
+                    defaultValue = providerPriceField,
+                    onValueChange = {
+                        providerPriceField = it
+                    },
+                    inputType = Double::class,
+                    fieldSemanticDescription = ContentDescription.NEW_PRODUCT_PROVIDER
                 )
                 FormInputField(
                     label = getText("field.quantity"),
-                    defaultValue = availableQuantity.toString(),
-                    onValueChange = {
-                        availableQuantity = it.toIntOrNull() ?: 0
+                    defaultValue = availableQuantityField,
+                    onValueChange = { changedValue ->
+                        availableQuantityField =
+                            if (changedValue.isBlank()) changedValue // allow empty string
+                            else if (isNumeric(changedValue)) changedValue.toIntOrNull()?.toString()
+                                ?: availableQuantityField // remove any floating points
+                            else availableQuantityField
                         availableQuantityFieldWarning =
-                            produceWarningText<Int>(
-                                availableQuantity,
-                                setOf(IsNotEmpty(), NotNegativeNumber())
-                            )
+                            produceWarningText(changedValue, setOf(IsNotEmpty()))
                     },
                     inputType = Int::class,
-                    warningMessage = availableQuantityFieldWarning
+                    warningMessage = availableQuantityFieldWarning,
+                    fieldSemanticDescription = ContentDescription.NEW_PRODUCT_QUANTITY
                 )
                 FormInputField(
                     label = getText("field.optional") + " " + getText("field.barcode"),
-                    defaultValue = barcode,
-                    onValueChange = { barcode = it },
+                    defaultValue = barcodeField,
+                    onValueChange = { barcodeField = it },
                     inputType = String::class,
-                    characterLimit = BARCODE_LENGTH
+                    characterLimit = BARCODE_LENGTH,
+                    fieldSemanticDescription = ContentDescription.NEW_PRODUCT_BARCODE
                 )
             }
 
-            FilledTonalButton(
+            val isButtonEnabled = nameFieldWarning.isNullOrEmpty()
+                    && sellingPriceFieldWarning.isNullOrEmpty() &&
+                    verifyValuesAreNotEmpty(
+                        nameField,
+                        sellingPriceField,
+                        availableQuantityField
+                    )
+
+            TextButton(
+                text = getText("label.save"),
                 modifier = Modifier.align(Alignment.CenterHorizontally),
                 onClick = {
-                    if (nameFieldWarning.isNullOrEmpty() && sellingPriceFieldWarning.isNullOrEmpty()) {
-                        onSubmit(
-                            ProductCreationDTO(
-                                name = name,
-                                sellingPrice = sellingPrice,
-                                providerPrice = providerPrice
-                            )
+                    onSubmit(
+                        ProductCreationDTO(
+                            name = nameField,
+                            sellingPrice = sellingPriceField.toBigDecimalOrNull()
+                                ?: BigDecimal.valueOf(0.0),
+                            providerPrice = providerPriceField.toBigDecimalOrNull(),
+                            barcode = barcodeField,
+                            availableQuantity = availableQuantityField.toIntOrNull() ?: 0
                         )
-                        onClose()
-                    }
-                    //TODO else some visual queue to acknowledge the validation errors
-                }) {
-                Text(getText("label.save"))
-            }
+                    )
+                    onClose()
+                },
+                enabled = isButtonEnabled
+            )
         }
     }
 }

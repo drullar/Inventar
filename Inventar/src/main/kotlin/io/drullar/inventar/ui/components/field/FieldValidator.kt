@@ -26,20 +26,6 @@ interface FieldValidator<T> {
     }
 }
 
-class NotNegativeNumber<T : Number> : FieldValidator<T> {
-    override fun validate(value: T): Boolean = when (value) {
-        is Int -> value >= 0
-        is Long -> value >= 0
-        is BigDecimal -> value >= BigDecimal.valueOf(0)
-        is Float -> value >= 0
-        is Byte -> value >= 0
-        is Short -> value >= 0
-        else -> throw InvalidAttributesException("Unsupported type ${value::class.java}")
-    }
-
-    override fun validationErrorMessage(): String = getText("warning.validation.negative")
-}
-
 class IsNotEmpty<T> : FieldValidator<T> {
     override fun validate(value: T): Boolean = value.toString().isNotBlank()
     override fun validationErrorMessage(): String = getText("warning.validation.isEmpty")

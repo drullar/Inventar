@@ -40,7 +40,7 @@ import io.drullar.inventar.ui.provider.getText
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun OrderProductConfirmation(
+fun OrderProductConfirmationDialog(
     product: ProductDTO,
     initialQuantity: Int,
     onConfirm: (Int) -> Unit,
