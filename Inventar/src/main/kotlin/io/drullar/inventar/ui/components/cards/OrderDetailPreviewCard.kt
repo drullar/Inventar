@@ -32,6 +32,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -56,7 +58,8 @@ fun OrderDetailPreviewCard(
     onTerminate: () -> Unit,
     onComplete: (Boolean) -> Unit,
     onProductValueChange: (ProductDTO, Int) -> Unit,
-    onProductRemove: (ProductDTO) -> Unit
+    onProductRemove: (ProductDTO) -> Unit,
+    renderContext: OrderDetailCardRenderContext
 ) {
     val productsMap = order.productToQuantity
 
@@ -64,7 +67,8 @@ fun OrderDetailPreviewCard(
         modifier = Modifier
             .fillMaxWidth()
             .fillMaxHeight()
-            .border(1.dp, Color.Black, roundedBorderShape()),
+            .border(1.dp, Color.Black, roundedBorderShape())
+            .semantics { contentDescription = renderContext.buildContentDescription() },
         verticalArrangement = Arrangement.SpaceBetween
     ) {
         Column(
@@ -262,4 +266,11 @@ private fun hasQuantityIssue(productsToQuantity: Map<ProductDTO, Int>) = product
 @Preview
 private fun OrderCreationRowPreview() {
     OrderCreationRow(ProductDTO(1, "name", 2.0.toBigDecimal()), true, 3, true, {}, {}, {})
+}
+
+enum class OrderDetailCardRenderContext {
+    PREVIEW,
+    EXTERNAL_WINDOW;
+
+    fun buildContentDescription() = "Order detail card in ${this.name}"
 }

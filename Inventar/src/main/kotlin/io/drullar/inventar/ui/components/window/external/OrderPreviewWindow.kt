@@ -11,6 +11,7 @@ import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.rememberWindowState
 import io.drullar.inventar.shared.OrderDTO
 import io.drullar.inventar.shared.ProductDTO
+import io.drullar.inventar.ui.components.cards.OrderDetailCardRenderContext
 import io.drullar.inventar.ui.components.cards.OrderDetailPreviewCard
 import io.drullar.inventar.ui.provider.getText
 import io.drullar.inventar.ui.utils.Icons
@@ -45,7 +46,8 @@ fun OrderPreviewWindow(
                 onTerminate(orderDTO)
             },
             onProductValueChange = onProductValueChange,
-            onProductRemove = { product -> onProductRemove(product, orderDTO) }
+            onProductRemove = { product -> onProductRemove(product, orderDTO) },
+            renderContext = OrderDetailCardRenderContext.EXTERNAL_WINDOW
         )
     }
 }

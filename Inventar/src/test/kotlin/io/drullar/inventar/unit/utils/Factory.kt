@@ -1,10 +1,14 @@
 package io.drullar.inventar.unit.utils
 
+import io.drullar.inventar.shared.OrderDTO
+import io.drullar.inventar.shared.OrderStatus
 import io.drullar.inventar.shared.ProductDTO
 import java.math.BigDecimal
+import java.time.LocalDateTime
 import kotlin.random.Random
 
 object Factory {
+    
     fun createProductDTO(
         uid: Int = Random.nextInt(),
         name: String = "Product1",
@@ -15,5 +19,17 @@ object Factory {
         name = name,
         availableQuantity = availableQuantity,
         sellingPrice = sellingPrice
+    )
+
+    fun createOrder(
+        orderId: Int = Random.nextInt(),
+        productToQuantity: Map<ProductDTO, Int> = mapOf(createProductDTO() to 1),
+        creationDate: LocalDateTime = LocalDateTime.now(),
+        status: OrderStatus = OrderStatus.DRAFT
+    ) = OrderDTO(
+        orderId = orderId,
+        productToQuantity = productToQuantity,
+        creationDate = creationDate,
+        status = status
     )
 }

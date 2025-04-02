@@ -3,32 +3,30 @@ package io.drullar.inventar.ui.data
 import io.drullar.inventar.shared.OrderDTO
 import io.drullar.inventar.shared.ProductDTO
 
-abstract class Preview<T> {
-    abstract fun getPreviewData(): T
-    abstract fun updatePreviewData(data: T)
+interface Preview<T> {
+    fun getData(): PreviewData<T>
 }
 
-class DetailedProductPreview(private var selectedProductDTO: ProductDTO) :
-    Preview<ProductDTO>() {
-    override fun getPreviewData(): ProductDTO = selectedProductDTO
+abstract class AbstractPreview<T>(data: T) : Preview<T> {
+    private val previewData = PreviewData<T>(data)
+    override fun getData(): PreviewData<T> = previewData
 
-    override fun updatePreviewData(data: ProductDTO) {
-        selectedProductDTO = data
+    override fun equals(other: Any?): Boolean {
+        return false
+    }
+
+    override fun hashCode(): Int {
+        return previewData.hashCode()
     }
 }
 
-class OrderDetailsPreview(private val order: OrderDTO) : Preview<OrderDTO>() {
-    override fun getPreviewData(): OrderDTO = order
+data class DetailedProductPreview(private val productDTO: ProductDTO) :
+    AbstractPreview<ProductDTO>(productDTO)
 
-    override fun updatePreviewData(data: OrderDTO) {
-        throw NotImplementedError()
-    }
-}
+data class OrderDetailsPreview(private val order: OrderDTO) :
+    AbstractPreview<OrderDTO>(order)
 
-class OrdersListPreview(private var orders: List<OrderDTO>) : Preview<List<OrderDTO>>() {
-    override fun getPreviewData(): List<OrderDTO> = orders
+data class OrdersListPreview(private val orders: List<OrderDTO>) :
+    AbstractPreview<List<OrderDTO>>(orders)
 
-    override fun updatePreviewData(data: List<OrderDTO>) {
-        TODO("Not yet implemented")
-    }
-}
+data class PreviewData<T>(val data: T)

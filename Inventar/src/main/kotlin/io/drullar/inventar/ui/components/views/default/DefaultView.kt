@@ -16,6 +16,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -28,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import io.drullar.inventar.shared.OrderDTO
 import io.drullar.inventar.shared.ProductCreationDTO
 import io.drullar.inventar.shared.ProductDTO
+import io.drullar.inventar.ui.components.cards.OrderDetailCardRenderContext
 import io.drullar.inventar.ui.components.cards.OrderDetailPreviewCard
 import io.drullar.inventar.ui.components.cards.OrdersListPreviewCard
 import io.drullar.inventar.ui.components.cards.ProductDetailedViewCard
@@ -49,6 +51,8 @@ import io.drullar.inventar.ui.data.OrdersListPreview
 import io.drullar.inventar.ui.provider.getText
 import io.drullar.inventar.ui.style.LayoutStyle
 import io.drullar.inventar.ui.style.roundedBorder
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 
 @Composable
 fun DefaultView(
@@ -58,12 +62,12 @@ fun DefaultView(
 ) {
     val activeDialogWindow by viewModel.getActiveDialog().collectAsState()
     val activeExternalWindow by viewModel.getActiveWindow().collectAsState()
-    val preview by viewModel.preview.collectAsState()
     val previewChangeIsAllowed by viewModel.previewChangeIsAllowed.collectAsState()
     val draftOrdersCount = viewModel.draftOrdersCount.collectAsState()
+    val preview by viewModel.preview.collectAsState()
     val settings by viewModel.getSettings().collectAsState()
     val selectedProductId =
-        remember { (preview as? DetailedProductPreview)?.getPreviewData()?.uid }
+        remember { (preview as? DetailedProductPreview)?.getData()?.data?.uid }
 
     var page by remember { mutableStateOf(1) }
     val sortBy by viewModel._sortBy.collectAsState()
@@ -76,6 +80,10 @@ fun DefaultView(
                 ).items
             )
         }
+    }
+
+    LaunchedEffect(preview) {
+        println("Preview Updated: ${preview?.getData()?.data}")
     }
 
     handleLayoutChange(layout, viewModel)
@@ -121,7 +129,7 @@ fun DefaultView(
                     itemsIndexed(
                         items = products,
                         key = { _, product -> product.hashCode() }
-                    ) { index, product ->
+                    ) { _, product ->
 
                         if (scrollState.layoutInfo.visibleItemsInfo.lastOrNull()?.index == products.size - 1) {
                             page += 1
@@ -160,7 +168,7 @@ fun DefaultView(
             ) {
                 when (preview) {
                     is DetailedProductPreview -> {
-                        val product = (preview as DetailedProductPreview).getPreviewData()
+                        val product = (preview as DetailedProductPreview).getData().data
                         ProductDetailedViewCard(
                             productData = product,
                             onChange = {
@@ -181,20 +189,24 @@ fun DefaultView(
                     }
 
                     is OrderDetailsPreview -> {
-                        val order = (preview as OrderDetailsPreview).getPreviewData()
+                        val order = (preview as OrderDetailsPreview).getData().data
                         OrderDetailPreviewCard(
                             order = order,
                             onTerminate = {
                                 //TODO
                             },
                             onComplete = { hasQuantityIssues ->
-                                if (hasQuantityIssues) {
+                                if (hasQuantityIssues) { // TODO move to some function and reuse in the window.
                                     viewModel.setActiveDialog(
                                         DialogWindowType.ORDER_QUANTITY_ISSUES_ALERT,
                                         OrderWindowPayload(order)
                                     )
                                 } else {
-                                    viewModel.completeOrder(order)
+                                    val updatedOrder = viewModel.completeOrder(order)
+                                    mergeProductChanges(
+                                        products,
+                                        updatedOrder.productToQuantity.keys
+                                    )
                                 }
                             },
                             onProductRemove = { product ->
@@ -202,12 +214,13 @@ fun DefaultView(
                             },
                             onProductValueChange = { product, newQuantity ->
                                 viewModel.changeProductQuantityInOrder(product, newQuantity)
-                            }
+                            },
+                            renderContext = OrderDetailCardRenderContext.PREVIEW
                         )
                     }
 
                     is OrdersListPreview -> {
-                        val draftOrders = (preview as OrdersListPreview).getPreviewData()
+                        val draftOrders = (preview as OrdersListPreview).getData().data
                         OrdersListPreviewCard(
                             orders = draftOrders,
                             style = layout,
@@ -236,7 +249,13 @@ fun DefaultView(
             //TODO consider triggering reorder of [products]
         }
     )
-    handleActiveExternalWindowRender(activeExternalWindow, viewModel)
+    handleActiveExternalWindowRender(
+        activeExternalWindowType = activeExternalWindow,
+        viewModel = viewModel,
+        onOrderCompletionCallback = { completedOrder ->
+            mergeProductChanges(products, completedOrder.productToQuantity.keys)
+        }
+    )
 }
 
 @Composable
@@ -287,7 +306,8 @@ private fun handleDialogWindowRender(
 @Composable
 private fun handleActiveExternalWindowRender(
     activeExternalWindowType: ExternalWindowType?,
-    viewModel: DefaultViewViewModel
+    viewModel: DefaultViewViewModel,
+    onOrderCompletionCallback: (OrderDTO) -> Unit
 ) {
     val payload by viewModel.getActiveWindowPayload<Nullable>().collectAsState()
 
@@ -298,8 +318,9 @@ private fun handleActiveExternalWindowRender(
                 onClose = { viewModel.closeExternalWindow() },
                 onTerminate = { /* TODO implement */ },
                 onComplete = {
-                    viewModel.completeOrder(it)
+                    val completedOrder = viewModel.completeOrder(it)
                     viewModel.closeExternalWindow()
+                    onOrderCompletionCallback(completedOrder)
                 },
                 onProductValueChange = { product, quantity ->
                     viewModel.changeProductQuantityInOrder(
@@ -318,7 +339,19 @@ private fun handleActiveExternalWindowRender(
 
         null -> Unit
     }
+}
 
+private fun mergeProductChanges(
+    products: MutableList<ProductDTO>,
+    updatedProducts: Collection<ProductDTO>
+) {
+    val productIdToIndex = products.mapIndexed { index, item -> item.uid to index }.toMap()
+    val updatedProductsIdToObjectMap = updatedProducts.associateBy { it.uid }
+    productIdToIndex.forEach { (id, index) ->
+        updatedProductsIdToObjectMap[id]?.let { updatedValue ->
+            products[index] = updatedValue
+        }
+    }
 }
 
 private fun handleLayoutChange(layout: LayoutStyle, viewModel: DefaultViewViewModel) {
@@ -336,7 +369,7 @@ private fun handleLayoutChange(layout: LayoutStyle, viewModel: DefaultViewViewMo
 private fun swapOrderPreviewToCompactLayout(viewModel: DefaultViewViewModel) {
     val preview = viewModel.getPreview().value
     if (preview is OrderDetailsPreview) {
-        val order = preview.getPreviewData()
+        val order = preview.getData().data
         viewModel.setActiveWindow(
             dialogType = ExternalWindowType.ORDER_PREVIEW,
             OrderWindowPayload(order)

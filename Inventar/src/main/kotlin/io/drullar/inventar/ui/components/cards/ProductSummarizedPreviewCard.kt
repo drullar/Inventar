@@ -91,9 +91,7 @@ fun ProductSummarizedPreviewCard(
             modifier = Modifier
                 .size(width = width, height = height)
                 .clickable {
-                    if (selectionIsAllowed && !isSelected) {
-                        onClickCallback(productData)
-                    }
+                    onClickCallback(productData)
                 }
                 .semantics {
                     contentDescription = "Summarized preview of ${productData.name} contents"

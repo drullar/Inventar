@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.asStateFlow
 
 class SharedAppStateDelegateImpl(initialNavigationDestination: NavigationDestination) :
     SharedAppStateDelegate {
-    private var preview = MutableStateFlow<Preview<*>?>(null)
+    private val preview = MutableStateFlow<Preview<*>?>(null)
     private var navigationDestination = MutableStateFlow(initialNavigationDestination)
 
     override fun getPreview(): MutableStateFlow<Preview<*>?> = preview

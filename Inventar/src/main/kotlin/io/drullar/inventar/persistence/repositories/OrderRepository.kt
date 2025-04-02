@@ -83,7 +83,7 @@ object OrderRepository :
             performPostOrderCompletionOperations(id)
         }
 
-        return@result getById(id).getOrNull()!!
+        return@result getById(id).getOrThrow()
     }
 
     override fun transformResultRowToModel(row: ResultRow): OrderDTO = OrderDTO(
