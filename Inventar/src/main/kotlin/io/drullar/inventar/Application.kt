@@ -1,5 +1,6 @@
 package io.drullar.inventar
 
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPlacement
@@ -70,6 +71,8 @@ class Application {
                 state = windowState,
                 icon = painterResource(Icons.APP_ICON)
             ) {
+                val activeLanguage = settingsProvider.getSettings().collectAsState()
+
                 window.minimumSize = Dimension(800, 600)
                 ComposeApp(
                     sharedAppStateHolder,

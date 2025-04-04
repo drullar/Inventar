@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -49,11 +50,6 @@ fun ComposeApp(
     val activeLanguage = settingsState.value.language
 
     initializeProviders(activeLanguage, windowSize)
-
-    //TODO remove below
-    println(getLayoutStyle())
-    println(windowSize)
-    // TODO remove above
 
     val currentView = sharedAppState.getNavigationDestination().collectAsState()
     val activeAlert = alertManager.getActiveAlert().collectAsState()

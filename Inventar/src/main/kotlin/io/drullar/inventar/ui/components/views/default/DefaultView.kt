@@ -51,8 +51,7 @@ import io.drullar.inventar.ui.data.OrdersListPreview
 import io.drullar.inventar.ui.provider.getText
 import io.drullar.inventar.ui.style.LayoutStyle
 import io.drullar.inventar.ui.style.roundedBorder
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
+import java.util.Currency
 
 @Composable
 fun DefaultView(
@@ -215,7 +214,8 @@ fun DefaultView(
                             onProductValueChange = { product, newQuantity ->
                                 viewModel.changeProductQuantityInOrder(product, newQuantity)
                             },
-                            renderContext = OrderDetailCardRenderContext.PREVIEW
+                            renderContext = OrderDetailCardRenderContext.PREVIEW,
+                            currency = settings.defaultCurrency
                         )
                     }
 
@@ -233,7 +233,9 @@ fun DefaultView(
                             },
                             onOrderTermination = { terminatedOrder ->
                                 //TODO
-                            })
+                            },
+                            currency = settings.defaultCurrency
+                        )
                     }
                 }
             }
@@ -254,7 +256,8 @@ fun DefaultView(
         viewModel = viewModel,
         onOrderCompletionCallback = { completedOrder ->
             mergeProductChanges(products, completedOrder.productToQuantity.keys)
-        }
+        },
+        currency = settings.defaultCurrency
     )
 }
 
@@ -307,7 +310,8 @@ private fun handleDialogWindowRender(
 private fun handleActiveExternalWindowRender(
     activeExternalWindowType: ExternalWindowType?,
     viewModel: DefaultViewViewModel,
-    onOrderCompletionCallback: (OrderDTO) -> Unit
+    onOrderCompletionCallback: (OrderDTO) -> Unit,
+    currency: Currency
 ) {
     val payload by viewModel.getActiveWindowPayload<Nullable>().collectAsState()
 
@@ -333,7 +337,8 @@ private fun handleActiveExternalWindowRender(
                         product,
                         order
                     )
-                }
+                },
+                currency = currency
             )
         }
 

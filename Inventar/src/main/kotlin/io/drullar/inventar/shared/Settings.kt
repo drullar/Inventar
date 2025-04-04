@@ -14,10 +14,13 @@ data class Settings(
     )
 }
 
-enum class SupportedLanguage(val locale: Locale) {
+enum class SupportedLanguage(
+    val locale: Locale,
+    val localizedName: Lazy<String>
+) {
     @JsonProperty("ENGLISH")
-    ENGLISH(Locale.ENGLISH),
+    ENGLISH(Locale.ENGLISH, lazy { "English" }),
 
     @JsonProperty("BULGARIAN")
-    BULGARIAN(Locale("BG"))
+    BULGARIAN(Locale("BG"), lazy { "Български" })
 }

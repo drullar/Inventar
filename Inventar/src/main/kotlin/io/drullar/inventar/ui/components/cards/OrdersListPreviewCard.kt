@@ -48,7 +48,8 @@ fun OrdersListPreviewCard(
     activeLocale: Locale,
     onOrderCompletion: (OrderDTO) -> Unit,
     onOrderSelect: (OrderDTO) -> Unit,
-    onOrderTermination: (OrderDTO) -> Unit
+    onOrderTermination: (OrderDTO) -> Unit,
+    currency: Currency
 ) {
     val scrollableState = rememberScrollState()
     OutlinedCard(
@@ -69,7 +70,8 @@ fun OrdersListPreviewCard(
                         onOrderCompletion,
                         onOrderSelect,
                         onOrderTermination,
-                        false
+                        false,
+                        currency
                     )
                 else
                     CompactOrderPreviewRow(
@@ -77,7 +79,8 @@ fun OrdersListPreviewCard(
                         onOrderCompletion,
                         onOrderTermination,
                         onOrderSelect,
-                        false
+                        false,
+                        currency
                     )
             }
         }
@@ -91,7 +94,8 @@ fun NormalOrderPreviewRow(
     onComplete: (OrderDTO) -> Unit,
     onSelect: (OrderDTO) -> Unit,
     onTerminate: (OrderDTO) -> Unit,
-    showOrderStatus: Boolean
+    showOrderStatus: Boolean,
+    currency: Currency
 ) {
     Row(
         Modifier
@@ -142,8 +146,7 @@ fun NormalOrderPreviewRow(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                orderDTO.getTotalPrice().toString()
-                        + Currency.getInstance("BGN"), // TODO use java currency and Singleton for currency
+                orderDTO.getTotalPrice().toString() + currency.symbol,
                 style = appTypography().bodyLarge,
                 modifier = Modifier.fillMaxWidth(0.2f)
             )
@@ -172,7 +175,8 @@ fun CompactOrderPreviewRow(
     onComplete: (OrderDTO) -> Unit,
     onTerminate: (OrderDTO) -> Unit,
     onSelect: (OrderDTO) -> Unit,
-    showOrderStatus: Boolean
+    showOrderStatus: Boolean,
+    currency: Currency
 ) {
     Column(
         Modifier.onClick { onSelect(orderDTO) }
@@ -218,7 +222,7 @@ fun CompactOrderPreviewRow(
                 style = appTypography().bodyLarge,
             )
             Text(
-                text = orderDTO.getTotalPrice().toString() + "BGN",
+                text = orderDTO.getTotalPrice().toString() + currency,
                 style = appTypography().bodyLarge,
             ) //TODO currency
         }

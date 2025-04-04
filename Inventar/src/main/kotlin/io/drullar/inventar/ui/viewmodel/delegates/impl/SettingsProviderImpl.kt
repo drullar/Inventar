@@ -15,9 +15,12 @@ class SettingsProviderImpl(
         fileManager.getFile<SettingsFile>(FileType.Settings).read()
     )
 
-    override fun getSettings(): StateFlow<Settings> = settings
+    override fun getSettings(): StateFlow<Settings> {
+        return settings
+    }
 
     override fun setSettings(settings: Settings) {
-        this.settings.value = settings // TODO write to settingsFile
+        this.settings.value = settings
+        fileManager.getFile<SettingsFile>(FileType.Settings).override(settings)
     }
 }

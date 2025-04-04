@@ -45,6 +45,13 @@ interface ReadableFile<T> {
     fun read(): T
 }
 
+interface ModifiableFile<T> {
+    /**
+     * Override contents
+     */
+    fun override(newContent: T)
+}
+
 abstract class AbstractApplicationFile : ApplicationFile {
     protected abstract val file: File
 
@@ -65,7 +72,7 @@ abstract class AbstractApplicationFile : ApplicationFile {
 
 class SettingsFile(
     private val parentDirectory: File
-) : AbstractApplicationFile(), ReadableFile<Settings> {
+) : AbstractApplicationFile(), ReadableFile<Settings>, ModifiableFile<Settings> {
 
     override val fileName: String = "settings.json"
     override val file: File get() = File(parentDirectory, fileName)
@@ -94,6 +101,10 @@ class SettingsFile(
             defaultCurrency = Currency.getInstance("BGN"),
             language = SupportedLanguage.ENGLISH
         )
+    }
+
+    override fun override(newContent: Settings) {
+        JsonParser.write(file, newContent)
     }
 }
 

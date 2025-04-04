@@ -196,7 +196,8 @@ fun OrdersView(viewModel: OrderViewViewModel) {
                                 if (updateItem.isSuccess)
                                     updateItem(_orders, itemIndex, updateItem.getOrNull()!!)
                             },
-                            showOrderStatus = true
+                            showOrderStatus = true,
+                            settings.defaultCurrency
                         )
                     else CompactOrderPreviewRow(
                         orderDTO = item,
@@ -220,7 +221,8 @@ fun OrdersView(viewModel: OrderViewViewModel) {
                             if (updateItem.isSuccess)
                                 updateItem(_orders, itemIndex, updateItem.getOrNull()!!)
                         },
-                        showOrderStatus = true
+                        showOrderStatus = true,
+                        currency = settings.defaultCurrency
                     )
                 }
             }

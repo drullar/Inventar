@@ -1,6 +1,5 @@
 package io.drullar.inventar.ui.components.navigation
 
-import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -17,43 +16,31 @@ fun NavigationBar(
     onNavigationChange: (destination: NavigationDestination) -> Unit
 ) {
     val spacingBetweenElements = 10.dp
-    val selectedItemDetails = navigationItems[selectedView]
 
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(spacingBetweenElements)
     ) {
-        navigationItems.forEach { (destination, details) ->
-            NavigationItem(
-                details = details,
-                isSelected = selectedItemDetails == details,
-                onClick = {
-                    onNavigationChange(destination)
-                }
-            )
-        }
-    }
-}
-
-@Preview
-@Composable
-@Deprecated(
-    "Used only for preview purposes",
-    ReplaceWith("NavigationBar(...)")
-)
-internal fun NavigationBarPreviewContainer() {
-    NavigationBar(NavigationDestination.PRODUCTS_PAGE) {}
-}
-
-private val navigationItems by lazy {
-    sortedMapOf(
-        NavigationDestination.PRODUCTS_PAGE to NavigationItemDetails(
-            iconPath = Icons.PRODUCTS,
-            getText("label.main")
-        ),
-        NavigationDestination.ORDERS_PAGE to NavigationItemDetails(
-            iconPath = Icons.ORDERS_LOG,
-            getText("label.log.history")
+        NavigationItem(
+            details = NavigationItemDetails(
+                iconPath = Icons.PRODUCTS,
+                getText("label.main")
+            ),
+            isSelected = selectedView == NavigationDestination.PRODUCTS_PAGE,
+            onClick = {
+                onNavigationChange(NavigationDestination.PRODUCTS_PAGE)
+            }
         )
-    )
+
+        NavigationItem(
+            details = NavigationItemDetails(
+                iconPath = Icons.ORDERS_LOG,
+                getText("label.log.history")
+            ),
+            isSelected = selectedView == NavigationDestination.ORDERS_PAGE,
+            onClick = {
+                onNavigationChange(NavigationDestination.ORDERS_PAGE)
+            }
+        )
+    }
 }

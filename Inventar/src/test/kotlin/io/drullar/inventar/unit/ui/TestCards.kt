@@ -112,7 +112,8 @@ class TestCards : AbstractUiTest() {
                     val updatedMap = order.productToQuantity.toMutableMap().also { it.remove(p) }
                     order = order.copy(productToQuantity = updatedMap)
                 },
-                renderContext = OrderDetailCardRenderContext.PREVIEW
+                renderContext = OrderDetailCardRenderContext.PREVIEW,
+                currency = Currency.getInstance("BGN")
             )
         }
 

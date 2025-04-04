@@ -51,6 +51,7 @@ import io.drullar.inventar.ui.style.Colors
 import io.drullar.inventar.ui.style.roundedBorderShape
 import io.drullar.inventar.ui.provider.getText
 import java.time.format.DateTimeFormatter
+import java.util.Currency
 
 @Composable
 fun OrderDetailPreviewCard(
@@ -59,7 +60,8 @@ fun OrderDetailPreviewCard(
     onComplete: (Boolean) -> Unit,
     onProductValueChange: (ProductDTO, Int) -> Unit,
     onProductRemove: (ProductDTO) -> Unit,
-    renderContext: OrderDetailCardRenderContext
+    renderContext: OrderDetailCardRenderContext,
+    currency: Currency
 ) {
     val productsMap = order.productToQuantity
 
@@ -145,7 +147,7 @@ fun OrderDetailPreviewCard(
 
         Column(modifier = Modifier.fillMaxWidth().wrapContentHeight()) {
             Text(
-                text = "${getText("field.total.price")}: ${order.getTotalPrice()} BGN", //TODO currency
+                text = "${getText("field.total.price")}: ${order.getTotalPrice()} ${currency.symbol}", //TODO currency
                 textAlign = TextAlign.Start,
                 fontWeight = FontWeight.W100,
                 fontSize = TextUnit(30f, TextUnitType.Sp)

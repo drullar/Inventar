@@ -15,6 +15,7 @@ import io.drullar.inventar.ui.components.cards.OrderDetailCardRenderContext
 import io.drullar.inventar.ui.components.cards.OrderDetailPreviewCard
 import io.drullar.inventar.ui.provider.getText
 import io.drullar.inventar.ui.utils.Icons
+import java.util.Currency
 
 @Composable
 fun OrderPreviewWindow(
@@ -23,7 +24,8 @@ fun OrderPreviewWindow(
     onTerminate: (OrderDTO) -> Unit,
     onComplete: (OrderDTO) -> Unit,
     onProductValueChange: (ProductDTO, Int) -> Unit,
-    onProductRemove: (ProductDTO, OrderDTO) -> Unit
+    onProductRemove: (ProductDTO, OrderDTO) -> Unit,
+    currency: Currency
 ) {
     Window(
         title = "${getText("label.order")} #${orderDTO.orderId} preview",
@@ -47,7 +49,8 @@ fun OrderPreviewWindow(
             },
             onProductValueChange = onProductValueChange,
             onProductRemove = { product -> onProductRemove(product, orderDTO) },
-            renderContext = OrderDetailCardRenderContext.EXTERNAL_WINDOW
+            renderContext = OrderDetailCardRenderContext.EXTERNAL_WINDOW,
+            currency = currency
         )
     }
 }

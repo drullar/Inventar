@@ -25,13 +25,14 @@ import kotlin.reflect.full.isSubclassOf
 
 @Composable
 fun <T : Any> FormInputField(
-    label: String,
+    label: String?,
     defaultValue: String,
     inputType: KClass<T>,
     onValueChange: (value: String) -> Unit,
     warningMessage: String? = null,
     characterLimit: Int? = null,
-    fieldSemanticDescription: String
+    fieldSemanticDescription: String,
+    modifier: Modifier = Modifier.fillMaxWidth()
 ) {
     val isWarningVisible = !warningMessage.isNullOrEmpty()
     BasicTextField(
@@ -43,7 +44,7 @@ fun <T : Any> FormInputField(
             if (inputType.isSubclassOf(Number::class) && !isNumeric(changedValue) && changedValue.isNotBlank()) return@BasicTextField
             onValueChange(changedValue)
         },
-        modifier = Modifier.fillMaxWidth().roundedBorder().heightIn(50.dp, 70.dp)
+        modifier = modifier.roundedBorder().heightIn(50.dp, 70.dp)
             .semantics { contentDescription = fieldSemanticDescription },
         keyboardOptions = KeyboardOptions(
             keyboardType = when (inputType) {
@@ -57,11 +58,13 @@ fun <T : Any> FormInputField(
                 verticalArrangement = Arrangement.Center,
                 modifier = Modifier.padding(start = 10.dp)
             ) {
-                // Label describing the field
-                Text(
-                    text = label,
-                    style = appTypography().labelSmall
-                )
+                label?.let {
+                    // Label describing the field
+                    Text(
+                        text = label,
+                        style = appTypography().labelSmall
+                    )
+                }
                 // Form input contents
                 innerTextField()
                 if (isWarningVisible && warningMessage != null) {
