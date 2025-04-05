@@ -16,7 +16,6 @@ data class ProductDTO(
     val iconPath: String = Icons.PRODUCTS, // TODO change default value after creating a default value image
     var providerPrice: BigDecimal? = null,
     var barcode: String? = null,
-    var categories: Set<Category> = emptySet()
 ) {
     fun toProductCreationDTO() = ProductCreationDTO(
         name = name,
@@ -25,7 +24,6 @@ data class ProductDTO(
         iconPath = iconPath,
         providerPrice = providerPrice,
         barcode = barcode,
-        categories = categories,
     )
 }
 
@@ -36,7 +34,6 @@ data class ProductCreationDTO(
     val iconPath: String = Icons.PRODUCTS, //  TODO change default value after creating a default value image
     var providerPrice: BigDecimal? = null,
     var barcode: String? = null,
-    var categories: Set<Category> = emptySet(),
 )
 
 data class OrderDTO(

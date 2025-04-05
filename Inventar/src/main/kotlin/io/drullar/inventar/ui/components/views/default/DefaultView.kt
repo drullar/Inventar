@@ -16,7 +16,6 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -27,6 +26,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import io.drullar.inventar.shared.OrderDTO
+import io.drullar.inventar.shared.PagedRequest
 import io.drullar.inventar.shared.ProductCreationDTO
 import io.drullar.inventar.shared.ProductDTO
 import io.drullar.inventar.ui.components.cards.OrderDetailCardRenderContext
@@ -53,6 +53,8 @@ import io.drullar.inventar.ui.style.LayoutStyle
 import io.drullar.inventar.ui.style.roundedBorder
 import java.util.Currency
 
+const val PRODUCTS_PER_PAGE = 40
+
 @Composable
 fun DefaultView(
     viewModel: DefaultViewViewModel,
@@ -75,20 +77,19 @@ fun DefaultView(
         mutableStateListOf<ProductDTO>().apply {
             addAll(
                 viewModel.fetchProducts(
-                    page, PRODUCTS_PER_PAGE, sortBy, sortingOrder
+                    PagedRequest(page, PRODUCTS_PER_PAGE, sortingOrder, sortBy)
                 ).items
             )
         }
     }
 
-    LaunchedEffect(preview) {
-        println("Preview Updated: ${preview?.getData()?.data}")
-    }
-
     handleLayoutChange(layout, viewModel)
 
     Column(modifier = modifier) {
-        Row(modifier = Modifier.fillMaxWidth().heightIn(30.dp, 70.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth().heightIn(30.dp, 70.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
             ProductUtilBar(
                 modifier = Modifier
                     .wrapContentWidth()
@@ -97,11 +98,25 @@ fun DefaultView(
                     if (!viewModel.hasActiveDialogWindow()) {
                         viewModel.setActiveDialog(DialogWindowType.NEW_PRODUCT, EmptyPayload())
                     }
+                },
+                onSearch = { query ->
+                    page = 1
+                    products.clear()
+                    products.addAll(
+                        if (query.isBlank()) {
+                            viewModel.fetchProducts(
+                                PagedRequest(page, PRODUCTS_PER_PAGE, sortingOrder, sortBy)
+                            ).items
+                        } else viewModel.searchProducts(
+                            query,
+                            PagedRequest(page, PRODUCTS_PER_PAGE, sortingOrder, sortBy)
+                        ).items
+                    )
                 }
             )
 
             DraftOrderButton(
-                modifier = Modifier.align(Alignment.CenterVertically),
+                modifier = Modifier.align(Alignment.CenterVertically).padding(end = 10.dp),
                 draftOrdersCount = draftOrdersCount.value,
                 onClick = { viewModel.showDraftOrders() })
         }
@@ -134,10 +149,12 @@ fun DefaultView(
                             page += 1
                             products.addAll(
                                 viewModel.fetchProducts(
-                                    page,
-                                    PRODUCTS_PER_PAGE,
-                                    sortBy,
-                                    sortingOrder
+                                    PagedRequest(
+                                        page,
+                                        PRODUCTS_PER_PAGE,
+                                        sortingOrder,
+                                        sortBy
+                                    )
                                 ).items
                             )
                         }

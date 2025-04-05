@@ -1,12 +1,12 @@
 package io.drullar.inventar.ui.viewmodel
 
 import io.drullar.inventar.SortingOrder
-import io.drullar.inventar.logging.LoggerImpl
 import io.drullar.inventar.shared.OrderStatus
-import io.drullar.inventar.persistence.repositories.OrderRepository
-import io.drullar.inventar.persistence.repositories.ProductsRepository
+import io.drullar.inventar.persistence.repositories.impl.OrderRepository
+import io.drullar.inventar.persistence.repositories.impl.ProductsRepository
 import io.drullar.inventar.shared.OrderCreationDTO
 import io.drullar.inventar.shared.OrderDTO
+import io.drullar.inventar.shared.PagedRequest
 import io.drullar.inventar.shared.ProductCreationDTO
 import io.drullar.inventar.shared.ProductDTO
 import io.drullar.inventar.ui.viewmodel.delegates.AlertManager
@@ -20,7 +20,6 @@ import io.drullar.inventar.ui.data.OrderDetailsPreview
 import io.drullar.inventar.ui.data.OrderWindowPayload
 import io.drullar.inventar.ui.data.OrdersListPreview
 import io.drullar.inventar.ui.data.ProductPayload
-import io.drullar.inventar.ui.exceptions.ControlledException
 import io.drullar.inventar.ui.provider.getLayoutStyle
 import io.drullar.inventar.ui.style.LayoutStyle
 import io.drullar.inventar.ui.viewmodel.delegates.SettingsProvider
@@ -235,11 +234,11 @@ class DefaultViewViewModel(
     }
 
     fun fetchProducts(
-        page: Int,
-        pageSize: Int,
-        sortBy: ProductsRepository.SortBy,
-        order: SortingOrder
-    ) = productsRepository.getPaged(page, pageSize, sortBy, order).getOrThrow()
+        pageRequest: PagedRequest<ProductsRepository.SortBy>
+    ) = productsRepository.getPaged(pageRequest).getOrThrow()
+
+    fun searchProducts(searchQuery: String, pageRequest: PagedRequest<ProductsRepository.SortBy>) =
+        productsRepository.search(searchQuery, pageRequest).getOrThrow()
 
     private fun isProductBeingEdited(product: ProductDTO) =
         getPreview().value is DetailedProductPreview &&

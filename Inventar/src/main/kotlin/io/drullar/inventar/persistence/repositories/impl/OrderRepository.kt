@@ -1,6 +1,7 @@
-package io.drullar.inventar.persistence.repositories
+package io.drullar.inventar.persistence.repositories.impl
 
 import io.drullar.inventar.persistence.DatabaseException
+import io.drullar.inventar.persistence.repositories.AbstractRepository
 import io.drullar.inventar.persistence.schema.Orders
 import io.drullar.inventar.persistence.schema.Orders.creationDate
 import io.drullar.inventar.persistence.schema.Orders.id
@@ -11,6 +12,7 @@ import io.drullar.inventar.persistence.schema.associative.ProductOrderAssociatio
 import io.drullar.inventar.persistence.schema.associative.ProductOrderAssociation.productUid
 import io.drullar.inventar.persistence.schema.associative.ProductOrderAssociation.sellingPrice
 import io.drullar.inventar.result
+import io.drullar.inventar.shared.ISortBy
 import io.drullar.inventar.shared.OrderCreationDTO
 import io.drullar.inventar.shared.OrderDTO
 import io.drullar.inventar.shared.OrderStatus
@@ -20,7 +22,9 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 
 object OrderRepository :
-    AbstractRepository<Orders, OrderDTO, OrderCreationDTO, Int, OrderRepository.SortBy>(Orders) {
+    AbstractRepository<Orders, OrderDTO, OrderCreationDTO, Int, OrderRepository.OrderSortBy>(
+        Orders
+    ) {
     private val productRepository = ProductsRepository
     private val productOrderAssociationTable = ProductOrderAssociation
 
@@ -106,7 +110,7 @@ object OrderRepository :
             withTransaction {
                 productOrderAssociationTable.selectAll()
                     .where { productOrderAssociationTable.orderUid.eq(orderId) }.map {
-                        productRepository.getById(it[productUid]).getOrNull()!!
+                        ProductsRepository.getById(it[productUid]).getOrNull()!!
                     }
             }
         }
@@ -115,16 +119,16 @@ object OrderRepository :
         table.selectAll().where { table.orderStatus.eq(status) }.count()
     }
 
-    override fun buildOrderByExpression(sortBy: SortBy): Expression<*> = when (sortBy) {
-        SortBy.NUMBER -> {
+    override fun buildOrderByExpression(sortBy: OrderSortBy): Expression<*> = when (sortBy) {
+        OrderSortBy.NUMBER -> {
             table.id
         }
 
-        SortBy.CREATION_DATE -> {
+        OrderSortBy.CREATION_DATE -> {
             table.creationDate
         }
 
-        SortBy.STATUS -> {
+        OrderSortBy.STATUS -> {
             table.orderStatus
         }
     }
@@ -140,9 +144,9 @@ object OrderRepository :
             this[orderedAmount] = quantity
             this[sellingPrice] = product.sellingPrice
             this[productUid] = product.uid
-        }.filter { productRepository.getById(it[productUid]).getOrNull() != null }
+        }.filter { ProductsRepository.getById(it[productUid]).getOrNull() != null }
             .associate {
-                productRepository.getById(it[productUid])
+                ProductsRepository.getById(it[productUid])
                     .getOrNull()!! to it[orderedAmount]
             }
 
@@ -196,7 +200,7 @@ object OrderRepository :
         withTransaction {
             productOrderAssociationTable.selectAll()
                 .where { productOrderAssociationTable.orderUid.eq(orderId) }.associate {
-                    productRepository.getById(it[productUid])
+                    ProductsRepository.getById(it[productUid])
                         .getOrNull()!! to it[orderedAmount]
                 }
         }
@@ -205,14 +209,14 @@ object OrderRepository :
         productsToSoldQuantity.keys.forEach { product ->
             val soldQuantity = productsToSoldQuantity[product]!!
             val updatedAvailability = (product.availableQuantity - soldQuantity).coerceAtLeast(0)
-            productRepository.update(
+            ProductsRepository.update(
                 product.uid,
                 product.copy(availableQuantity = updatedAvailability).toProductCreationDTO()
             )
         }
     }
 
-    enum class SortBy(val text: String) {
+    enum class OrderSortBy(val text: String) : ISortBy {
         NUMBER("field.number"),
         CREATION_DATE("field.date"),
         STATUS("field.status"),

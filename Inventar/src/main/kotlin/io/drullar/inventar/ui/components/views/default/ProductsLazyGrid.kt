@@ -22,6 +22,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import io.drullar.inventar.persistence.repositories.impl.ProductsRepository
+import io.drullar.inventar.shared.PagedRequest
 import io.drullar.inventar.shared.ProductCreationDTO
 import io.drullar.inventar.shared.ProductDTO
 import io.drullar.inventar.ui.components.cards.ProductSummarizedPreviewCard
@@ -30,9 +32,6 @@ import io.drullar.inventar.ui.viewmodel.DefaultViewViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import java.util.Currency
-
-const val PRODUCTS_PER_PAGE = 40 //TODO increase
-
 
 @Composable
 fun ProductsLazyGrid(
@@ -52,7 +51,9 @@ fun ProductsLazyGrid(
         mutableStateListOf<ProductDTO>().apply {
             addAll(
                 viewModel.fetchProducts(
-                    page, PRODUCTS_PER_PAGE, sortBy, sortingOrder
+                    PagedRequest(
+                        page, PRODUCTS_PER_PAGE, sortingOrder, sortBy
+                    )
                 ).items
             )
         }
@@ -87,10 +88,12 @@ fun ProductsLazyGrid(
                 page += 1
                 products.addAll(
                     viewModel.fetchProducts(
-                        page,
-                        PRODUCTS_PER_PAGE,
-                        sortBy,
-                        sortingOrder
+                        PagedRequest(
+                            page,
+                            PRODUCTS_PER_PAGE,
+                            sortingOrder,
+                            sortBy
+                        )
                     ).items
                 )
             }

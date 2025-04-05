@@ -10,17 +10,17 @@ import assertk.assertions.isEqualTo
 import assertk.assertions.isFailure
 import assertk.assertions.isFalse
 import assertk.assertions.isNotNull
-import assertk.assertions.isSameInstanceAs
 import assertk.assertions.isTrue
 import io.drullar.inventar.SortingOrder
-import io.drullar.inventar.persistence.repositories.OrderRepository
-import io.drullar.inventar.persistence.repositories.ProductsRepository
+import io.drullar.inventar.persistence.repositories.impl.OrderRepository
+import io.drullar.inventar.persistence.repositories.impl.ProductsRepository
 import io.drullar.inventar.shared.OrderCreationDTO
 import io.drullar.inventar.shared.OrderStatus
 import io.drullar.inventar.shared.ProductCreationDTO
 import io.drullar.inventar.shared.ProductDTO
 import io.drullar.inventar.persistence.DatabaseException
-import org.jetbrains.exposed.sql.SortOrder
+import io.drullar.inventar.shared.Page
+import io.drullar.inventar.shared.PagedRequest
 import org.junit.After
 import org.junit.Test
 
@@ -233,10 +233,11 @@ class TestOrderRepository : AbstractPersistenceTest() {
 
         val firstPage =
             orderRepository.getPaged(
-                1,
-                25,
-                OrderRepository.SortBy.CREATION_DATE,
-                SortingOrder.ASCENDING
+                PagedRequest(
+                    1,
+                    25, SortingOrder.ASCENDING,
+                    OrderRepository.OrderSortBy.CREATION_DATE,
+                )
             )
                 .getOrNull()
         assertAll {
@@ -250,10 +251,12 @@ class TestOrderRepository : AbstractPersistenceTest() {
 
         val secondPage =
             orderRepository.getPaged(
-                2,
-                25,
-                OrderRepository.SortBy.CREATION_DATE,
-                SortingOrder.ASCENDING
+                PagedRequest(
+                    2,
+                    25,
+                    SortingOrder.ASCENDING,
+                    OrderRepository.OrderSortBy.CREATION_DATE,
+                )
             )
                 .getOrNull()
         assertAll {

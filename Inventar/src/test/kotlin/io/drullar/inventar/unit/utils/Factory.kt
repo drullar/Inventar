@@ -8,22 +8,24 @@ import java.time.LocalDateTime
 import kotlin.random.Random
 
 object Factory {
-    
-    fun createProductDTO(
+
+    fun createProduct(
         uid: Int = Random.nextInt(),
         name: String = "Product1",
         availableQuantity: Int = 1,
-        sellingPrice: BigDecimal = 0.0.toBigDecimal()
+        sellingPrice: BigDecimal = 0.0.toBigDecimal(),
+        barcode: String? = null
     ) = ProductDTO(
         uid = uid,
         name = name,
         availableQuantity = availableQuantity,
-        sellingPrice = sellingPrice
+        sellingPrice = sellingPrice,
+        barcode = barcode
     )
 
     fun createOrder(
         orderId: Int = Random.nextInt(),
-        productToQuantity: Map<ProductDTO, Int> = mapOf(createProductDTO() to 1),
+        productToQuantity: Map<ProductDTO, Int> = mapOf(createProduct() to 1),
         creationDate: LocalDateTime = LocalDateTime.now(),
         status: OrderStatus = OrderStatus.DRAFT
     ) = OrderDTO(

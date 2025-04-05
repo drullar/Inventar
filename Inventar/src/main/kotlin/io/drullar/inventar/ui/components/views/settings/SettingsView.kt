@@ -28,8 +28,11 @@ import io.drullar.inventar.shared.Settings
 import io.drullar.inventar.shared.SupportedLanguage
 import io.drullar.inventar.ui.components.button.TextButton
 import io.drullar.inventar.ui.components.field.FormInputField
+import io.drullar.inventar.ui.provider.getLayoutStyle
 import io.drullar.inventar.ui.provider.getText
+import io.drullar.inventar.ui.style.LayoutStyle
 import io.drullar.inventar.ui.style.appTypography
+import io.drullar.inventar.ui.style.roundedBorderShape
 import io.drullar.inventar.ui.viewmodel.SettingsViewModel
 import java.util.Currency
 
@@ -45,8 +48,8 @@ fun SettingsView(viewModel: SettingsViewModel) {
     Box(modifier = Modifier.fillMaxWidth().fillMaxHeight()) {
         Column(
             modifier = Modifier.align(Alignment.TopCenter)
-                .border(1.dp, Color.Black)
-                .fillMaxWidth(0.3f)
+                .border(1.dp, Color.Black, roundedBorderShape())
+                .fillMaxWidth(if (getLayoutStyle() == LayoutStyle.COMPACT) 0.6f else 0.3f)
                 .fillMaxHeight(0.8f)
                 .padding(5.dp)
         ) {

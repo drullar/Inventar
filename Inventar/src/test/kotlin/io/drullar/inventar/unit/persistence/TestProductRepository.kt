@@ -3,19 +3,28 @@ package io.drullar.inventar.unit.persistence
 import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.containsExactly
+import assertk.assertions.containsExactlyInAnyOrder
+import assertk.assertions.containsOnly
+import assertk.assertions.extracting
 import assertk.assertions.isEqualTo
 import assertk.assertions.isFailure
 import assertk.assertions.isNotNull
 import assertk.assertions.isNull
 import assertk.assertions.isSuccess
-import io.drullar.inventar.persistence.repositories.ProductsRepository
+import assertk.assertions.prop
+import io.drullar.inventar.SortingOrder
+import io.drullar.inventar.persistence.repositories.impl.ProductsRepository
 import io.drullar.inventar.persistence.schema.Products
 import io.drullar.inventar.shared.ProductCreationDTO
 import io.drullar.inventar.persistence.DatabaseException
+import io.drullar.inventar.persistence.schema.BARCODE_LENGTH
+import io.drullar.inventar.shared.PagedRequest
+import io.drullar.inventar.shared.ProductDTO
+import io.drullar.inventar.unit.utils.Factory.createProduct
 import org.junit.After
 import org.junit.Test
 import java.math.BigDecimal
-import java.math.MathContext
+import java.util.UUID
 
 class TestProductRepository : AbstractPersistenceTest() {
 
@@ -195,5 +204,103 @@ class TestProductRepository : AbstractPersistenceTest() {
         val exception = getAfterDeletion.exceptionOrNull()!!
         assertThat(exception::class).isEqualTo(DatabaseException.NoSuchElementFoundException::class)
         assertThat(exception!!.message!!).contains("Couldn't find product with id")
+    }
+
+    @Test
+    fun search() {
+        val barcode = UUID.randomUUID().toString().substring(0, BARCODE_LENGTH)
+        val products = listOf(
+            createProduct(name = "Loreal Paris"),
+            createProduct(name = "Cola Coca"),
+            createProduct(name = "Derby cola"),
+            createProduct(name = "Mark Loreal", barcode = barcode),
+            createProduct(name = "CocktaCola")
+        ).mapIndexed { index, item -> item.copy(uid = index) }
+
+        products.forEach { productRepository.save(it.toProductCreationDTO()) }
+
+        val lorealProducts = productRepository.search(
+            "loreal",
+            PagedRequest(
+                1,
+                10,
+                order = SortingOrder.ASCENDING,
+                sortBy = ProductsRepository.SortBy.ID
+            )
+        ).getOrThrow().items
+
+        assertThat(lorealProducts)
+            .extracting { it.name }
+            .containsOnly(
+                "Loreal Paris",
+                "Mark Loreal"
+            )
+
+        val colaProducts = productRepository.search(
+            "COLA",
+            PagedRequest(
+                1,
+                10,
+                order = SortingOrder.ASCENDING,
+                sortBy = ProductsRepository.SortBy.ID
+            )
+        ).getOrThrow().items
+
+        assertThat(colaProducts)
+            .extracting { it.name }
+            .containsOnly(
+                "Cola Coca",
+                "Derby cola",
+                "CocktaCola"
+            )
+
+        val barcodeSearch = productRepository.search(
+            barcode,
+            PagedRequest(
+                1,
+                10,
+                order = SortingOrder.ASCENDING,
+                sortBy = ProductsRepository.SortBy.ID
+            )
+        ).getOrThrow().items
+
+        assertThat(barcodeSearch)
+            .extracting { it.name }
+            .containsOnly("Mark Loreal")
+
+        val pagedSearch1 = productRepository.search(
+            "COLA",
+            PagedRequest(
+                1,
+                1,
+                order = SortingOrder.ASCENDING,
+                sortBy = ProductsRepository.SortBy.ID
+            )
+        ).getOrThrow().items
+
+        val pagedSearch2 = productRepository.search(
+            "COLA",
+            PagedRequest(
+                2,
+                1,
+                order = SortingOrder.ASCENDING,
+                sortBy = ProductsRepository.SortBy.ID
+            )
+        ).getOrThrow().items
+
+        assertThat(pagedSearch1).extracting { it.name }.containsOnly("Cola Coca")
+        assertThat(pagedSearch2).extracting { it.name }.containsOnly("Derby cola")
+
+        val searchById = productRepository.search(
+            "1",
+            PagedRequest(
+                1,
+                10,
+                order = SortingOrder.ASCENDING,
+                sortBy = ProductsRepository.SortBy.ID
+            )
+        ).getOrThrow().items
+
+        assertThat(searchById).extracting { it.name }.containsOnly("Loreal Paris")
     }
 }

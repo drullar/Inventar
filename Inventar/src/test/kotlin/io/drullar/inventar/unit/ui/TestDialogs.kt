@@ -61,7 +61,7 @@ class TestDialogs : AbstractUiTest() {
         var submittedQuantity = 0
         setContent {
             OrderProductConfirmationDialog(
-                product = Factory.createProductDTO(),
+                product = Factory.createProduct(),
                 initialQuantity = 1,
                 onConfirm = { submittedQuantity = it },
                 onCancel = {}

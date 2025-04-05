@@ -71,9 +71,7 @@ class Application {
                 state = windowState,
                 icon = painterResource(Icons.APP_ICON)
             ) {
-                val activeLanguage = settingsProvider.getSettings().collectAsState()
-
-                window.minimumSize = Dimension(800, 600)
+                window.minimumSize = Dimension(MIN_WIDTH, MIN_HEIGHT)
                 ComposeApp(
                     sharedAppStateHolder,
                     alertManagerDelegate,
@@ -84,5 +82,10 @@ class Application {
                 )
             }
         }
+    }
+
+    companion object {
+        const val MIN_WIDTH = 1020
+        const val MIN_HEIGHT = 600
     }
 }

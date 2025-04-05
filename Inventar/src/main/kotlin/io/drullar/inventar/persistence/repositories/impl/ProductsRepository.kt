@@ -1,6 +1,7 @@
-package io.drullar.inventar.persistence.repositories
+package io.drullar.inventar.persistence.repositories.impl
 
 import io.drullar.inventar.persistence.DatabaseException
+import io.drullar.inventar.persistence.repositories.AbstractRepository
 import io.drullar.inventar.persistence.schema.Products
 import io.drullar.inventar.persistence.schema.Products.uid
 import io.drullar.inventar.persistence.schema.Products.availableQuantity
@@ -9,10 +10,14 @@ import io.drullar.inventar.persistence.schema.Products.name
 import io.drullar.inventar.persistence.schema.Products.providerPrice
 import io.drullar.inventar.persistence.schema.Products.sellingPrice
 import io.drullar.inventar.result
+import io.drullar.inventar.shared.ISortBy
+import io.drullar.inventar.shared.Page
+import io.drullar.inventar.shared.PagedRequest
 import io.drullar.inventar.shared.ProductCreationDTO
 import io.drullar.inventar.shared.ProductDTO
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.like
 
 object ProductsRepository :
     AbstractRepository<Products, ProductDTO, ProductCreationDTO, Int, ProductsRepository.SortBy>(
@@ -36,15 +41,15 @@ object ProductsRepository :
 
     override fun update(
         id: Int,
-        model: ProductCreationDTO
+        dto: ProductCreationDTO
     ): Result<ProductDTO> {
         withTransaction {
             table.update(where = { table.uid.eq(id) }) {
-                it[name] = model.name
-                it[availableQuantity] = model.availableQuantity
-                it[sellingPrice] = model.sellingPrice
-                it[barcode] = model.barcode
-                model.providerPrice?.let { price -> it[providerPrice] = price }
+                it[name] = dto.name
+                it[availableQuantity] = dto.availableQuantity
+                it[sellingPrice] = dto.sellingPrice
+                it[barcode] = dto.barcode
+                dto.providerPrice?.let { price -> it[providerPrice] = price }
             }
         }
         return getById(id)
@@ -63,6 +68,38 @@ object ProductsRepository :
             table.deleteWhere { table.uid.eq(id) }
         }
         return@result Unit
+    }
+
+    override fun search(
+        searchQuery: String,
+        pageRequest: PagedRequest<SortBy>
+    ): Result<Page<ProductDTO>> = result {
+        val shouldSearchById = searchQuery.toIntOrNull() != null
+        val items = withTransaction {
+            val searchPattern = "%$searchQuery%"
+            table.selectAll().where {
+                table.name.like(searchPattern).or {
+                    table.barcode.like(searchPattern)
+                }.let { predicate ->
+                    if (shouldSearchById) predicate.or {
+                        table.uid.eq(searchQuery.toInt())
+                    }
+                    else predicate
+                }
+            }.limit(
+                pageRequest.pageSize,
+                ((pageRequest.page - 1) * pageRequest.pageSize).toLong()
+            ).map {
+                transformResultRowToModel(it)
+            }
+        }
+        Page(
+            pageNumber = pageRequest.page,
+            isLastPage = true, //TODO figure this out
+            items = items,
+            itemsPerPage = pageRequest.pageSize,
+            totalItems = items.count().toLong() //TODO figure this out as well
+        )
     }
 
     override fun buildOrderByExpression(sortBy: SortBy): Expression<*> = when (sortBy) {
@@ -97,7 +134,7 @@ object ProductsRepository :
             barcode = row[barcode]
         )
 
-    enum class SortBy {
+    enum class SortBy : ISortBy {
         NAME,
         ID,
         AVAILABLE_QUANTITY,

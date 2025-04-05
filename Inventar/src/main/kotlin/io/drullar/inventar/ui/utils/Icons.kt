@@ -14,4 +14,5 @@ object Icons {
     const val EDIT_SIGN = "/icons/edit-sign.svg"
     const val POSITIVE_SIGN = "/icons/positive-sign.svg"
     const val NEGATIVE_SIGN = "/icons/negative-sign.png"
+    const val ANALYTICS = "/icons/analytics.svg"
 }

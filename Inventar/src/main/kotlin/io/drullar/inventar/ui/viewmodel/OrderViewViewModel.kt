@@ -1,10 +1,11 @@
 package io.drullar.inventar.ui.viewmodel
 
 import io.drullar.inventar.SortingOrder
-import io.drullar.inventar.persistence.repositories.OrderRepository
+import io.drullar.inventar.persistence.repositories.impl.OrderRepository
 import io.drullar.inventar.shared.OrderCreationDTO
 import io.drullar.inventar.shared.OrderDTO
 import io.drullar.inventar.shared.OrderStatus
+import io.drullar.inventar.shared.PagedRequest
 import io.drullar.inventar.ui.components.navigation.NavigationDestination
 import io.drullar.inventar.ui.data.OrderDetailsPreview
 import io.drullar.inventar.ui.viewmodel.delegates.SettingsProvider
@@ -24,10 +25,10 @@ class OrderViewViewModel(
     }
     val _sortingOrder by lazy { sortingOrder.asStateFlow() }
 
-    private val sortBy by lazy { MutableStateFlow(OrderRepository.SortBy.CREATION_DATE) }
+    private val sortBy by lazy { MutableStateFlow(OrderRepository.OrderSortBy.CREATION_DATE) }
     val _sortBy by lazy { sortBy.asStateFlow() }
 
-    fun sortOrdersBy(sortBy: OrderRepository.SortBy) {
+    fun sortOrdersBy(sortBy: OrderRepository.OrderSortBy) {
         this.sortBy.value = sortBy
     }
 
@@ -43,8 +44,8 @@ class OrderViewViewModel(
         setNavigationDestination(NavigationDestination.PRODUCTS_PAGE)
     }
 
-    fun fetchOrders(page: Int, pageSize: Int, sortBy: OrderRepository.SortBy, order: SortingOrder) =
-        ordersRepository.getPaged(page, pageSize, sortBy, order)
+    fun fetchOrders(pagedRequest: PagedRequest<OrderRepository.OrderSortBy>) =
+        ordersRepository.getPaged(pagedRequest)
 
     fun changeOrderStatus(order: OrderDTO, status: OrderStatus) =
         ordersRepository.update(order.orderId, order.copy(status = status).toOrderCreationDTO())

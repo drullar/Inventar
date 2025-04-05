@@ -1,5 +1,6 @@
 package io.drullar.inventar.ui
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -7,9 +8,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -21,6 +22,7 @@ import io.drullar.inventar.ui.components.button.IconButton
 import io.drullar.inventar.ui.components.window.dialog.SingleActionAlertDialog
 import io.drullar.inventar.ui.components.navigation.NavigationBar
 import io.drullar.inventar.ui.components.navigation.NavigationDestination
+import io.drullar.inventar.ui.components.views.analytics.AnalyticsView
 import io.drullar.inventar.ui.components.views.order.OrdersView
 import io.drullar.inventar.ui.viewmodel.DefaultViewViewModel
 import io.drullar.inventar.ui.components.views.default.DefaultView
@@ -35,7 +37,6 @@ import io.drullar.inventar.ui.viewmodel.SettingsViewModel
 import io.drullar.inventar.ui.provider.getText
 import io.drullar.inventar.ui.provider.impl.TextProviderImpl
 import io.drullar.inventar.ui.provider.impl.LayoutStyleProviderImpl
-import io.drullar.inventar.ui.style.LayoutStyle
 
 @Composable
 fun ComposeApp(
@@ -56,35 +57,47 @@ fun ComposeApp(
 
     Column(modifier = Modifier.fillMaxWidth().fillMaxHeight()) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(10.dp)
+            modifier = Modifier.fillMaxWidth().padding(10.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Row(
-                Modifier.fillMaxWidth(
-                    0.7f
-                )
-            ) {
-                NavigationBar(
-                    selectedView = currentView.value,
-                    modifier = Modifier.fillMaxWidth(if (getLayoutStyle() == LayoutStyle.NORMAL) 0.3f else 0.5f),
-                    onNavigationChange = { sharedAppState.setNavigationDestination(it) }
-                )
-            }
 
-            IconButton(
-                onClick = { sharedAppState.setNavigationDestination(NavigationDestination.SETTINGS_PAGE) },
-                onHoverText = getText("label.settings"),
-                buttonColors = ButtonColors(
-                    Color.Transparent,
-                    Color.Black,
-                    Color.Transparent,
-                    Color.Black
-                )
-            ) {
-                Icon(
-                    painterResource(Icons.COG_WHEEL),
-                    getText("label.settings"),
-                    Modifier.height(20.dp)
-                )
+            NavigationBar(
+                selectedView = currentView.value,
+                onNavigationChange = { sharedAppState.setNavigationDestination(it) }
+            )
+
+            Row {
+                IconButton(
+                    onClick = { sharedAppState.setNavigationDestination(NavigationDestination.SETTINGS_PAGE) },
+                    buttonColors = ButtonColors(
+                        Color.Transparent,
+                        Color.Black,
+                        Color.Transparent,
+                        Color.Black
+                    )
+                ) {
+                    Icon(
+                        painterResource(Icons.COG_WHEEL),
+                        getText("label.settings"),
+                        Modifier.height(20.dp)
+                    )
+                }
+
+                IconButton(
+                    onClick = { sharedAppState.setNavigationDestination(NavigationDestination.ANALYTICS_PAGE) },
+                    buttonColors = ButtonColors(
+                        Color.Transparent,
+                        Color.Black,
+                        Color.Transparent,
+                        Color.Black
+                    )
+                ) {
+                    Icon(
+                        painterResource(Icons.ANALYTICS),
+                        getText("label.analytics"),
+                        Modifier.height(20.dp)
+                    )
+                }
             }
         }
 
@@ -100,6 +113,10 @@ fun ComposeApp(
 
             NavigationDestination.SETTINGS_PAGE -> {
                 SettingsView(settingsViewModel)
+            }
+
+            NavigationDestination.ANALYTICS_PAGE -> {
+                AnalyticsView()
             }
         }
 

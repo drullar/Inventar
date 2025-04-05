@@ -25,9 +25,9 @@ import io.drullar.inventar.ui.utils.Icons
 
 @Composable
 fun DraftOrderButton(modifier: Modifier = Modifier, draftOrdersCount: Long, onClick: () -> Unit) {
-    Row {
+    Row(modifier = modifier) {
         IconButton(
-            onClick = onClick, modifier.wrapContentSize()
+            onClick = onClick, Modifier.wrapContentSize()
         ) {
             Icon(
                 painter = painterResource(Icons.ORDER),

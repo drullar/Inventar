@@ -30,9 +30,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import io.drullar.inventar.SortingOrder
-import io.drullar.inventar.persistence.repositories.OrderRepository
+import io.drullar.inventar.persistence.repositories.impl.OrderRepository
 import io.drullar.inventar.shared.OrderDTO
 import io.drullar.inventar.shared.OrderStatus
+import io.drullar.inventar.shared.PagedRequest
 import io.drullar.inventar.ui.components.button.TextButton
 import io.drullar.inventar.ui.components.cards.CompactOrderPreviewRow
 import io.drullar.inventar.ui.components.cards.NormalOrderPreviewRow
@@ -60,10 +61,12 @@ fun OrdersView(viewModel: OrderViewViewModel) {
         mutableStateListOf<OrderDTO>().apply {
             addAll(
                 viewModel.fetchOrders(
-                    page = _page,
-                    pageSize = PAGE_SIZE,
-                    sortBy = sortingBy,
-                    order = sortingOrder
+                    PagedRequest(
+                        page = _page,
+                        pageSize = PAGE_SIZE,
+                        sortBy = sortingBy,
+                        order = sortingOrder
+                    )
                 ).getOrNull()?.items ?: emptyList()
             )
         }
@@ -74,10 +77,12 @@ fun OrdersView(viewModel: OrderViewViewModel) {
         _orders.clear()
         _orders.addAll(
             viewModel.fetchOrders(
-                page = _page,
-                pageSize = PAGE_SIZE,
-                sortBy = sortingBy,
-                order = sortingOrder
+                PagedRequest(
+                    page = _page,
+                    pageSize = PAGE_SIZE,
+                    sortBy = sortingBy,
+                    order = sortingOrder
+                )
             ).getOrNull()?.items ?: emptyList()
         )
     }
@@ -106,19 +111,19 @@ fun OrdersView(viewModel: OrderViewViewModel) {
                         onDismissRequest = { isOrderByDropdownExtended = false }
                     ) {
                         DropdownMenuItem({ Text(getText("field.date")) }, {
-                            viewModel.sortOrdersBy(OrderRepository.SortBy.CREATION_DATE)
+                            viewModel.sortOrdersBy(OrderRepository.OrderSortBy.CREATION_DATE)
                             isOrderByDropdownExtended = false
                         })
                         DropdownMenuItem({ Text(getText("field.number")) }, {
                             isOrderByDropdownExtended = false
-                            viewModel.sortOrdersBy(OrderRepository.SortBy.NUMBER)
+                            viewModel.sortOrdersBy(OrderRepository.OrderSortBy.NUMBER)
                         })
 //                        DropdownMenuItem({ Text(getText("field.total.price")) }, {
 //                            isOrderByDropdownExtended = false
 //                            viewModel.sortOrdersBy(OrderViewViewModel.OrderBy.TOTAL_PRICE)
 //                        }) TODO implement
                         DropdownMenuItem({ Text(getText("field.status")) }, {
-                            viewModel.sortOrdersBy(OrderRepository.SortBy.STATUS)
+                            viewModel.sortOrdersBy(OrderRepository.OrderSortBy.STATUS)
                             isOrderByDropdownExtended = false
                         })
                     }
@@ -165,10 +170,12 @@ fun OrdersView(viewModel: OrderViewViewModel) {
                     if (scrollState.layoutInfo.visibleItemsInfo.lastOrNull()?.index == _orders.size - 1) {
                         _page += 1
                         _orders += viewModel.fetchOrders(
-                            _page,
-                            PAGE_SIZE,
-                            sortingBy,
-                            sortingOrder
+                            PagedRequest(
+                                _page,
+                                PAGE_SIZE,
+                                sortingOrder,
+                                sortingBy
+                            )
                         ).getOrNull()?.items ?: emptyList()
                     }
 
