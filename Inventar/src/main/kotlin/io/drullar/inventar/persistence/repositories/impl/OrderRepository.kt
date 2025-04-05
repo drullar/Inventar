@@ -1,7 +1,9 @@
 package io.drullar.inventar.persistence.repositories.impl
 
+import io.drullar.inventar.SortingOrder
 import io.drullar.inventar.persistence.DatabaseException
 import io.drullar.inventar.persistence.repositories.AbstractRepository
+import io.drullar.inventar.persistence.repositories.impl.OrderRepository.productOrderAssociationTable
 import io.drullar.inventar.persistence.schema.Orders
 import io.drullar.inventar.persistence.schema.Orders.creationDate
 import io.drullar.inventar.persistence.schema.Orders.id
@@ -17,21 +19,27 @@ import io.drullar.inventar.shared.OrderCreationDTO
 import io.drullar.inventar.shared.OrderDTO
 import io.drullar.inventar.shared.OrderStatus
 import io.drullar.inventar.shared.ProductDTO
+import io.drullar.inventar.shared.ProductSoldAmountDTO
+import io.drullar.inventar.sortedBy
+import io.drullar.inventar.toLocalDateTime
 import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.between
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
+import java.time.Instant
+import java.util.Date
 
 object OrderRepository :
-    AbstractRepository<Orders, OrderDTO, OrderCreationDTO, Int, OrderRepository.OrderSortBy>(
-        Orders
-    ) {
-    private val productRepository = ProductsRepository
+    AbstractRepository<Orders, OrderDTO, OrderCreationDTO, Int, OrderRepository.OrderSortBy>(Orders) {
     private val productOrderAssociationTable = ProductOrderAssociation
 
     override fun save(dto: OrderCreationDTO): Result<OrderDTO?> = result {
         withTransaction {
             val orderId =
-                table.insert { it[orderStatus] = dto.status }.resultedValues?.first()?.let {
+                table.insert {
+                    it[orderStatus] = dto.status
+                    it[creationDate] = dto.creationDate
+                }.resultedValues?.first()?.let {
                     it[id]
                 } ?: throw DatabaseException.PersistenceException("Couldn't save the order")
 
@@ -117,6 +125,60 @@ object OrderRepository :
 
     fun getCountByStatus(status: OrderStatus) = withTransaction {
         table.selectAll().where { table.orderStatus.eq(status) }.count()
+    }
+
+    /**
+     * Get the total sold amount of [productId] for the given [fromDate] and [untilDate].
+     * If [fromDate] is null Epoch 0 will be used.
+     * If [untilDate] is null the current timestamp will be used
+     */
+    fun getProductSoldAmount(productId: Int, fromDate: Date?, untilDate: Date?) = result {
+        withTransaction {
+            val predicateFromDate = (fromDate ?: Date.from(Instant.EPOCH)).toLocalDateTime()
+            val predicateUntilDate = (untilDate ?: Date.from(Instant.now())).toLocalDateTime()
+            val result = productOrderAssociationTable.innerJoin(table).selectAll().where {
+
+                productOrderAssociationTable.productUid.eq(productId)
+                    .and(table.creationDate.between(predicateFromDate, predicateUntilDate))
+                    .and(table.orderStatus.eq(OrderStatus.COMPLETED))
+            }
+
+            val soldAmount = result.sumOf { it[orderedAmount] }
+            ProductSoldAmountDTO(
+                productId,
+                soldAmount,
+                predicateFromDate.toLocalDate(),
+                predicateUntilDate.toLocalDate()
+            )
+        }
+    }
+
+    /**
+     * Gets products based on their sales between [fromDate] and [untilDate].
+     * The resulting list contains [limit] amount of products or less, based on sales and products that are saved.
+     * If [fromDate] is null Epoch 0 will be used.
+     * If [untilDate] is null the current timestamp will be used
+     */
+    fun getMostSoldProducts(limit: Int, fromDate: Date?, untilDate: Date?) = result {
+        withTransaction {
+            val predicateFromDate = (fromDate ?: Date.from(Instant.EPOCH)).toLocalDateTime()
+            val predicateUntilDate = (untilDate ?: Date.from(Instant.now())).toLocalDateTime()
+            val result = productOrderAssociationTable.innerJoin(table).selectAll().where {
+                (table.creationDate.between(predicateFromDate, predicateUntilDate))
+                    .and(table.orderStatus.eq(OrderStatus.COMPLETED))
+            }.groupBy { it[productUid] }.map { entry ->
+                val productId = entry.key
+                val sales = entry.value.sumOf { it[orderedAmount] }
+                ProductSoldAmountDTO(
+                    productId = productId,
+                    soldQuantity = sales,
+                    fromDate = predicateFromDate.toLocalDate(),
+                    untilDate = predicateFromDate.toLocalDate()
+                )
+            }
+
+            result.sortedBy(SortingOrder.DESCENDING) { it.soldQuantity }.subList(0, limit)
+        }
     }
 
     override fun buildOrderByExpression(sortBy: OrderSortBy): Expression<*> = when (sortBy) {

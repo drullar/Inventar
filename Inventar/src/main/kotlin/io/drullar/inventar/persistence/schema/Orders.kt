@@ -12,7 +12,7 @@ import java.time.LocalDateTime
 @Relation
 object Orders : Table(name = "orders") {
     val id = integer(name = "id").autoIncrement().uniqueIndex()
-    val creationDate = datetime("creation_date").default(LocalDateTime.now())
+    val creationDate = datetime("creation_date")//.default(LocalDateTime.now())
     val orderStatus = enumeration<OrderStatus>("order_status")
 
     override val primaryKey: PrimaryKey

@@ -1,5 +1,8 @@
 package io.drullar.inventar
 
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.util.Date
 import kotlin.Result.Companion.failure
 import kotlin.Result.Companion.success
 
@@ -29,3 +32,5 @@ enum class SortingOrder(val text: String) {
 }
 
 fun verifyValuesAreNotEmpty(vararg values: String) = values.none { it.isBlank() }
+
+fun Date.toLocalDateTime() = LocalDateTime.ofInstant(this.toInstant(), ZoneId.systemDefault())

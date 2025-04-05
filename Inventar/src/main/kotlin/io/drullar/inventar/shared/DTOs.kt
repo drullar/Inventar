@@ -1,12 +1,13 @@
 package io.drullar.inventar.shared
 
 import androidx.compose.ui.graphics.Color
-import io.drullar.inventar.persistence.model.Category
 import io.drullar.inventar.ui.utils.Icons
 import io.drullar.inventar.ui.provider.getText
 import io.drullar.inventar.ui.style.Colors
 import java.math.BigDecimal
+import java.time.LocalDate
 import java.time.LocalDateTime
+import java.util.Date
 
 data class ProductDTO(
     val uid: Int,
@@ -44,7 +45,8 @@ data class OrderDTO(
 ) {
     fun toOrderCreationDTO(): OrderCreationDTO = OrderCreationDTO(
         productToQuantity = productToQuantity,
-        status = status
+        status = status,
+        creationDate = creationDate
     )
 
     fun getTotalPrice(): BigDecimal {
@@ -60,7 +62,15 @@ data class OrderDTO(
 
 data class OrderCreationDTO(
     val productToQuantity: Map<ProductDTO, Int>,
-    val status: OrderStatus
+    val status: OrderStatus,
+    val creationDate: LocalDateTime = LocalDateTime.now() // required for testing purposes, otherwise default in the model would have sufficed
+)
+
+data class ProductSoldAmountDTO(
+    val productId: Int,
+    val soldQuantity: Int,
+    val fromDate: LocalDate,
+    val untilDate: LocalDate
 )
 
 enum class OrderStatus(val text: Lazy<String>, val associatedColor: Lazy<Color>) {

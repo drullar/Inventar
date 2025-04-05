@@ -4,7 +4,9 @@ import assertk.assertAll
 import assertk.assertThat
 import assertk.assertions.containsExactly
 import assertk.assertions.containsExactlyInAnyOrder
+import assertk.assertions.containsOnly
 import assertk.assertions.extracting
+import assertk.assertions.hasSize
 import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
 import assertk.assertions.isFailure
@@ -21,8 +23,15 @@ import io.drullar.inventar.shared.ProductDTO
 import io.drullar.inventar.persistence.DatabaseException
 import io.drullar.inventar.shared.Page
 import io.drullar.inventar.shared.PagedRequest
+import io.drullar.inventar.unit.utils.Factory.createOrder
+import io.drullar.inventar.unit.utils.Factory.createProduct
 import org.junit.After
 import org.junit.Test
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.ZoneOffset
+import java.util.Date
 
 class TestOrderRepository : AbstractPersistenceTest() {
 
@@ -267,5 +276,75 @@ class TestOrderRepository : AbstractPersistenceTest() {
             assertThat(secondPage.pageNumber).isEqualTo(2)
             assertThat(secondPage.totalItems).isEqualTo(40)
         }
+    }
+
+    @Test
+    fun getProductSoldAmount() {
+        val product1 = createProduct(uid = 1)
+        val product2 = createProduct(uid = 2)
+        productRepository.save(product1.toProductCreationDTO())
+        productRepository.save(product2.toProductCreationDTO())
+        val orders = listOf(
+            createOrder(
+                creationDate = LocalDateTime.ofEpochSecond(0, 0, ZoneOffset.UTC).plusDays(10),
+                productToQuantity = mapOf(product1 to 2, product2 to 10),
+                status = OrderStatus.COMPLETED
+            ),
+            createOrder(
+                creationDate = LocalDateTime.now(),
+                productToQuantity = mapOf(product1 to 3),
+                status = OrderStatus.COMPLETED
+            )
+        ).map {
+            orderRepository.save(it.toOrderCreationDTO()).getOrThrow()
+        }
+
+        val search1 =
+            orderRepository.getProductSoldAmount(product1.uid, null, null).getOrThrow()
+        assertThat(search1.soldQuantity).isEqualTo(5)
+
+        val search2 =
+            orderRepository.getProductSoldAmount(
+                product1.uid,
+                Date.from(Instant.now().minusSeconds(86400)),
+                null
+            ).getOrThrow()
+        assertThat(search2.soldQuantity).isEqualTo(3)
+    }
+
+    @Test
+    fun getMostSoldProducts() {
+        val product1 = productRepository.save(createProduct(1).toProductCreationDTO()).getOrThrow()
+        val product2 = productRepository.save(createProduct(2).toProductCreationDTO()).getOrThrow()
+        val product3 = productRepository.save(createProduct(3).toProductCreationDTO()).getOrThrow()
+
+        listOf(
+            createOrder(productToQuantity = mapOf(product1 to 10), status = OrderStatus.COMPLETED),
+            createOrder(productToQuantity = mapOf(product3 to 20), status = OrderStatus.COMPLETED),
+            createOrder(
+                productToQuantity = mapOf(product1 to 15, product2 to 21),
+                status = OrderStatus.COMPLETED
+            )
+        ).forEach {
+            orderRepository.save(it.toOrderCreationDTO()).getOrThrow()
+        }
+
+        val search1 = orderRepository.getMostSoldProducts(2, null, null).getOrThrow()
+
+        assertThat(search1).extracting { it.productId to it.soldQuantity }.containsOnly(
+            1 to 25, 2 to 21
+        )
+
+        orderRepository.save(
+            OrderCreationDTO(
+                productToQuantity = mapOf(product3 to 10),
+                status = OrderStatus.COMPLETED
+            )
+        ).getOrThrow()
+
+        val search2 = orderRepository.getMostSoldProducts(2, null, null).getOrThrow()
+        assertThat(search2).extracting { it.productId to it.soldQuantity }.containsOnly(
+            1 to 25, 3 to 30
+        )
     }
 }
