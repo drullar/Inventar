@@ -208,7 +208,7 @@ class TestProductRepository : AbstractPersistenceTest() {
 
     @Test
     fun search() {
-        val barcode = UUID.randomUUID().toString().substring(0, BARCODE_LENGTH)
+        val barcode = "9234-564534"
         val products = listOf(
             createProduct(name = "Loreal Paris"),
             createProduct(name = "Cola Coca"),

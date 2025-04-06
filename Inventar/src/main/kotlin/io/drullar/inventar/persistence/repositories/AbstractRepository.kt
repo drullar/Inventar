@@ -58,7 +58,7 @@ abstract class AbstractRepository<T : Table, R, C, ID, S : ISortBy>(val table: T
             Page(
                 items = items,
                 totalItems = total,
-                itemsPerPage = pagedRequest.page,
+                itemsPerPage = pagedRequest.pageSize,
                 isLastPage = pagedRequest.page * pagedRequest.pageSize >= total,
                 pageNumber = pagedRequest.page
             )
