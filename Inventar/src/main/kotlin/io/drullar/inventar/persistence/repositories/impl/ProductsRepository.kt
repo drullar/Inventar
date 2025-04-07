@@ -17,7 +17,6 @@ import io.drullar.inventar.shared.ProductCreationDTO
 import io.drullar.inventar.shared.ProductDTO
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.like
 
 object ProductsRepository :
     AbstractRepository<Products, ProductDTO, ProductCreationDTO, Int, ProductsRepository.SortBy>(
@@ -75,6 +74,7 @@ object ProductsRepository :
         pageRequest: PagedRequest<SortBy>
     ): Result<Page<ProductDTO>> = result {
         val shouldSearchById = searchQuery.toIntOrNull() != null
+        var count: Long = 0
         val items = withTransaction {
             val searchPattern = "%$searchQuery%"
             table.selectAll().where {
@@ -86,6 +86,8 @@ object ProductsRepository :
                     }
                     else predicate
                 }
+            }.also {
+                count = it.count()
             }.limit(
                 pageRequest.pageSize,
                 ((pageRequest.page - 1) * pageRequest.pageSize).toLong()
@@ -95,10 +97,10 @@ object ProductsRepository :
         }
         Page(
             pageNumber = pageRequest.page,
-            isLastPage = true, //TODO figure this out
+            isLastPage = pageRequest.pageSize * pageRequest.page >= count,
             items = items,
             itemsPerPage = pageRequest.pageSize,
-            totalItems = items.count().toLong() //TODO figure this out as well
+            totalItems = count
         )
     }
 

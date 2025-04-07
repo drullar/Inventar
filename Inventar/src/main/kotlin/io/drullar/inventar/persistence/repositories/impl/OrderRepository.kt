@@ -1,9 +1,7 @@
 package io.drullar.inventar.persistence.repositories.impl
 
-import io.drullar.inventar.SortingOrder
 import io.drullar.inventar.persistence.DatabaseException
 import io.drullar.inventar.persistence.repositories.AbstractRepository
-import io.drullar.inventar.persistence.repositories.impl.OrderRepository.productOrderAssociationTable
 import io.drullar.inventar.persistence.schema.Orders
 import io.drullar.inventar.persistence.schema.Orders.creationDate
 import io.drullar.inventar.persistence.schema.Orders.id
@@ -20,14 +18,16 @@ import io.drullar.inventar.shared.OrderDTO
 import io.drullar.inventar.shared.OrderStatus
 import io.drullar.inventar.shared.ProductDTO
 import io.drullar.inventar.shared.ProductSoldAmountDTO
+import io.drullar.inventar.shared.SortingOrder
 import io.drullar.inventar.sortedBy
-import io.drullar.inventar.toLocalDateTime
 import org.jetbrains.exposed.sql.*
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.between
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
 import java.time.Instant
-import java.util.Date
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.ZoneId
 
 object OrderRepository :
     AbstractRepository<Orders, OrderDTO, OrderCreationDTO, Int, OrderRepository.OrderSortBy>(Orders) {
@@ -132,10 +132,15 @@ object OrderRepository :
      * If [fromDate] is null Epoch 0 will be used.
      * If [untilDate] is null the current timestamp will be used
      */
-    fun getProductSoldAmount(productId: Int, fromDate: Date?, untilDate: Date?) = result {
+    fun getProductSoldAmount(productId: Int, fromDate: LocalDate?, untilDate: LocalDate?) = result {
         withTransaction {
-            val predicateFromDate = (fromDate ?: Date.from(Instant.EPOCH)).toLocalDateTime()
-            val predicateUntilDate = (untilDate ?: Date.from(Instant.now())).toLocalDateTime()
+            val predicateFromDate =
+                fromDate?.atStartOfDay() ?: LocalDateTime.ofInstant(
+                    Instant.EPOCH,
+                    ZoneId.systemDefault()
+                )
+            val predicateUntilDate =
+                untilDate?.let { LocalDateTime.of(it, LocalTime.now()) } ?: LocalDateTime.now()
             val result = productOrderAssociationTable.innerJoin(table).selectAll().where {
 
                 productOrderAssociationTable.productUid.eq(productId)
@@ -159,10 +164,15 @@ object OrderRepository :
      * If [fromDate] is null Epoch 0 will be used.
      * If [untilDate] is null the current timestamp will be used
      */
-    fun getMostSoldProducts(limit: Int, fromDate: Date?, untilDate: Date?) = result {
+    fun getMostSoldProducts(limit: Int, fromDate: LocalDate?, untilDate: LocalDate?) = result {
         withTransaction {
-            val predicateFromDate = (fromDate ?: Date.from(Instant.EPOCH)).toLocalDateTime()
-            val predicateUntilDate = (untilDate ?: Date.from(Instant.now())).toLocalDateTime()
+            val predicateFromDate =
+                fromDate?.atStartOfDay() ?: LocalDateTime.ofInstant(
+                    Instant.EPOCH,
+                    ZoneId.systemDefault()
+                )
+            val predicateUntilDate =
+                untilDate?.let { LocalDateTime.of(it, LocalTime.now()) } ?: LocalDateTime.now()
             val result = productOrderAssociationTable.innerJoin(table).selectAll().where {
                 (table.creationDate.between(predicateFromDate, predicateUntilDate))
                     .and(table.orderStatus.eq(OrderStatus.COMPLETED))

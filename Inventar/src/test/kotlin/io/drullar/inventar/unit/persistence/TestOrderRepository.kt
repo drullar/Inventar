@@ -6,14 +6,12 @@ import assertk.assertions.containsExactly
 import assertk.assertions.containsExactlyInAnyOrder
 import assertk.assertions.containsOnly
 import assertk.assertions.extracting
-import assertk.assertions.hasSize
 import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
 import assertk.assertions.isFailure
 import assertk.assertions.isFalse
 import assertk.assertions.isNotNull
 import assertk.assertions.isTrue
-import io.drullar.inventar.SortingOrder
 import io.drullar.inventar.persistence.repositories.impl.OrderRepository
 import io.drullar.inventar.persistence.repositories.impl.ProductsRepository
 import io.drullar.inventar.shared.OrderCreationDTO
@@ -21,13 +19,14 @@ import io.drullar.inventar.shared.OrderStatus
 import io.drullar.inventar.shared.ProductCreationDTO
 import io.drullar.inventar.shared.ProductDTO
 import io.drullar.inventar.persistence.DatabaseException
-import io.drullar.inventar.shared.Page
 import io.drullar.inventar.shared.PagedRequest
+import io.drullar.inventar.shared.SortingOrder
 import io.drullar.inventar.unit.utils.Factory.createOrder
 import io.drullar.inventar.unit.utils.Factory.createProduct
 import org.junit.After
 import org.junit.Test
 import java.time.Instant
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZoneOffset
@@ -306,7 +305,7 @@ class TestOrderRepository : AbstractPersistenceTest() {
         val search2 =
             orderRepository.getProductSoldAmount(
                 product1.uid,
-                Date.from(Instant.now().minusSeconds(86400)),
+                LocalDate.ofInstant(Instant.now().minusSeconds(86400), ZoneId.systemDefault()),
                 null
             ).getOrThrow()
         assertThat(search2.soldQuantity).isEqualTo(3)

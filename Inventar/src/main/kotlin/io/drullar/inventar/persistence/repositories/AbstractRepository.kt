@@ -1,10 +1,10 @@
 package io.drullar.inventar.persistence.repositories
 
-import io.drullar.inventar.SortingOrder
 import io.drullar.inventar.result
 import io.drullar.inventar.shared.ISortBy
 import io.drullar.inventar.shared.Page
 import io.drullar.inventar.shared.PagedRequest
+import io.drullar.inventar.shared.SortingOrder
 import org.jetbrains.exposed.sql.Expression
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.SortOrder

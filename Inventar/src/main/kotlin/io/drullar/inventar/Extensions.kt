@@ -1,5 +1,7 @@
 package io.drullar.inventar
 
+import io.drullar.inventar.shared.SortingOrder
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.Date
@@ -25,12 +27,4 @@ inline fun <T, R : Comparable<R>> Iterable<T>.sortedBy(
 
 fun isNumeric(value: String): Boolean = value.toDoubleOrNull()?.let { true } ?: false
 
-//TODo move to some other place
-enum class SortingOrder(val text: String) {
-    ASCENDING("order.ascending"),
-    DESCENDING("order.descending")
-}
-
 fun verifyValuesAreNotEmpty(vararg values: String) = values.none { it.isBlank() }
-
-fun Date.toLocalDateTime() = LocalDateTime.ofInstant(this.toInstant(), ZoneId.systemDefault())

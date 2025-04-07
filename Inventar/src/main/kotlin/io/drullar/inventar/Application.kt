@@ -9,6 +9,7 @@ import androidx.compose.ui.window.rememberWindowState
 import io.drullar.inventar.ui.ComposeApp
 import io.drullar.inventar.ui.components.navigation.NavigationDestination
 import io.drullar.inventar.ui.utils.Icons
+import io.drullar.inventar.ui.viewmodel.AnalyticsViewModel
 import io.drullar.inventar.ui.viewmodel.DefaultViewViewModel
 import io.drullar.inventar.ui.viewmodel.OrderViewViewModel
 import io.drullar.inventar.ui.viewmodel.SettingsViewModel
@@ -26,8 +27,9 @@ import java.awt.Frame
 import java.awt.Label
 
 class Application {
+
     fun run() {
-        Thread.setDefaultUncaughtExceptionHandler { _, e ->
+        Thread.setDefaultUncaughtExceptionHandler { _, e -> //TODO cleanup error handling
             Dialog(Frame(), e.message ?: "Error").apply {
                 layout = FlowLayout()
                 val label = Label(e.stackTraceToString())
@@ -60,6 +62,7 @@ class Application {
             DefaultViewViewModel(sharedAppStateHolder, alertManagerDelegate, settingsProvider)
         val orderViewViewModel = OrderViewViewModel(sharedAppStateHolder, settingsProvider)
         val settingsViewModel = SettingsViewModel(settingsProvider)
+        val analyticsViewModel = AnalyticsViewModel(settingsProvider)
 
         application {
             val windowState = rememberWindowState(placement = WindowPlacement.Maximized)
@@ -78,6 +81,7 @@ class Application {
                     defaultViewViewModel,
                     orderViewViewModel,
                     settingsViewModel,
+                    analyticsViewModel,
                     windowState.size
                 )
             }

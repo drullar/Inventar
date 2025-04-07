@@ -15,4 +15,5 @@ object Icons {
     const val POSITIVE_SIGN = "/icons/positive-sign.svg"
     const val NEGATIVE_SIGN = "/icons/negative-sign.png"
     const val ANALYTICS = "/icons/analytics.svg"
+    const val CALENDAR = "/icons/calendar.svg"
 }

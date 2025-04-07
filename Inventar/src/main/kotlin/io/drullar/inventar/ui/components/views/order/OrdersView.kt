@@ -29,11 +29,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import io.drullar.inventar.SortingOrder
 import io.drullar.inventar.persistence.repositories.impl.OrderRepository
 import io.drullar.inventar.shared.OrderDTO
 import io.drullar.inventar.shared.OrderStatus
 import io.drullar.inventar.shared.PagedRequest
+import io.drullar.inventar.shared.SortingOrder
 import io.drullar.inventar.ui.components.button.TextButton
 import io.drullar.inventar.ui.components.cards.CompactOrderPreviewRow
 import io.drullar.inventar.ui.components.cards.NormalOrderPreviewRow

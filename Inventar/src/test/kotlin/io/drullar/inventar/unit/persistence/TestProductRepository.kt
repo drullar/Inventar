@@ -3,28 +3,24 @@ package io.drullar.inventar.unit.persistence
 import assertk.assertThat
 import assertk.assertions.contains
 import assertk.assertions.containsExactly
-import assertk.assertions.containsExactlyInAnyOrder
 import assertk.assertions.containsOnly
 import assertk.assertions.extracting
 import assertk.assertions.isEqualTo
 import assertk.assertions.isFailure
+import assertk.assertions.isFalse
 import assertk.assertions.isNotNull
 import assertk.assertions.isNull
 import assertk.assertions.isSuccess
-import assertk.assertions.prop
-import io.drullar.inventar.SortingOrder
 import io.drullar.inventar.persistence.repositories.impl.ProductsRepository
 import io.drullar.inventar.persistence.schema.Products
 import io.drullar.inventar.shared.ProductCreationDTO
 import io.drullar.inventar.persistence.DatabaseException
-import io.drullar.inventar.persistence.schema.BARCODE_LENGTH
 import io.drullar.inventar.shared.PagedRequest
-import io.drullar.inventar.shared.ProductDTO
+import io.drullar.inventar.shared.SortingOrder
 import io.drullar.inventar.unit.utils.Factory.createProduct
 import org.junit.After
 import org.junit.Test
 import java.math.BigDecimal
-import java.util.UUID
 
 class TestProductRepository : AbstractPersistenceTest() {
 
@@ -276,7 +272,7 @@ class TestProductRepository : AbstractPersistenceTest() {
                 order = SortingOrder.ASCENDING,
                 sortBy = ProductsRepository.SortBy.ID
             )
-        ).getOrThrow().items
+        ).getOrThrow()
 
         val pagedSearch2 = productRepository.search(
             "COLA",
@@ -286,10 +282,14 @@ class TestProductRepository : AbstractPersistenceTest() {
                 order = SortingOrder.ASCENDING,
                 sortBy = ProductsRepository.SortBy.ID
             )
-        ).getOrThrow().items
+        ).getOrThrow()
 
-        assertThat(pagedSearch1).extracting { it.name }.containsOnly("Cola Coca")
-        assertThat(pagedSearch2).extracting { it.name }.containsOnly("Derby cola")
+        assertThat(pagedSearch1.isLastPage).isFalse()
+        assertThat(pagedSearch1.totalItems).isEqualTo(3)
+        assertThat(pagedSearch2.isLastPage).isFalse()
+
+        assertThat(pagedSearch1.items).extracting { it.name }.containsOnly("Cola Coca")
+        assertThat(pagedSearch2.items).extracting { it.name }.containsOnly("Derby cola")
 
         val searchById = productRepository.search(
             "1",

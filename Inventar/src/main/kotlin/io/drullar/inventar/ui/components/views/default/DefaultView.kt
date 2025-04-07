@@ -110,7 +110,7 @@ fun DefaultView(
                         } else viewModel.searchProducts(
                             query,
                             PagedRequest(page, PRODUCTS_PER_PAGE, sortingOrder, sortBy)
-                        ).items
+                        ).items //TODO handle pagination of search queries, i.e when scrolling to the end of the displayed searched products to load more
                     )
                 }
             )
@@ -319,7 +319,7 @@ private fun handleDialogWindowRender(
             )
         }
 
-        null -> Unit
+        else -> Unit
     }
 }
 

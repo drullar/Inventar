@@ -224,7 +224,7 @@ fun CompactOrderPreviewRow(
             Text(
                 text = orderDTO.getTotalPrice().toString() + currency,
                 style = appTypography().bodyLarge,
-            ) //TODO currency
+            )
         }
 
         if (orderDTO.status == OrderStatus.DRAFT) {

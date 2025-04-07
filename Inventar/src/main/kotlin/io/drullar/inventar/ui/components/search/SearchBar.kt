@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.material3.IconButton
@@ -55,7 +56,8 @@ fun SearchBar(
                     )
                 }
                 innerTextField() // has to be called as per the documentation
-            }
+            },
+            keyboardActions = KeyboardActions(onSearch = { onSearch(searchQuery) })
         )
         TextButton(
             getText("label.search"),

@@ -1,17 +1,19 @@
 package io.drullar.inventar.persistence.repositories
 
 import io.drullar.inventar.shared.ISortBy
-import io.drullar.inventar.shared.Page
-import io.drullar.inventar.shared.PagedRequest
 import kotlin.Result
 import org.jetbrains.exposed.sql.*
 
 /**
  *  Repository interface for persisting single Model object
  *  [T] - [Table] that this repository serves
+ *
  *  [ID] - type of the ID for the given entity
+ *
  *  [C] - Creation dto model
+ *
  *  [R] - result model
+ *
  *  [S] - Allowed sort by
  */
 interface CRUDRepository<T : Table, R, C, ID, S : ISortBy> {

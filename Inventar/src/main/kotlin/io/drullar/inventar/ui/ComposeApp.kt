@@ -37,6 +37,7 @@ import io.drullar.inventar.ui.viewmodel.SettingsViewModel
 import io.drullar.inventar.ui.provider.getText
 import io.drullar.inventar.ui.provider.impl.TextProviderImpl
 import io.drullar.inventar.ui.provider.impl.LayoutStyleProviderImpl
+import io.drullar.inventar.ui.viewmodel.AnalyticsViewModel
 
 @Composable
 fun ComposeApp(
@@ -45,6 +46,7 @@ fun ComposeApp(
     defaultViewViewModel: DefaultViewViewModel,
     orderViewViewModel: OrderViewViewModel,
     settingsViewModel: SettingsViewModel,
+    analyticsViewModel: AnalyticsViewModel,
     windowSize: DpSize
 ) {
     val settingsState = settingsViewModel.getSettings().collectAsState()
@@ -116,7 +118,7 @@ fun ComposeApp(
             }
 
             NavigationDestination.ANALYTICS_PAGE -> {
-                AnalyticsView()
+                AnalyticsView(analyticsViewModel)
             }
         }
 

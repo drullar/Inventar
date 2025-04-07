@@ -11,7 +11,8 @@ interface PagingAndSearchRepository<S : ISortBy, R> {
     fun getPaged(pageRequest: PagedRequest<S>): Result<Page<R>>
 
     /**
-     * Perform search based on the provided [searchQuery] and [pageRequest] and return a [Page] [Result]
+     * Perform search based on the provided [searchQuery] and [pageRequest] and return a [Page] [Result].
+     * Each repository implements it's own search criteria.
      */
     fun search(searchQuery: String, pageRequest: PagedRequest<S>): Result<Page<R>>
 }

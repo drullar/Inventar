@@ -1,11 +1,11 @@
 package io.drullar.inventar.ui.viewmodel
 
-import io.drullar.inventar.SortingOrder
 import io.drullar.inventar.persistence.repositories.impl.OrderRepository
 import io.drullar.inventar.shared.OrderCreationDTO
 import io.drullar.inventar.shared.OrderDTO
 import io.drullar.inventar.shared.OrderStatus
 import io.drullar.inventar.shared.PagedRequest
+import io.drullar.inventar.shared.SortingOrder
 import io.drullar.inventar.ui.components.navigation.NavigationDestination
 import io.drullar.inventar.ui.data.OrderDetailsPreview
 import io.drullar.inventar.ui.viewmodel.delegates.SettingsProvider

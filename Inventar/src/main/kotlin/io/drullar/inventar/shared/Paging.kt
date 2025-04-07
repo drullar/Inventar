@@ -1,6 +1,5 @@
 package io.drullar.inventar.shared
 
-import io.drullar.inventar.SortingOrder
 
 data class Page<T>(
     val pageNumber: Int,
