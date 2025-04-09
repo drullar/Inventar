@@ -32,7 +32,7 @@ dependencies {
     implementation("io.github.classgraph:classgraph:4.8.177")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.18.3")
     // Charts dependencies TODO delete unused ones after implementation
-    implementation("io.github.ehsannarmani:compose-charts:0.1.2")
+    implementation("org.jfree:jfreechart:1.5.5")
     //Test dependencies
     testImplementation(kotlin("test"))
     testImplementation("junit:junit:4.13.2")

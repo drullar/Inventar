@@ -1,6 +1,5 @@
 package io.drullar.inventar.ui.components.cards
 
-import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material3.OutlinedCard

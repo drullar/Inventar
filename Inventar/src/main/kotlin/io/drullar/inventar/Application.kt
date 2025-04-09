@@ -29,6 +29,8 @@ import java.awt.Label
 class Application {
 
     fun run() {
+        setSystemProperties()
+
         Thread.setDefaultUncaughtExceptionHandler { _, e -> //TODO cleanup error handling
             Dialog(Frame(), e.message ?: "Error").apply {
                 layout = FlowLayout()
@@ -86,6 +88,11 @@ class Application {
                 )
             }
         }
+    }
+
+    private fun setSystemProperties() {
+        // Required for JFreeChart inside a SwingPanel.
+        // https://www.jetbrains.com/help/kotlin-multiplatform-dev/compose-desktop-swing-interoperability.html#use-swing-in-a-compose-multiplatform-application
     }
 
     companion object {
