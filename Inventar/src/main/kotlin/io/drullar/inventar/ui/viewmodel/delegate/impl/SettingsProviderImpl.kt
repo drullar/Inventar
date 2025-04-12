@@ -1,7 +1,7 @@
-package io.drullar.inventar.ui.viewmodel.delegates.impl
+package io.drullar.inventar.ui.viewmodel.delegate.impl
 
 import io.drullar.inventar.shared.Settings
-import io.drullar.inventar.ui.viewmodel.delegates.SettingsProvider
+import io.drullar.inventar.ui.viewmodel.delegate.SettingsProvider
 import io.drullar.inventar.utils.file.FileManager
 import io.drullar.inventar.utils.file.FileType
 import io.drullar.inventar.utils.file.SettingsFile

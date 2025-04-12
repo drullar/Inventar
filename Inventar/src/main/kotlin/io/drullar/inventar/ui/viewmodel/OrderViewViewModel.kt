@@ -8,8 +8,8 @@ import io.drullar.inventar.shared.PagedRequest
 import io.drullar.inventar.shared.SortingOrder
 import io.drullar.inventar.ui.components.navigation.NavigationDestination
 import io.drullar.inventar.ui.data.OrderDetailsPreview
-import io.drullar.inventar.ui.viewmodel.delegates.SettingsProvider
-import io.drullar.inventar.ui.viewmodel.delegates.SharedAppStateDelegate
+import io.drullar.inventar.ui.viewmodel.delegate.SettingsProvider
+import io.drullar.inventar.ui.viewmodel.delegate.SharedAppStateDelegate
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 

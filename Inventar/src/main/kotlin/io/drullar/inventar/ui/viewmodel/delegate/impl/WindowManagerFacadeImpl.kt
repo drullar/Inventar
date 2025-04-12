@@ -1,10 +1,10 @@
-package io.drullar.inventar.ui.viewmodel.delegates.impl
+package io.drullar.inventar.ui.viewmodel.delegate.impl
 
 import io.drullar.inventar.ui.data.DialogWindowType
 import io.drullar.inventar.ui.data.WindowPayload
 import io.drullar.inventar.ui.data.ExternalWindowType
-import io.drullar.inventar.ui.viewmodel.delegates.PopupWindowManager
-import io.drullar.inventar.ui.viewmodel.delegates.WindowManagerFacade
+import io.drullar.inventar.ui.viewmodel.delegate.PopupWindowManager
+import io.drullar.inventar.ui.viewmodel.delegate.WindowManagerFacade
 import kotlinx.coroutines.flow.StateFlow
 
 class WindowManagerFacadeImpl(

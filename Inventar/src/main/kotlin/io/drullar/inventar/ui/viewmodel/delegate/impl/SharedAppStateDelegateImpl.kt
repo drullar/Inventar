@@ -1,7 +1,7 @@
-package io.drullar.inventar.ui.viewmodel.delegates.impl
+package io.drullar.inventar.ui.viewmodel.delegate.impl
 
 import io.drullar.inventar.ui.components.navigation.NavigationDestination
-import io.drullar.inventar.ui.viewmodel.delegates.SharedAppStateDelegate
+import io.drullar.inventar.ui.viewmodel.delegate.SharedAppStateDelegate
 import io.drullar.inventar.ui.data.Preview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

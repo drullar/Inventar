@@ -3,7 +3,7 @@ package io.drullar.inventar.utils.file
 import com.fasterxml.jackson.databind.DatabindException
 import io.drullar.inventar.shared.Settings
 import io.drullar.inventar.shared.SupportedLanguage
-import io.drullar.inventar.utils.JsonParser
+import io.drullar.inventar.utils.parser.JsonParser
 import java.io.File
 import java.util.Currency
 
@@ -52,14 +52,19 @@ interface ModifiableFile<T> {
     fun override(newContent: T)
 }
 
+interface AppendableFile<T> {
+    /**
+     * Append contents
+     */
+    fun append(content: T)
+}
+
 abstract class AbstractApplicationFile : ApplicationFile {
     protected abstract val file: File
 
     override fun exists(): Boolean = file.exists()
 
     override fun getAbsolutePath(): String = file.absolutePath
-
-    override fun validateFileIntegrity() = Unit
 
     override fun create(): Boolean {
         if (!file.exists()) {
@@ -111,4 +116,5 @@ class SettingsFile(
 class DatabaseFile(private val parentDirectory: File) : AbstractApplicationFile() {
     override val file: File get() = File(parentDirectory, fileName)
     override val fileName = "inventar.db"
+    override fun validateFileIntegrity() = Unit
 }

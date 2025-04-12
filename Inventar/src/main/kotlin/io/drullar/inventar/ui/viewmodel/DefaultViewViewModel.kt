@@ -9,9 +9,9 @@ import io.drullar.inventar.shared.PagedRequest
 import io.drullar.inventar.shared.ProductCreationDTO
 import io.drullar.inventar.shared.ProductDTO
 import io.drullar.inventar.shared.SortingOrder
-import io.drullar.inventar.ui.viewmodel.delegates.AlertManager
+import io.drullar.inventar.ui.viewmodel.delegate.AlertManager
 import io.drullar.inventar.ui.data.DialogWindowType
-import io.drullar.inventar.ui.viewmodel.delegates.SharedAppStateDelegate
+import io.drullar.inventar.ui.viewmodel.delegate.SharedAppStateDelegate
 import io.drullar.inventar.ui.data.AlertType
 import io.drullar.inventar.ui.data.DetailedProductPreview
 import io.drullar.inventar.ui.data.EmptyPayload
@@ -22,9 +22,9 @@ import io.drullar.inventar.ui.data.OrdersListPreview
 import io.drullar.inventar.ui.data.ProductPayload
 import io.drullar.inventar.ui.provider.getLayoutStyle
 import io.drullar.inventar.ui.style.LayoutStyle
-import io.drullar.inventar.ui.viewmodel.delegates.SettingsProvider
-import io.drullar.inventar.ui.viewmodel.delegates.WindowManagerFacade
-import io.drullar.inventar.ui.viewmodel.delegates.impl.WindowManagerFacadeImpl
+import io.drullar.inventar.ui.viewmodel.delegate.SettingsProvider
+import io.drullar.inventar.ui.viewmodel.delegate.WindowManagerFacade
+import io.drullar.inventar.ui.viewmodel.delegate.impl.WindowManagerFacadeImpl
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 

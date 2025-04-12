@@ -1,4 +1,4 @@
-package io.drullar.inventar.ui.viewmodel.delegates
+package io.drullar.inventar.ui.viewmodel.delegate
 
 import io.drullar.inventar.ui.components.navigation.NavigationDestination
 import io.drullar.inventar.ui.data.Preview

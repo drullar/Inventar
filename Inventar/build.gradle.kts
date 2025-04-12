@@ -31,6 +31,8 @@ dependencies {
     //Other dependencies
     implementation("io.github.classgraph:classgraph:4.8.177")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.18.3")
+    // https://github.com/Wavesonics/compose-multiplatform-file-picker
+    implementation("com.darkrockstudios:mpfilepicker:3.1.0")
     // Charts dependencies TODO delete unused ones after implementation
     implementation("org.jfree:jfreechart:1.5.5")
     //Test dependencies

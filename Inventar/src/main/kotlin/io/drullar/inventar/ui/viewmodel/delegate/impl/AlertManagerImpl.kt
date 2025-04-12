@@ -1,6 +1,6 @@
-package io.drullar.inventar.ui.viewmodel.delegates.impl
+package io.drullar.inventar.ui.viewmodel.delegate.impl
 
-import io.drullar.inventar.ui.viewmodel.delegates.AlertManager
+import io.drullar.inventar.ui.viewmodel.delegate.AlertManager
 import io.drullar.inventar.ui.data.AlertType
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

@@ -1,10 +1,8 @@
 package io.drullar.inventar
 
 import io.drullar.inventar.shared.SortingOrder
-import java.time.LocalDate
 import java.time.LocalDateTime
-import java.time.ZoneId
-import java.util.Date
+import java.util.StringJoiner
 import kotlin.Result.Companion.failure
 import kotlin.Result.Companion.success
 
@@ -28,3 +26,12 @@ inline fun <T, R : Comparable<R>> Iterable<T>.sortedBy(
 fun isNumeric(value: String): Boolean = value.toDoubleOrNull()?.let { true } ?: false
 
 fun verifyValuesAreNotEmpty(vararg values: String) = values.none { it.isBlank() }
+
+fun LocalDateTime.toFileAppropriateString(): String = StringJoiner("-")
+    .add(dayOfMonth.toString())
+    .add(month.name)
+    .add(year.toString())
+    .add(hour.toString())
+    .add(minute.toString())
+    .add(second.toString())
+    .toString()

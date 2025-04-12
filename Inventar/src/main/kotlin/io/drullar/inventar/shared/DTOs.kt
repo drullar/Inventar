@@ -39,6 +39,7 @@ data class ProductCreationDTO(
 
 data class OrderDTO(
     val orderId: Int,
+
     val productToQuantity: Map<ProductDTO, Int>,
     val creationDate: LocalDateTime,
     val status: OrderStatus

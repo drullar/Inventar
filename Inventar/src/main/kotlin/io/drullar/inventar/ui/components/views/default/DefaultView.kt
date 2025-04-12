@@ -359,7 +359,7 @@ private fun handleActiveExternalWindowRender(
             )
         }
 
-        null -> Unit
+        else -> Unit
     }
 }
 

@@ -6,9 +6,9 @@ import io.drullar.inventar.shared.PagedRequest
 import io.drullar.inventar.shared.ProductDTO
 import io.drullar.inventar.shared.SortingOrder
 import io.drullar.inventar.ui.data.DialogWindowType
-import io.drullar.inventar.ui.viewmodel.delegates.PopupWindowManager
-import io.drullar.inventar.ui.viewmodel.delegates.SettingsProvider
-import io.drullar.inventar.ui.viewmodel.delegates.impl.PopupWindowManagerImpl
+import io.drullar.inventar.ui.viewmodel.delegate.PopupWindowManager
+import io.drullar.inventar.ui.viewmodel.delegate.SettingsProvider
+import io.drullar.inventar.ui.viewmodel.delegate.impl.PopupWindowManagerImpl
 import java.time.LocalDate
 
 class AnalyticsViewModel(

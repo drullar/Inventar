@@ -1,7 +1,7 @@
-package io.drullar.inventar.ui.viewmodel.delegates.impl
+package io.drullar.inventar.ui.viewmodel.delegate.impl
 
 import io.drullar.inventar.ui.data.EmptyPayload
-import io.drullar.inventar.ui.viewmodel.delegates.PopupWindowManager
+import io.drullar.inventar.ui.viewmodel.delegate.PopupWindowManager
 import io.drullar.inventar.ui.data.WindowPayload
 import io.drullar.inventar.ui.data.WindowTypeInterface
 import kotlinx.coroutines.flow.MutableStateFlow

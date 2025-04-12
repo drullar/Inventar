@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ButtonColors
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -27,17 +26,24 @@ import io.drullar.inventar.ui.components.views.order.OrdersView
 import io.drullar.inventar.ui.viewmodel.DefaultViewViewModel
 import io.drullar.inventar.ui.components.views.default.DefaultView
 import io.drullar.inventar.ui.components.views.settings.SettingsView
+import io.drullar.inventar.ui.components.window.external.DataExportWindow
 import io.drullar.inventar.ui.viewmodel.OrderViewViewModel
-import io.drullar.inventar.ui.viewmodel.delegates.AlertManager
-import io.drullar.inventar.ui.viewmodel.delegates.SharedAppStateDelegate
+import io.drullar.inventar.ui.viewmodel.delegate.AlertManager
+import io.drullar.inventar.ui.viewmodel.delegate.SharedAppStateDelegate
 import io.drullar.inventar.ui.data.AlertType
+import io.drullar.inventar.ui.data.ExternalWindowType
 import io.drullar.inventar.ui.provider.getLayoutStyle
 import io.drullar.inventar.ui.utils.Icons
 import io.drullar.inventar.ui.viewmodel.SettingsViewModel
 import io.drullar.inventar.ui.provider.getText
-import io.drullar.inventar.ui.provider.impl.TextProviderImpl
 import io.drullar.inventar.ui.provider.impl.LayoutStyleProviderImpl
+import io.drullar.inventar.ui.provider.impl.TextProviderImpl
 import io.drullar.inventar.ui.viewmodel.AnalyticsViewModel
+import io.drullar.inventar.ui.viewmodel.delegate.PopupWindowManager
+import io.drullar.inventar.ui.viewmodel.delegate.impl.OrderDataCsvExporter
+import io.drullar.inventar.utils.file.ExportRequest
+import io.drullar.inventar.utils.runAsync
+import java.util.Locale
 
 @Composable
 fun ComposeApp(
@@ -47,8 +53,10 @@ fun ComposeApp(
     orderViewViewModel: OrderViewViewModel,
     settingsViewModel: SettingsViewModel,
     analyticsViewModel: AnalyticsViewModel,
+    globalWindowManager: PopupWindowManager<ExternalWindowType>,
     windowSize: DpSize
 ) {
+    val activeExternalWindow = globalWindowManager.getActiveWindow().collectAsState()
     val settingsState = settingsViewModel.getSettings().collectAsState()
     val activeLanguage = settingsState.value.language
 
@@ -134,6 +142,41 @@ fun ComposeApp(
 
             else -> {}
         }
+    }
+
+    handleExternalWindowRender(
+        externalWindowType = activeExternalWindow.value,
+        onWindowClose = { globalWindowManager.setActiveWindow(null) },
+        locale = activeLanguage.locale,
+        onDataExport = { request ->
+            runAsync {
+                OrderDataCsvExporter(settingsViewModel.getSettings().value.defaultCurrency).export(
+                    request
+                )
+                // TODO show some dialog on completion
+            }
+        }
+    )
+}
+
+@Composable
+private fun handleExternalWindowRender(
+    externalWindowType: ExternalWindowType?,
+    onWindowClose: () -> Unit,
+    locale: Locale,
+    onDataExport: (ExportRequest) -> Unit
+) {
+    when (externalWindowType) {
+        ExternalWindowType.DATA_EXPORT -> {
+            DataExportWindow(
+                onClose = onWindowClose,
+                locale = locale,
+                onExportRequest = { exportRequestData ->
+                    onDataExport(exportRequestData)
+                })
+        }
+
+        else -> Unit
     }
 }
 
