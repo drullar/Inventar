@@ -97,7 +97,6 @@ fun SingleActionAlertDialog(
     actionButtonText: String,
     onAction: () -> Unit
 ) {
-    // TODO fix layout
     BasicAlertDialog(
         onDismissRequest = onAction,
         modifier = Modifier.border(1.dp, Color.Black, roundedBorderShape())
@@ -107,12 +106,14 @@ fun SingleActionAlertDialog(
                 modifier = Modifier.fillMaxWidth().wrapContentHeight(),
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
-                SelectionContainer {
+                SelectionContainer(
+                    Modifier.align(Alignment.CenterHorizontally).padding(vertical = 50.dp)
+                        .fillMaxWidth()
+                ) {
                     Text(
                         text,
                         textAlign = TextAlign.Center,
-                        modifier = Modifier.wrapContentHeight().align(Alignment.CenterHorizontally)
-                            .padding(vertical = 50.dp)
+                        modifier = Modifier.wrapContentHeight()
                     )
                 }
                 Row(
