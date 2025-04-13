@@ -9,10 +9,11 @@ import io.drullar.inventar.utils.file.ExportRequest
 import java.util.Currency
 import java.util.StringJoiner
 
-class OrderDataCsvExporter(private val currency: Currency) : DataExporter<ExportRequest> {
+class OrderDataCsvExporter(private val currency: Currency) :
+    DataExporter<ExportRequest, DataExportFile> {
     private val orderRepository = OrderRepository
 
-    override fun export(request: ExportRequest) {
+    override fun export(request: ExportRequest): DataExportFile {
         val file = DataExportFile(request.targetDirectory).also {
             it.create()
             it.append(ORDER_DATA_CSV_KEYS.plus("\n"))
@@ -25,6 +26,7 @@ class OrderDataCsvExporter(private val currency: Currency) : DataExporter<Export
         }
 
         println("Exported orders data to: ${file.getAbsolutePath()}")
+        return file
     }
 
     private fun orderDataToCsvString(order: OrderDTO): List<String> =

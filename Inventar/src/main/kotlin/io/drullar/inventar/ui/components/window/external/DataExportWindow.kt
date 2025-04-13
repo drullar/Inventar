@@ -33,8 +33,7 @@ import kotlin.io.path.absolutePathString
 fun DataExportWindow(
     onClose: () -> Unit,
     locale: Locale,
-    onExportRequest: (ExportRequest) -> Unit,
-    onExportCompletion: () -> Unit = {} //TODO implement and pass where DataExportWindow is used
+    onExportRequest: (ExportRequest) -> Unit
 ) {
     val windowState = rememberWindowState(
         placement = WindowPlacement.Floating,

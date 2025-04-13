@@ -26,12 +26,17 @@ import io.drullar.inventar.ui.components.views.order.OrdersView
 import io.drullar.inventar.ui.viewmodel.DefaultViewViewModel
 import io.drullar.inventar.ui.components.views.default.DefaultView
 import io.drullar.inventar.ui.components.views.settings.SettingsView
+import io.drullar.inventar.ui.components.window.dialog.ExportResultDialog
 import io.drullar.inventar.ui.components.window.external.DataExportWindow
 import io.drullar.inventar.ui.viewmodel.OrderViewViewModel
 import io.drullar.inventar.ui.viewmodel.delegate.AlertManager
 import io.drullar.inventar.ui.viewmodel.delegate.SharedAppStateDelegate
 import io.drullar.inventar.ui.data.AlertType
+import io.drullar.inventar.ui.data.DialogWindowType
+import io.drullar.inventar.ui.data.EmptyPayload
+import io.drullar.inventar.ui.data.ExportCompletionPayload
 import io.drullar.inventar.ui.data.ExternalWindowType
+import io.drullar.inventar.ui.data.WindowPayload
 import io.drullar.inventar.ui.provider.getLayoutStyle
 import io.drullar.inventar.ui.utils.Icons
 import io.drullar.inventar.ui.viewmodel.SettingsViewModel
@@ -39,8 +44,9 @@ import io.drullar.inventar.ui.provider.getText
 import io.drullar.inventar.ui.provider.impl.LayoutStyleProviderImpl
 import io.drullar.inventar.ui.provider.impl.TextProviderImpl
 import io.drullar.inventar.ui.viewmodel.AnalyticsViewModel
-import io.drullar.inventar.ui.viewmodel.delegate.PopupWindowManager
+import io.drullar.inventar.ui.viewmodel.delegate.WindowManagerFacade
 import io.drullar.inventar.ui.viewmodel.delegate.impl.OrderDataCsvExporter
+import io.drullar.inventar.utils.file.DataExportFile
 import io.drullar.inventar.utils.file.ExportRequest
 import io.drullar.inventar.utils.runAsync
 import java.util.Locale
@@ -53,10 +59,12 @@ fun ComposeApp(
     orderViewViewModel: OrderViewViewModel,
     settingsViewModel: SettingsViewModel,
     analyticsViewModel: AnalyticsViewModel,
-    globalWindowManager: PopupWindowManager<ExternalWindowType>,
+    windowManager: WindowManagerFacade,
     windowSize: DpSize
 ) {
-    val activeExternalWindow = globalWindowManager.getActiveWindow().collectAsState()
+    val activeExternalWindow = windowManager.getActiveWindow().collectAsState()
+    val activeDialogWindow = windowManager.getActiveDialog().collectAsState()
+
     val settingsState = settingsViewModel.getSettings().collectAsState()
     val activeLanguage = settingsState.value.language
 
@@ -140,21 +148,36 @@ fun ComposeApp(
                 }
             }
 
+
             else -> {}
         }
     }
 
     handleExternalWindowRender(
         externalWindowType = activeExternalWindow.value,
-        onWindowClose = { globalWindowManager.setActiveWindow(null) },
+        onWindowClose = { windowManager.setActiveWindow(null, EmptyPayload()) },
         locale = activeLanguage.locale,
         onDataExport = { request ->
             runAsync {
-                OrderDataCsvExporter(settingsViewModel.getSettings().value.defaultCurrency).export(
-                    request
+                val file =
+                    OrderDataCsvExporter(settingsViewModel.getSettings().value.defaultCurrency).export(
+                        request
+                    )
+
+                windowManager.setActiveWindow(null, EmptyPayload())
+                windowManager.setActiveDialog(
+                    DialogWindowType.EXPORT_RESULT,
+                    ExportCompletionPayload(file)
                 )
-                // TODO show some dialog on completion
             }
+        }
+    )
+
+    handleDialogWindowRender(
+        dialogWindowType = activeDialogWindow.value,
+        dialogWindowPayload = windowManager.getActiveDialogPayload<Any>().value,
+        onWindowClose = {
+            windowManager.setActiveDialog(null, EmptyPayload())
         }
     )
 }
@@ -174,6 +197,23 @@ private fun handleExternalWindowRender(
                 onExportRequest = { exportRequestData ->
                     onDataExport(exportRequestData)
                 })
+        }
+
+        else -> Unit
+    }
+}
+
+@Composable
+private fun handleDialogWindowRender(
+    dialogWindowType: DialogWindowType?,
+    dialogWindowPayload: WindowPayload<Any>?,
+    onWindowClose: () -> Unit
+) {
+    when (dialogWindowType) {
+        DialogWindowType.EXPORT_RESULT -> {
+            ExportResultDialog(
+                dialogWindowPayload!!.getData() as DataExportFile, onAcknowledge = onWindowClose
+            )
         }
 
         else -> Unit

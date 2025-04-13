@@ -1,5 +1,5 @@
 package io.drullar.inventar.ui.viewmodel.delegate
 
-interface DataExporter<T> {
-    fun export(request: T)
+interface DataExporter<R, T> {
+    fun export(request: R): T
 }

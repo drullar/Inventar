@@ -8,6 +8,7 @@ import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import io.drullar.inventar.ui.ComposeApp
 import io.drullar.inventar.ui.components.navigation.NavigationDestination
+import io.drullar.inventar.ui.data.EmptyPayload
 import io.drullar.inventar.ui.data.ExternalWindowType
 import io.drullar.inventar.ui.utils.Icons
 import io.drullar.inventar.ui.viewmodel.AnalyticsViewModel
@@ -18,6 +19,7 @@ import io.drullar.inventar.ui.viewmodel.delegate.impl.AlertManagerImpl
 import io.drullar.inventar.ui.viewmodel.delegate.impl.PopupWindowManagerImpl
 import io.drullar.inventar.ui.viewmodel.delegate.impl.SettingsProviderImpl
 import io.drullar.inventar.ui.viewmodel.delegate.impl.SharedAppStateDelegateImpl
+import io.drullar.inventar.ui.viewmodel.delegate.impl.WindowManagerFacadeImpl
 import io.drullar.inventar.utils.bootstrap.ApplicationBootstrapper
 import io.drullar.inventar.utils.bootstrap.DatabaseBootstrapperImpl
 import io.drullar.inventar.utils.file.FileManager
@@ -31,7 +33,6 @@ import java.awt.Label
 class Application {
 
     fun run() {
-
         Thread.setDefaultUncaughtExceptionHandler { _, e -> //TODO cleanup error handling
             Dialog(Frame(), e.message ?: "Error").apply {
                 layout = FlowLayout()
@@ -66,7 +67,7 @@ class Application {
         val orderViewViewModel = OrderViewViewModel(sharedAppStateHolder, settingsProvider)
         val settingsViewModel = SettingsViewModel(settingsProvider)
         val analyticsViewModel = AnalyticsViewModel(settingsProvider)
-        val globalWindowManager = PopupWindowManagerImpl<ExternalWindowType>()
+        val globalWindowManager = WindowManagerFacadeImpl()
 
         application {
             val windowState = rememberWindowState(placement = WindowPlacement.Maximized)
@@ -84,7 +85,10 @@ class Application {
                 MenuBar {
                     Menu("File") {
                         Item("Export") {
-                            globalWindowManager.setActiveWindow(ExternalWindowType.DATA_EXPORT)
+                            globalWindowManager.setActiveWindow(
+                                ExternalWindowType.DATA_EXPORT,
+                                EmptyPayload()
+                            )
                         }
                     }
                 }
