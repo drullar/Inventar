@@ -25,3 +25,9 @@ data class ExportCompletionPayload(
 ) : WindowPayload<DataExportFile> {
     override fun getData(): DataExportFile = exportFile
 }
+
+data class BarcodePayload(
+    private val barcode: String
+) : WindowPayload<String> {
+    override fun getData(): String = barcode
+}

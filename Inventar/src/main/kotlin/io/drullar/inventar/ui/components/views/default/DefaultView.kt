@@ -16,6 +16,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -25,10 +26,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import io.drullar.inventar.persistence.repositories.impl.ProductsRepository
+import io.drullar.inventar.shared.OnScan
 import io.drullar.inventar.shared.OrderDTO
 import io.drullar.inventar.shared.PagedRequest
 import io.drullar.inventar.shared.ProductCreationDTO
 import io.drullar.inventar.shared.ProductDTO
+import io.drullar.inventar.shared.SortingOrder
 import io.drullar.inventar.ui.components.cards.OrderDetailCardRenderContext
 import io.drullar.inventar.ui.components.cards.OrderDetailPreviewCard
 import io.drullar.inventar.ui.components.cards.OrdersListPreviewCard
@@ -37,11 +41,12 @@ import io.drullar.inventar.ui.components.cards.ProductSummarizedPreviewCard
 import io.drullar.inventar.ui.components.window.dialog.NewProductDialog
 import io.drullar.inventar.ui.components.window.external.OrderPreviewWindow
 import io.drullar.inventar.ui.data.DialogWindowType
-import io.drullar.inventar.ui.components.window.dialog.OrderProductConfirmationDialog
+import io.drullar.inventar.ui.components.window.dialog.ChangeProductQuantityDialog
 import io.drullar.inventar.ui.viewmodel.DefaultViewViewModel
 import io.drullar.inventar.ui.components.views.default.layout.DraftOrderButton
 import io.drullar.inventar.ui.components.views.default.layout.ProductUtilBar
 import io.drullar.inventar.ui.components.window.dialog.AlertDialog
+import io.drullar.inventar.ui.data.BarcodePayload
 import io.drullar.inventar.ui.data.DetailedProductPreview
 import io.drullar.inventar.ui.data.EmptyPayload
 import io.drullar.inventar.ui.data.ExternalWindowType
@@ -80,6 +85,36 @@ fun DefaultView(
                     PagedRequest(page, PRODUCTS_PER_PAGE, sortingOrder, sortBy)
                 ).items
             )
+        }
+    }
+
+    val lastScannedBarcode by viewModel.lastScannedBarcode.collectAsState()
+
+    LaunchedEffect(lastScannedBarcode) {
+        if (lastScannedBarcode.isBlank()) return@LaunchedEffect
+        val product = viewModel.searchProducts(
+            lastScannedBarcode,
+            PagedRequest(0, 1, SortingOrder.DESCENDING, ProductsRepository.SortBy.NAME)
+        ).items.firstOrNull()
+
+        if (product == null) {
+            viewModel.setActiveDialog(
+                DialogWindowType.NEW_PRODUCT,
+                BarcodePayload(lastScannedBarcode)
+            )
+            return@LaunchedEffect
+        }
+
+        when (settings.onScan) {
+            OnScan.ADD_TO_ORDER -> {
+                viewModel.showAddProductToOrderDialog(product)
+                viewModel.cleanLastScannedBarcode()
+            }
+
+            OnScan.RESTOCK -> {
+                viewModel.showChangeProductQuantity(product)
+                viewModel.cleanLastScannedBarcode()
+            }
         }
     }
 
@@ -209,7 +244,7 @@ fun DefaultView(
                         OrderDetailPreviewCard(
                             order = order,
                             onTerminate = {
-                                //TODO
+                                viewModel.terminateOrder(order)
                             },
                             onComplete = { hasQuantityIssues ->
                                 if (hasQuantityIssues) { // TODO move to some function and reuse in the window.
@@ -249,7 +284,6 @@ fun DefaultView(
                                 viewModel.selectOrder(selectedOrder)
                             },
                             onOrderTermination = { terminatedOrder ->
-                                //TODO
                             },
                             currency = settings.defaultCurrency
                         )
@@ -285,14 +319,22 @@ private fun handleDialogWindowRender(
     onAddNewProduct: (ProductCreationDTO) -> Unit
 ) {
     when (activeDialogWindow) {
-        DialogWindowType.NEW_PRODUCT -> NewProductDialog(
-            onClose = { viewModel.closeDialogWindow() },
-            onSubmit = onAddNewProduct
-        )
+        DialogWindowType.NEW_PRODUCT -> {
+            val barcodePayload = try {
+                viewModel.getActiveDialogPayload<String>().value as BarcodePayload
+            } catch (e: TypeCastException) {
+                null
+            }
+            NewProductDialog(
+                onClose = { viewModel.closeDialogWindow() },
+                onSubmit = onAddNewProduct,
+                barcodePayload = barcodePayload
+            )
+        }
 
         DialogWindowType.ADD_PRODUCT_TO_ORDER -> {
             val product = viewModel.getActiveDialogPayload<ProductDTO>().value.getData()
-            OrderProductConfirmationDialog(
+            ChangeProductQuantityDialog(
                 product = product,
                 initialQuantity = viewModel.getCurrentOrderTargetProductQuantity(product) ?: 1,
                 onConfirm = { quantity ->
@@ -319,6 +361,21 @@ private fun handleDialogWindowRender(
             )
         }
 
+        DialogWindowType.CHANGE_PRODUCT_QUANTITY -> {
+            val product = viewModel.getActiveDialogPayload<ProductDTO>().value.getData()
+            ChangeProductQuantityDialog(
+                product = product,
+                initialQuantity = product.availableQuantity,
+                onConfirm = { newQuantity ->
+                    viewModel.updateProduct(product.copy(availableQuantity = newQuantity))
+                    viewModel.setActiveDialog(null, EmptyPayload())
+                },
+                onCancel = {
+                    viewModel.setActiveDialog(null, EmptyPayload())
+                }
+            )
+        }
+
         else -> Unit
     }
 }
@@ -334,10 +391,11 @@ private fun handleActiveExternalWindowRender(
 
     when (activeExternalWindowType) {
         ExternalWindowType.ORDER_PREVIEW -> {
+            val order = payload.getData() as OrderDTO
             OrderPreviewWindow(
-                orderDTO = payload.getData() as OrderDTO,
+                orderDTO = order,
                 onClose = { viewModel.closeExternalWindow() },
-                onTerminate = { /* TODO implement */ },
+                onTerminate = { viewModel.terminateOrder(order) },
                 onComplete = {
                     val completedOrder = viewModel.completeOrder(it)
                     viewModel.closeExternalWindow()

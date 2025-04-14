@@ -25,7 +25,7 @@ import assertk.assertions.isNotNull
 import io.drullar.inventar.shared.ProductDTO
 import io.drullar.inventar.ui.components.window.dialog.AlertDialog
 import io.drullar.inventar.ui.components.window.dialog.NewProductDialog
-import io.drullar.inventar.ui.components.window.dialog.OrderProductConfirmationDialog
+import io.drullar.inventar.ui.components.window.dialog.ChangeProductQuantityDialog
 import io.drullar.inventar.ui.provider.getText
 import io.drullar.inventar.ui.utils.ContentDescription
 import io.drullar.inventar.unit.utils.Factory
@@ -60,7 +60,7 @@ class TestDialogs : AbstractUiTest() {
     fun orderProductConfirmationDialog() = runComposeUiTest {
         var submittedQuantity = 0
         setContent {
-            OrderProductConfirmationDialog(
+            ChangeProductQuantityDialog(
                 product = Factory.createProduct(),
                 initialQuantity = 1,
                 onConfirm = { submittedQuantity = it },

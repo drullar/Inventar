@@ -1,5 +1,6 @@
 package io.drullar.inventar.ui
 
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -73,7 +74,7 @@ fun ComposeApp(
     val currentView = sharedAppState.getNavigationDestination().collectAsState()
     val activeAlert = alertManager.getActiveAlert().collectAsState()
 
-    Column(modifier = Modifier.fillMaxWidth().fillMaxHeight()) {
+    Column(modifier = Modifier.fillMaxWidth().fillMaxHeight().focusable()) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(10.dp),
             horizontalArrangement = Arrangement.SpaceBetween

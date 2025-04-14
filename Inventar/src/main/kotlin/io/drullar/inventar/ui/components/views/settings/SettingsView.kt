@@ -24,6 +24,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import io.drullar.inventar.shared.OnScan
 import io.drullar.inventar.shared.Settings
 import io.drullar.inventar.shared.SupportedLanguage
 import io.drullar.inventar.ui.components.button.TextButton
@@ -42,6 +43,7 @@ fun SettingsView(viewModel: SettingsViewModel) {
     var settingsCopy by remember { mutableStateOf(settings.value) }
     var languagesDropDownExpanded by remember { mutableStateOf(false) }
     var showCurrencyWarningMessage by remember { mutableStateOf(false) }
+    var scanModeDropDownExpanded by remember { mutableStateOf(false) }
 
     var currencyInputField by remember { mutableStateOf(settingsCopy.defaultCurrency.currencyCode) }
 
@@ -97,6 +99,26 @@ fun SettingsView(viewModel: SettingsViewModel) {
                     else null,
                     modifier = Modifier.wrapContentWidth()
                 )
+            }
+
+            SettingsRow(getText("label.scanner.mode")) {
+                TextButton(
+                    text = settingsCopy.onScan.text.value,
+                    onClick = { scanModeDropDownExpanded = !scanModeDropDownExpanded }) {
+                    DropdownMenu(
+                        expanded = scanModeDropDownExpanded,
+                        onDismissRequest = { scanModeDropDownExpanded = false }
+                    ) {
+                        OnScan.entries.forEach { scanMode ->
+                            DropdownMenuItem(
+                                text = { Text(scanMode.text.value) },
+                                onClick = {
+                                    settingsCopy = settingsCopy.copy(onScan = scanMode)
+                                    scanModeDropDownExpanded = false
+                                })
+                        }
+                    }
+                }
             }
         }
         if (hasChange(settings.value, settingsCopy) && !showCurrencyWarningMessage)

@@ -1,5 +1,12 @@
 package io.drullar.inventar
 
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.type
+import androidx.compose.ui.input.key.utf16CodePoint
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.window.MenuBar
 import androidx.compose.ui.window.Window
@@ -16,7 +23,7 @@ import io.drullar.inventar.ui.viewmodel.DefaultViewViewModel
 import io.drullar.inventar.ui.viewmodel.OrderViewViewModel
 import io.drullar.inventar.ui.viewmodel.SettingsViewModel
 import io.drullar.inventar.ui.viewmodel.delegate.impl.AlertManagerImpl
-import io.drullar.inventar.ui.viewmodel.delegate.impl.PopupWindowManagerImpl
+import io.drullar.inventar.ui.viewmodel.delegate.impl.BarcodeScanManager
 import io.drullar.inventar.ui.viewmodel.delegate.impl.SettingsProviderImpl
 import io.drullar.inventar.ui.viewmodel.delegate.impl.SharedAppStateDelegateImpl
 import io.drullar.inventar.ui.viewmodel.delegate.impl.WindowManagerFacadeImpl
@@ -62,8 +69,14 @@ class Application {
         val alertManagerDelegate = AlertManagerImpl()
         val settingsProvider = SettingsProviderImpl(fileManager)
 
+        val barcodeScanManager = BarcodeScanManager()
         val defaultViewViewModel =
-            DefaultViewViewModel(sharedAppStateHolder, alertManagerDelegate, settingsProvider)
+            DefaultViewViewModel(
+                sharedAppStateHolder,
+                alertManagerDelegate,
+                settingsProvider,
+                barcodeScanManager
+            )
         val orderViewViewModel = OrderViewViewModel(sharedAppStateHolder, settingsProvider)
         val settingsViewModel = SettingsViewModel(settingsProvider)
         val analyticsViewModel = AnalyticsViewModel(settingsProvider)
@@ -71,16 +84,26 @@ class Application {
 
         application {
             val windowState = rememberWindowState(placement = WindowPlacement.Maximized)
+            val listeningForBarcode by barcodeScanManager.isListening.collectAsState()
             Window(
-                {
-                    exitApplication()
-                },
+                onCloseRequest = { exitApplication() },
                 title = "Inventar",
                 state = windowState,
-                icon = painterResource(Icons.APP_ICON)
+                icon = painterResource(Icons.APP_ICON),
+                onKeyEvent = { event ->
+                    if (listeningForBarcode && event.type == KeyEventType.KeyDown) {
+                        if (event.key == Key.Enter) {
+                            barcodeScanManager.complete()
+                        } else {
+                            val character = event.utf16CodePoint.toChar()
+                            barcodeScanManager.notify(character)
+                        }
+                        return@Window true
+                    }
+                    false
+                }
             ) {
                 window.minimumSize = Dimension(MIN_WIDTH, MIN_HEIGHT)
-
 
                 MenuBar {
                     Menu("File") {

@@ -4,5 +4,6 @@ enum class DialogWindowType : WindowTypeInterface {
     NEW_PRODUCT,
     ADD_PRODUCT_TO_ORDER,
     ORDER_QUANTITY_ISSUES_ALERT,
+    CHANGE_PRODUCT_QUANTITY,
     EXPORT_RESULT
 }

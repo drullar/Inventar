@@ -24,6 +24,7 @@ import io.drullar.inventar.ui.provider.getLayoutStyle
 import io.drullar.inventar.ui.style.LayoutStyle
 import io.drullar.inventar.ui.viewmodel.delegate.SettingsProvider
 import io.drullar.inventar.ui.viewmodel.delegate.WindowManagerFacade
+import io.drullar.inventar.ui.viewmodel.delegate.impl.BarcodeScanManager
 import io.drullar.inventar.ui.viewmodel.delegate.impl.WindowManagerFacadeImpl
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -35,6 +36,7 @@ class DefaultViewViewModel(
     sharedAppStateDelegate: SharedAppStateDelegate,
     alertManagerDelegate: AlertManager,
     settingsProvider: SettingsProvider,
+    private val barcodeScanManager: BarcodeScanManager,
     windowManager: WindowManagerFacade = WindowManagerFacadeImpl(),
     private val productsRepository: ProductsRepository = ProductsRepository,
     private val ordersRepository: OrderRepository = OrderRepository,
@@ -54,12 +56,18 @@ class DefaultViewViewModel(
 
     var preview = getPreview().asStateFlow()
 
+    val lastScannedBarcode = barcodeScanManager._lastScannedBarcode
+
     private val _draftOrdersCount by lazy {
         MutableStateFlow(
             ordersRepository.getCountByStatus(OrderStatus.DRAFT)
         )
     }
     val draftOrdersCount by lazy { _draftOrdersCount.asStateFlow() }
+
+    fun cleanLastScannedBarcode() {
+        barcodeScanManager.cleanBarcode()
+    }
 
     fun updateProduct(product: ProductDTO): ProductDTO {
         _previewChangeIsAllowed.value = true
@@ -87,6 +95,10 @@ class DefaultViewViewModel(
 
     fun showAddProductToOrderDialog(product: ProductDTO) {
         setActiveDialog(DialogWindowType.ADD_PRODUCT_TO_ORDER, ProductPayload(product))
+    }
+
+    fun showChangeProductQuantity(product: ProductDTO) {
+        setActiveDialog(DialogWindowType.CHANGE_PRODUCT_QUANTITY, ProductPayload(product))
     }
 
     fun addProductToOrder(
@@ -122,6 +134,13 @@ class DefaultViewViewModel(
         if (createdNewOrder) {
             _draftOrdersCount.value += 1
         }
+    }
+
+    fun terminateOrder(orderDTO: OrderDTO) {
+        ordersRepository.update(
+            orderDTO.orderId,
+            orderDTO.copy(status = OrderStatus.TERMINATED).toOrderCreationDTO()
+        )
     }
 
     private fun getSelectedOrderFromCompactLayout(): OrderDTO? {

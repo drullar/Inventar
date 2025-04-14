@@ -23,21 +23,24 @@ import io.drullar.inventar.ui.components.button.TextButton
 import io.drullar.inventar.ui.components.field.FieldValidator
 import io.drullar.inventar.ui.components.field.FormInputField
 import io.drullar.inventar.ui.components.field.IsNotEmpty
+import io.drullar.inventar.ui.data.BarcodePayload
 import io.drullar.inventar.ui.provider.getText
 import io.drullar.inventar.ui.utils.ContentDescription
 import io.drullar.inventar.verifyValuesAreNotEmpty
 import java.math.BigDecimal
 
 @Composable
-fun NewProductDialog( //TODO reuse same form here and inside ProductDetailedPreviewCard
+fun NewProductDialog(
+    //TODO reuse same form here and inside ProductDetailedPreviewCard
     onClose: () -> Unit,
-    onSubmit: (ProductCreationDTO) -> Unit
+    onSubmit: (ProductCreationDTO) -> Unit,
+    barcodePayload: BarcodePayload? = null,
 ) {
     var nameField by remember { mutableStateOf("") }
     var sellingPriceField by remember { mutableStateOf("") }
     var providerPriceField by remember { mutableStateOf<String>("") }
     var availableQuantityField by remember { mutableStateOf("") }
-    var barcodeField by remember { mutableStateOf("") }
+    var barcodeField by remember { mutableStateOf(barcodePayload?.getData() ?: "") }
 
     var nameFieldWarning by remember { mutableStateOf<String?>(null) }
     var sellingPriceFieldWarning by remember { mutableStateOf<String?>(null) }

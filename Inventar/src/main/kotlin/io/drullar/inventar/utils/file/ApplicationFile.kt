@@ -1,6 +1,7 @@
 package io.drullar.inventar.utils.file
 
 import com.fasterxml.jackson.databind.DatabindException
+import io.drullar.inventar.shared.OnScan
 import io.drullar.inventar.shared.Settings
 import io.drullar.inventar.shared.SupportedLanguage
 import io.drullar.inventar.utils.parser.JsonParser
@@ -104,7 +105,8 @@ class SettingsFile(
     private companion object {
         val defaultSettings = Settings(
             defaultCurrency = Currency.getInstance("BGN"),
-            language = SupportedLanguage.ENGLISH
+            language = SupportedLanguage.ENGLISH,
+            onScan = OnScan.ADD_TO_ORDER
         )
     }
 
