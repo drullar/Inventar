@@ -103,7 +103,7 @@ fun SettingsView(viewModel: SettingsViewModel) {
 
             SettingsRow(getText("label.scanner.mode")) {
                 TextButton(
-                    text = settingsCopy.onScan.text.value,
+                    text = getText(settingsCopy.onScan.textProperty),
                     onClick = { scanModeDropDownExpanded = !scanModeDropDownExpanded }) {
                     DropdownMenu(
                         expanded = scanModeDropDownExpanded,
@@ -111,7 +111,7 @@ fun SettingsView(viewModel: SettingsViewModel) {
                     ) {
                         OnScan.entries.forEach { scanMode ->
                             DropdownMenuItem(
-                                text = { Text(scanMode.text.value) },
+                                text = { Text(getText(scanMode.textProperty)) },
                                 onClick = {
                                     settingsCopy = settingsCopy.copy(onScan = scanMode)
                                     scanModeDropDownExpanded = false

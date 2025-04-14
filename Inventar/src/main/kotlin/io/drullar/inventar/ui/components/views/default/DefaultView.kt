@@ -46,6 +46,7 @@ import io.drullar.inventar.ui.viewmodel.DefaultViewViewModel
 import io.drullar.inventar.ui.components.views.default.layout.DraftOrderButton
 import io.drullar.inventar.ui.components.views.default.layout.ProductUtilBar
 import io.drullar.inventar.ui.components.window.dialog.AlertDialog
+import io.drullar.inventar.ui.components.window.dialog.OrderProductConfirmationDialog
 import io.drullar.inventar.ui.data.BarcodePayload
 import io.drullar.inventar.ui.data.DetailedProductPreview
 import io.drullar.inventar.ui.data.EmptyPayload
@@ -89,6 +90,10 @@ fun DefaultView(
     }
 
     val lastScannedBarcode by viewModel.lastScannedBarcode.collectAsState()
+
+    LaunchedEffect(Unit) {
+        viewModel.cleanLastScannedBarcode()
+    }
 
     LaunchedEffect(lastScannedBarcode) {
         if (lastScannedBarcode.isBlank()) return@LaunchedEffect
@@ -334,7 +339,7 @@ private fun handleDialogWindowRender(
 
         DialogWindowType.ADD_PRODUCT_TO_ORDER -> {
             val product = viewModel.getActiveDialogPayload<ProductDTO>().value.getData()
-            ChangeProductQuantityDialog(
+            OrderProductConfirmationDialog(
                 product = product,
                 initialQuantity = viewModel.getCurrentOrderTargetProductQuantity(product) ?: 1,
                 onConfirm = { quantity ->

@@ -1,5 +1,6 @@
 package io.drullar.inventar.ui.viewmodel.delegate.impl
 
+import io.drullar.inventar.persistence.schema.BARCODE_LENGTH
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
@@ -11,6 +12,7 @@ class BarcodeScanManager {
     val _lastScannedBarcode = lastScannedBarcode.asStateFlow()
 
     fun notify(character: Char) {
+        if (barcodeBuffer.length == BARCODE_LENGTH) complete()
         barcodeBuffer += character
     }
 

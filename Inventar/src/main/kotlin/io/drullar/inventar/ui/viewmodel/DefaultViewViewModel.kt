@@ -62,7 +62,7 @@ class DefaultViewViewModel(
         MutableStateFlow(
             ordersRepository.getCountByStatus(OrderStatus.DRAFT)
         )
-    }
+    } //TODO move state to be managed by a shared abstraction with OrdersViewModel.
     val draftOrdersCount by lazy { _draftOrdersCount.asStateFlow() }
 
     fun cleanLastScannedBarcode() {
@@ -87,10 +87,8 @@ class DefaultViewViewModel(
     }
 
     fun showDraftOrders() {
-        if (_previewChangeIsAllowed.value) {
-            val draftOrders = ordersRepository.getAllByStatus(OrderStatus.DRAFT).getOrThrow()
-            setPreview(OrdersListPreview(draftOrders))
-        }
+        val draftOrders = ordersRepository.getAllByStatus(OrderStatus.DRAFT).getOrThrow()
+        setPreview(OrdersListPreview(draftOrders))
     }
 
     fun showAddProductToOrderDialog(product: ProductDTO) {

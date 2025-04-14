@@ -28,14 +28,14 @@ enum class SupportedLanguage(
     BULGARIAN(Locale("BG"), lazy { "Български" })
 }
 
-enum class OnScan(val text: Lazy<String>) {
+enum class OnScan(val textProperty: String) {
     /**
      * Add to an order or add new product
      */
-    ADD_TO_ORDER(lazy { getText("label.scanner.mode.additive") }),
+    ADD_TO_ORDER("label.scanner.mode.additive"),
 
     /**
      * Change product available quantity
      */
-    RESTOCK(lazy { getText("label.scanner.mode.restock") })
+    RESTOCK("label.scanner.mode.restock")
 }
