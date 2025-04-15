@@ -9,12 +9,15 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPlacement
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.rememberWindowState
+import io.drullar.inventar.handleBarcodeScanEvent
 import io.drullar.inventar.shared.OrderDTO
 import io.drullar.inventar.shared.ProductDTO
 import io.drullar.inventar.ui.components.cards.OrderDetailCardRenderContext
 import io.drullar.inventar.ui.components.cards.OrderDetailPreviewCard
 import io.drullar.inventar.ui.provider.getText
 import io.drullar.inventar.ui.utils.Icons
+import io.drullar.inventar.ui.viewmodel.delegate.impl.BarcodeScanManager
+import io.drullar.inventar.ui.viewmodel.delegate.impl.BarcodeScanManagerInterface
 import java.util.Currency
 
 @Composable
@@ -25,11 +28,12 @@ fun OrderPreviewWindow(
     onComplete: (OrderDTO) -> Unit,
     onProductValueChange: (ProductDTO, Int) -> Unit,
     onProductRemove: (ProductDTO, OrderDTO) -> Unit,
-    currency: Currency
+    currency: Currency,
+    barcodeScanManager: BarcodeScanManagerInterface
 ) {
     Window(
         title = "${getText("label.order")} #${orderDTO.orderId} preview",
-        resizable = true,
+        resizable = false,
         onCloseRequest = { onClose() },
         icon = painterResource(Icons.APP_ICON),
         state = rememberWindowState(
@@ -37,6 +41,9 @@ fun OrderPreviewWindow(
             position = WindowPosition.Aligned(Alignment.CenterEnd),
             size = DpSize(500.dp, 500.dp)
         ),
+        onKeyEvent = { event ->
+            handleBarcodeScanEvent(event, barcodeScanManager)
+        },
         alwaysOnTop = false,
     ) {
         OrderDetailPreviewCard(

@@ -25,6 +25,7 @@ import io.drullar.inventar.ui.style.LayoutStyle
 import io.drullar.inventar.ui.viewmodel.delegate.SettingsProvider
 import io.drullar.inventar.ui.viewmodel.delegate.WindowManagerFacade
 import io.drullar.inventar.ui.viewmodel.delegate.impl.BarcodeScanManager
+import io.drullar.inventar.ui.viewmodel.delegate.impl.BarcodeScanManagerInterface
 import io.drullar.inventar.ui.viewmodel.delegate.impl.WindowManagerFacadeImpl
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -36,14 +37,15 @@ class DefaultViewViewModel(
     sharedAppStateDelegate: SharedAppStateDelegate,
     alertManagerDelegate: AlertManager,
     settingsProvider: SettingsProvider,
-    private val barcodeScanManager: BarcodeScanManager,
+    barcodeScanManager: BarcodeScanManager,
     windowManager: WindowManagerFacade = WindowManagerFacadeImpl(),
     private val productsRepository: ProductsRepository = ProductsRepository,
     private val ordersRepository: OrderRepository = OrderRepository,
 ) : SharedAppStateDelegate by sharedAppStateDelegate,
     AlertManager by alertManagerDelegate,
     SettingsProvider by settingsProvider,
-    WindowManagerFacade by windowManager {
+    WindowManagerFacade by windowManager,
+    BarcodeScanManagerInterface by barcodeScanManager {
 
     private val _previewChangeIsAllowed = MutableStateFlow(true)
     val previewChangeIsAllowed = _previewChangeIsAllowed.asStateFlow()
@@ -66,7 +68,7 @@ class DefaultViewViewModel(
     val draftOrdersCount by lazy { _draftOrdersCount.asStateFlow() }
 
     fun cleanLastScannedBarcode() {
-        barcodeScanManager.cleanBarcode()
+        cleanBarcode()
     }
 
     fun updateProduct(product: ProductDTO): ProductDTO {

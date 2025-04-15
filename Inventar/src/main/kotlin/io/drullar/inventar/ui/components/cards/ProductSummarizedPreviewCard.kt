@@ -86,7 +86,7 @@ fun ProductSummarizedPreviewCard(
             ),
             border = BorderStroke(
                 width = 2.dp,
-                color = if (isSelected) Colors.INDIGO else Colors.BABY_BLUE
+                color = if (false) Colors.INDIGO else Colors.BABY_BLUE //TODO
             ),
             modifier = Modifier
                 .size(width = width, height = height)

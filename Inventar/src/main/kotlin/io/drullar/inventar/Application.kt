@@ -3,6 +3,7 @@ package io.drullar.inventar
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.type
@@ -24,6 +25,7 @@ import io.drullar.inventar.ui.viewmodel.OrderViewViewModel
 import io.drullar.inventar.ui.viewmodel.SettingsViewModel
 import io.drullar.inventar.ui.viewmodel.delegate.impl.AlertManagerImpl
 import io.drullar.inventar.ui.viewmodel.delegate.impl.BarcodeScanManager
+import io.drullar.inventar.ui.viewmodel.delegate.impl.BarcodeScanManagerInterface
 import io.drullar.inventar.ui.viewmodel.delegate.impl.SettingsProviderImpl
 import io.drullar.inventar.ui.viewmodel.delegate.impl.SharedAppStateDelegateImpl
 import io.drullar.inventar.ui.viewmodel.delegate.impl.WindowManagerFacadeImpl
@@ -91,16 +93,7 @@ class Application {
                 state = windowState,
                 icon = painterResource(Icons.APP_ICON),
                 onKeyEvent = { event ->
-                    if (listeningForBarcode && event.type == KeyEventType.KeyDown) {
-                        if (event.key == Key.Enter) {
-                            barcodeScanManager.complete()
-                        } else {
-                            val character = event.utf16CodePoint.toChar()
-                            barcodeScanManager.notify(character)
-                        }
-                        return@Window true
-                    }
-                    false
+                    handleBarcodeScanEvent(event, barcodeScanManager)
                 }
             ) {
                 window.minimumSize = Dimension(MIN_WIDTH, MIN_HEIGHT)
@@ -134,4 +127,20 @@ class Application {
         const val MIN_WIDTH = 1020
         const val MIN_HEIGHT = 600
     }
+}
+
+fun handleBarcodeScanEvent(
+    event: KeyEvent,
+    barcodeScanManager: BarcodeScanManagerInterface
+): Boolean {
+    if (event.type == KeyEventType.KeyDown) {
+        if (event.key == Key.Enter) {
+            barcodeScanManager.complete()
+        } else {
+            val character = event.utf16CodePoint.toChar()
+            barcodeScanManager.notify(character)
+        }
+        return true
+    }
+    return false
 }

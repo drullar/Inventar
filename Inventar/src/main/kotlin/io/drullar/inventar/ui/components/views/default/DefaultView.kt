@@ -327,7 +327,7 @@ private fun handleDialogWindowRender(
         DialogWindowType.NEW_PRODUCT -> {
             val barcodePayload = try {
                 viewModel.getActiveDialogPayload<String>().value as BarcodePayload
-            } catch (e: TypeCastException) {
+            } catch (e: ClassCastException) {
                 null
             }
             NewProductDialog(
@@ -418,7 +418,8 @@ private fun handleActiveExternalWindowRender(
                         order
                     )
                 },
-                currency = currency
+                currency = currency,
+                viewModel
             )
         }
 
