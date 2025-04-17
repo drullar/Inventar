@@ -9,6 +9,8 @@ import io.drullar.inventar.persistence.schema.Products.barcode
 import io.drullar.inventar.persistence.schema.Products.name
 import io.drullar.inventar.persistence.schema.Products.providerPrice
 import io.drullar.inventar.persistence.schema.Products.sellingPrice
+import io.drullar.inventar.persistence.schema.associative.ProductOrderAssociation
+import io.drullar.inventar.persistence.schema.associative.ProductOrderAssociation.productUid
 import io.drullar.inventar.result
 import io.drullar.inventar.shared.ISortBy
 import io.drullar.inventar.shared.Page
@@ -17,6 +19,7 @@ import io.drullar.inventar.shared.ProductCreationDTO
 import io.drullar.inventar.shared.ProductDTO
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.notInList
 
 object ProductsRepository :
     AbstractRepository<Products, ProductDTO, ProductCreationDTO, Int, ProductsRepository.SortBy>(
@@ -31,6 +34,7 @@ object ProductsRepository :
                 it[sellingPrice] = dto.sellingPrice
                 it[barcode] = dto.barcode
                 it[providerPrice] = dto.providerPrice
+                it[isMarkedForDeletion] = dto.isMarkedForDeletion
             }.resultedValues?.first()?.let { queryResult ->
                 transformResultRowToModel(queryResult)
             }
@@ -48,13 +52,29 @@ object ProductsRepository :
                 it[availableQuantity] = dto.availableQuantity
                 it[sellingPrice] = dto.sellingPrice
                 it[barcode] = dto.barcode
+                it[isMarkedForDeletion] = dto.isMarkedForDeletion
                 dto.providerPrice?.let { price -> it[providerPrice] = price }
             }
         }
         return getById(id)
     }
 
+    /**
+     * Returns the product if it exists and if it is not marked for deletion
+     */
     override fun getById(id: Int) = result {
+        withTransaction {
+            table.selectAll().where { table.uid.eq(id).and(table.isMarkedForDeletion.eq(false)) }
+                .firstOrNull()
+                ?.let { transformResultRowToModel(it) }
+        }
+            ?: throw DatabaseException.NoSuchElementFoundException("Couldn't find product with id $id")
+    }
+
+    /**
+     * Returns the product regardless of whether it's marked for deletion or not
+     */
+    fun getByIdRegardlessOfDeletionMark(id: Int) = result {
         withTransaction {
             table.selectAll().where { table.uid.eq(id) }.firstOrNull()
                 ?.let { transformResultRowToModel(it) }
@@ -64,9 +84,17 @@ object ProductsRepository :
 
     override fun deleteById(id: Int) = result {
         withTransaction {
-            table.deleteWhere { table.uid.eq(id) }
+            val occurrencesInOrder = ProductOrderAssociation.selectAll().where {
+                productUid.eq(id)
+            }.count()
+
+            if (occurrencesInOrder == 0L) {
+                table.deleteWhere { table.uid.eq(id) }
+            } else {
+                markAsDeleted(listOf(id))
+            }
         }
-        return@result Unit
+        return@result
     }
 
     override fun search(
@@ -104,6 +132,33 @@ object ProductsRepository :
         )
     }
 
+    override fun deleteAll(): Result<Unit> = result {
+        withTransaction {
+            val productsInOrder =
+                table.innerJoin(ProductOrderAssociation)
+                    .select(
+                        listOf(
+                            Column(
+                                ProductOrderAssociation,
+                                productUid.name,
+                                productUid.columnType,
+                            )
+                        )
+                    ).map { it[productUid] }
+            markAsDeleted(productsInOrder)
+
+            table.deleteWhere { table.uid.notInList(productsInOrder) }
+        }
+
+        return@result
+    }
+
+    override fun getCount(): Result<Long> = result {
+        withTransaction {
+            table.selectAll().where { table.isMarkedForDeletion.eq(false) }.count()
+        }
+    }
+
     override fun buildOrderByExpression(sortBy: SortBy): Expression<*> = when (sortBy) {
         SortBy.NAME -> {
             table.name
@@ -135,6 +190,12 @@ object ProductsRepository :
             sellingPrice = row[sellingPrice],
             barcode = row[barcode]
         )
+
+    private fun markAsDeleted(ids: List<Int>) {
+        table.update(where = { table.uid.inList(ids) }) {
+            it[isMarkedForDeletion] = true
+        }
+    }
 
     enum class SortBy : ISortBy {
         NAME,

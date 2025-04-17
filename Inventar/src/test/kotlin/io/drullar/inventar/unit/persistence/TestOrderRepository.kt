@@ -12,6 +12,7 @@ import assertk.assertions.isFailure
 import assertk.assertions.isFalse
 import assertk.assertions.isNotNull
 import assertk.assertions.isTrue
+import assertk.assertions.key
 import io.drullar.inventar.persistence.repositories.impl.OrderRepository
 import io.drullar.inventar.persistence.repositories.impl.ProductsRepository
 import io.drullar.inventar.shared.OrderCreationDTO
@@ -30,7 +31,6 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZoneOffset
-import java.util.Date
 
 class TestOrderRepository : AbstractPersistenceTest() {
 
@@ -165,7 +165,7 @@ class TestOrderRepository : AbstractPersistenceTest() {
 
     @Test
     fun getAllByStatus() {
-        var product =
+        val product =
             productRepository.save(ProductCreationDTO("Product", availableQuantity = 1))
                 .getOrNull()!!
 
@@ -183,7 +183,6 @@ class TestOrderRepository : AbstractPersistenceTest() {
         val completedOrder =
             orderRepository.save(OrderCreationDTO(mapOf(product to 1), OrderStatus.COMPLETED))
                 .getOrNull()
-        product = productRepository.getById(product.uid).getOrNull()!!
 
         val getAllDraft = orderRepository.getAllByStatus(OrderStatus.DRAFT).getOrNull()
         val getAllCanceled =
@@ -283,7 +282,7 @@ class TestOrderRepository : AbstractPersistenceTest() {
         val product2 = createProduct(uid = 2)
         productRepository.save(product1.toProductCreationDTO())
         productRepository.save(product2.toProductCreationDTO())
-        val orders = listOf(
+        listOf(
             createOrder(
                 creationDate = LocalDateTime.ofEpochSecond(0, 0, ZoneOffset.UTC).plusDays(10),
                 productToQuantity = mapOf(product1 to 2, product2 to 10),
@@ -294,7 +293,7 @@ class TestOrderRepository : AbstractPersistenceTest() {
                 productToQuantity = mapOf(product1 to 3),
                 status = OrderStatus.COMPLETED
             )
-        ).map {
+        ).forEach {
             orderRepository.save(it.toOrderCreationDTO()).getOrThrow()
         }
 
@@ -345,5 +344,49 @@ class TestOrderRepository : AbstractPersistenceTest() {
         assertThat(search2).extracting { it.productId to it.soldQuantity }.containsOnly(
             1 to 25, 3 to 30
         )
+    }
+
+    @Test
+    fun productSellingPriceDoesNotChangeOnCompletion() {
+        val product = productRepository.save(
+            createProduct(sellingPrice = 3.0.toBigDecimal()).toProductCreationDTO()
+        ).getOrThrow()
+
+        val order =
+            orderRepository.save(
+                createOrder(productToQuantity = mapOf(product to 1))
+                    .toOrderCreationDTO()
+            ).getOrThrow()
+
+        orderRepository.update(
+            order!!.orderId,
+            order.copy(status = OrderStatus.COMPLETED).toOrderCreationDTO()
+        )
+
+        productRepository.update(
+            product.uid,
+            product.copy(sellingPrice = 4.0.toBigDecimal()).toProductCreationDTO()
+        )
+
+        val orderAfterUpdate = orderRepository.getById(order.orderId).getOrThrow()
+        val completedOrderProduct = orderAfterUpdate.productToQuantity.keys.first()
+        assertThat(completedOrderProduct.sellingPrice.toDouble()).isEqualTo(3.0)
+        assertThat(orderAfterUpdate.getTotalPrice().toDouble()).isEqualTo(3.0)
+    }
+
+    @Test
+    fun orderHasNoChangeWhenProductIsDelete() {
+        val product = productRepository.save(createProduct().toProductCreationDTO()).getOrThrow()
+        val orderCreationDTO = createOrder().toOrderCreationDTO().copy(
+            productToQuantity = mapOf(product to 1)
+        )
+        val order = orderRepository.save(orderCreationDTO).getOrThrow()!!
+        assertThat(order.productToQuantity).key(product).isEqualTo(1)
+
+        productRepository.deleteById(product.uid).getOrThrow()
+        assertThat(productRepository.getById(product.uid).getOrNull()).isEqualTo(null)
+
+        val orderRe = orderRepository.getById(order.orderId).getOrThrow()
+        assertThat(orderRe.productToQuantity).key(product).isEqualTo(1)
     }
 }

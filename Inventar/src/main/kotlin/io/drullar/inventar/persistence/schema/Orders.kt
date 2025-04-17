@@ -4,7 +4,6 @@ import io.drullar.inventar.persistence.Relation
 import io.drullar.inventar.shared.OrderStatus
 import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.javatime.datetime
-import java.time.LocalDateTime
 
 /**
  * Columns: [creationDate], [orderStatus]
@@ -12,7 +11,7 @@ import java.time.LocalDateTime
 @Relation
 object Orders : Table(name = "orders") {
     val id = integer(name = "id").autoIncrement().uniqueIndex()
-    val creationDate = datetime("creation_date")//.default(LocalDateTime.now())
+    val creationDate = datetime("creation_date")
     val orderStatus = enumeration<OrderStatus>("order_status")
 
     override val primaryKey: PrimaryKey

@@ -272,8 +272,10 @@ object OrderRepository :
         withTransaction {
             productOrderAssociationTable.selectAll()
                 .where { productOrderAssociationTable.orderUid.eq(orderId) }.associate {
-                    ProductsRepository.getById(it[productUid])
-                        .getOrNull()!! to it[orderedAmount]
+                    val product = ProductsRepository.getByIdRegardlessOfDeletionMark(it[productUid])
+                        .getOrThrow()
+
+                    product.copy(sellingPrice = it[sellingPrice]) to it[orderedAmount]
                 }
         }
 

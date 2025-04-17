@@ -12,11 +12,12 @@ import assertk.assertions.isNotNull
 import assertk.assertions.isNull
 import assertk.assertions.isSuccess
 import io.drullar.inventar.persistence.repositories.impl.ProductsRepository
-import io.drullar.inventar.persistence.schema.Products
 import io.drullar.inventar.shared.ProductCreationDTO
 import io.drullar.inventar.persistence.DatabaseException
+import io.drullar.inventar.persistence.repositories.impl.OrderRepository
 import io.drullar.inventar.shared.PagedRequest
 import io.drullar.inventar.shared.SortingOrder
+import io.drullar.inventar.unit.utils.Factory.createOrder
 import io.drullar.inventar.unit.utils.Factory.createProduct
 import org.junit.After
 import org.junit.Test
@@ -25,11 +26,12 @@ import java.math.BigDecimal
 class TestProductRepository : AbstractPersistenceTest() {
 
     private val productRepository = ProductsRepository
+    private val orderRepository = OrderRepository
 
     @After
     fun cleanup() {
-        productRepository.deleteAll()
-        val table = Products.autoIncColumn!!.table
+        productRepository.deleteAll().getOrThrow()
+        orderRepository.deleteAll().getOrThrow()
     }
 
     @Test
@@ -75,7 +77,7 @@ class TestProductRepository : AbstractPersistenceTest() {
 
         val updateResult =
             productRepository.update(
-                productId!!,
+                productId,
                 data.toProductCreationDTO().copy(
                     name = "new name",
                     sellingPrice = 2.0.toBigDecimal(),
@@ -109,7 +111,7 @@ class TestProductRepository : AbstractPersistenceTest() {
         assertThat(id).isNotNull()
 
         assertThat(
-            productRepository.getById(id!!).getOrNull()
+            productRepository.getById(id).getOrNull()
         ).isEqualTo(result.getOrNull())
     }
 
@@ -191,7 +193,7 @@ class TestProductRepository : AbstractPersistenceTest() {
                 providerPrice = null,
                 availableQuantity = 10
             )
-        ).getOrNull()!!.uid!!
+        ).getOrNull()!!.uid
 
         assertThat(productRepository.getById(id).getOrNull()).isNotNull()
         productRepository.deleteById(id)
@@ -199,7 +201,16 @@ class TestProductRepository : AbstractPersistenceTest() {
         assertThat(getAfterDeletion).isFailure()
         val exception = getAfterDeletion.exceptionOrNull()!!
         assertThat(exception::class).isEqualTo(DatabaseException.NoSuchElementFoundException::class)
-        assertThat(exception!!.message!!).contains("Couldn't find product with id")
+        assertThat(exception.message!!).contains("Couldn't find product with id")
+
+        val product = productRepository.save(createProduct(2).toProductCreationDTO()).getOrThrow()
+        orderRepository.save(
+            createOrder().toOrderCreationDTO().copy(productToQuantity = mapOf(product to 2))
+        ).getOrThrow()
+
+        productRepository.deleteById(product.uid).getOrThrow()
+        assertThat(productRepository.getById(product.uid)).isFailure()
+        assertThat(productRepository.getByIdRegardlessOfDeletionMark(product.uid)).isSuccess()
     }
 
     @Test
@@ -302,5 +313,26 @@ class TestProductRepository : AbstractPersistenceTest() {
         ).getOrThrow().items
 
         assertThat(searchById).extracting { it.name }.containsOnly("Loreal Paris")
+    }
+
+    @Test
+    fun deleteAll() {
+        repeat(10) {
+            productRepository.save(createProduct(it).toProductCreationDTO()).getOrThrow()
+        }
+
+        val orderedProduct =
+            productRepository.save(createProduct(uid = 11).toProductCreationDTO()).getOrThrow()
+
+        orderRepository.save(
+            createOrder(
+                productToQuantity = mapOf(orderedProduct to 1)
+            ).toOrderCreationDTO()
+        ).getOrThrow()
+
+        assertThat(productRepository.getCount().getOrThrow()).isEqualTo(11)
+        productRepository.deleteAll().getOrThrow()
+        assertThat(productRepository.getCount().getOrThrow()).isEqualTo(0)
+        assertThat(productRepository.getByIdRegardlessOfDeletionMark(orderedProduct.uid)).isSuccess()
     }
 }

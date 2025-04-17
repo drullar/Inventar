@@ -11,6 +11,7 @@ object Products : Table("products") {
     val providerPrice = decimal("provider_price", Int.MAX_VALUE, 2).nullable()
     val sellingPrice = decimal("selling_price", Int.MAX_VALUE, 2)
     val barcode = varchar("barcode", BARCODE_LENGTH).nullable()
+    val isMarkedForDeletion = bool("marked_for_deletion")
     override val primaryKey: PrimaryKey
         get() = PrimaryKey(uid)
 }

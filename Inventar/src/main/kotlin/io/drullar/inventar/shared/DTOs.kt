@@ -7,7 +7,6 @@ import io.drullar.inventar.ui.style.Colors
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.util.Date
 
 data class ProductDTO(
     val uid: Int,
@@ -35,6 +34,7 @@ data class ProductCreationDTO(
     val iconPath: String = Icons.PRODUCTS, //  TODO change default value after creating a default value image
     var providerPrice: BigDecimal? = null,
     var barcode: String? = null,
+    val isMarkedForDeletion: Boolean = false
 )
 
 data class OrderDTO(
