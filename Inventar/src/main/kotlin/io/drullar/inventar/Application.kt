@@ -14,12 +14,7 @@ import io.drullar.inventar.ui.viewmodel.delegate.ViewModelFactory
 import io.drullar.inventar.utils.bootstrap.ApplicationBootstrapper
 import io.drullar.inventar.utils.bootstrap.DatabaseBootstrapperImpl
 import io.drullar.inventar.utils.scanner.ScannerInputHandler.handleEvent
-import java.awt.Button
-import java.awt.Dialog
 import java.awt.Dimension
-import java.awt.FlowLayout
-import java.awt.Frame
-import java.awt.Label
 
 class Application {
     private val viewModelFactory = ViewModelFactory()
@@ -32,25 +27,6 @@ class Application {
     }
 
     fun run() {
-        Thread.setDefaultUncaughtExceptionHandler { _, e -> //TODO proper error handling
-//            Dialog(Frame(), e.message ?: "Error").apply {
-//                layout = FlowLayout()
-//                val label = Label(e.stackTraceToString())
-//                add(label)
-//                val button = Button("OK").apply {
-//                    addActionListener {
-//                        dispose()
-//                        Thread.currentThread().interrupt()
-//                    }
-//                }
-//                add(button)
-//                setSize(300, 300)
-//                isVisible = true
-//            }
-
-            e.printStackTrace()
-        }
-
         application {
             val windowState = rememberWindowState(placement = WindowPlacement.Maximized)
             Window(

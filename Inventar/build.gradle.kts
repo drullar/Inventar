@@ -1,4 +1,5 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+import java.util.UUID
 
 plugins {
     kotlin("jvm")
@@ -10,7 +11,7 @@ plugins {
 group = "io.drullar.inventar"
 version = "0.1-SNAPSHOT"
 
-val releaseVersion = "1.0.0"
+val releaseVersion = "1.0.2"
 
 dependencies {
     val exposedVersion = "0.54.0"
@@ -57,9 +58,18 @@ compose.desktop {
     application {
         mainClass = "io.drullar.inventar.MainKt"
         nativeDistributions {
-            targetFormats(TargetFormat.Exe)
+            targetFormats(TargetFormat.Msi)
             packageName = "Inventar"
             packageVersion = releaseVersion
+
+            windows {
+                menu = true
+                shortcut = true
+                console = false
+                upgradeUuid = "c9aefd56-26de-4d6a-9f61-f55c8eac9c2f"
+                iconFile.set(project.file("src/main/resources/icons/appIcon.ico"))
+            }
+            modules("java.sql", "jdk.unsupported")
         }
     }
 }
