@@ -13,7 +13,7 @@ data class ProductDTO(
     var name: String,
     var sellingPrice: BigDecimal = BigDecimal.valueOf(0.0),
     var availableQuantity: Int = 0,
-    val iconPath: String = Icons.PRODUCTS, // TODO change default value after creating a default value image
+    val iconPath: String = Icons.PRODUCTS,
     var providerPrice: BigDecimal? = null,
     var barcode: String? = null,
 ) {
@@ -31,7 +31,7 @@ data class ProductCreationDTO(
     var name: String,
     var sellingPrice: BigDecimal = BigDecimal.valueOf(0.0),
     var availableQuantity: Int = 0,
-    val iconPath: String = Icons.PRODUCTS, //  TODO change default value after creating a default value image
+    val iconPath: String = Icons.PRODUCTS,
     var providerPrice: BigDecimal? = null,
     var barcode: String? = null,
     val isMarkedForDeletion: Boolean = false

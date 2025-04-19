@@ -1,13 +1,12 @@
 package io.drullar.inventar.ui.viewmodel
 
 import io.drullar.inventar.persistence.repositories.impl.OrderRepository
-import io.drullar.inventar.shared.OrderCreationDTO
 import io.drullar.inventar.shared.OrderDTO
-import io.drullar.inventar.shared.OrderStatus
-import io.drullar.inventar.shared.PagedRequest
+import io.drullar.inventar.shared.ProductDTO
 import io.drullar.inventar.shared.SortingOrder
 import io.drullar.inventar.ui.components.navigation.NavigationDestination
 import io.drullar.inventar.ui.data.OrderDetailsPreview
+import io.drullar.inventar.ui.viewmodel.delegate.OrdersDelegate
 import io.drullar.inventar.ui.viewmodel.delegate.SettingsProvider
 import io.drullar.inventar.ui.viewmodel.delegate.SharedAppStateDelegate
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,9 +15,10 @@ import kotlinx.coroutines.flow.asStateFlow
 class OrderViewViewModel(
     sharedAppStateDelegate: SharedAppStateDelegate,
     settingsProvider: SettingsProvider,
-    private val ordersRepository: OrderRepository = OrderRepository
+    private val ordersDelegate: OrdersDelegate,
 ) : SharedAppStateDelegate by sharedAppStateDelegate,
-    SettingsProvider by settingsProvider {
+    SettingsProvider by settingsProvider,
+    OrdersDelegate by ordersDelegate {
 
     private val sortingOrder by lazy {
         MutableStateFlow(SortingOrder.ASCENDING)
@@ -36,17 +36,10 @@ class OrderViewViewModel(
         this.sortingOrder.value = sortingOrder
     }
 
-    fun newOrder() {
-        val newOrder = ordersRepository.save(OrderCreationDTO(emptyMap(), OrderStatus.DRAFT))
-            .getOrThrow()!!
-
+    override fun createOrder(products: Map<ProductDTO, Int>): OrderDTO {
+        val newOrder = ordersDelegate.createOrder(products)
         setPreview(OrderDetailsPreview(newOrder))
         setNavigationDestination(NavigationDestination.PRODUCTS_PAGE)
+        return newOrder
     }
-
-    fun fetchOrders(pagedRequest: PagedRequest<OrderRepository.OrderSortBy>) =
-        ordersRepository.getPaged(pagedRequest)
-
-    fun changeOrderStatus(order: OrderDTO, status: OrderStatus) =
-        ordersRepository.update(order.orderId, order.copy(status = status).toOrderCreationDTO())
 }

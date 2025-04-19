@@ -10,6 +10,8 @@ plugins {
 group = "io.drullar.inventar"
 version = "0.1-SNAPSHOT"
 
+val releaseVersion = "1.0.0"
+
 dependencies {
     val exposedVersion = "0.54.0"
     val h2Version = "2.2.224"
@@ -33,7 +35,7 @@ dependencies {
     implementation("com.fasterxml.jackson.core:jackson-databind:2.18.3")
     // https://github.com/Wavesonics/compose-multiplatform-file-picker
     implementation("com.darkrockstudios:mpfilepicker:3.1.0")
-    // Charts dependencies TODO delete unused ones after implementation
+    // Charts dependencies
     implementation("org.jfree:jfreechart:1.5.5")
     //Test dependencies
     testImplementation(kotlin("test"))
@@ -53,11 +55,11 @@ kotlin {
 
 compose.desktop {
     application {
-        mainClass = "MainKt"
+        mainClass = "io.drullar.inventar.MainKt"
         nativeDistributions {
-            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
+            targetFormats(TargetFormat.Exe)
             packageName = "Inventar"
-            packageVersion = "1.0.0"
+            packageVersion = releaseVersion
         }
     }
 }

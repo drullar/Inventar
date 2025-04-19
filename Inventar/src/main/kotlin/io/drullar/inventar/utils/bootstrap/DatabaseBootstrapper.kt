@@ -21,23 +21,26 @@ abstract class AbstractDatabaseBootstrapper : DatabaseBootstrapper {
 
     private fun initiateDatabase() {
         Database.connect(url = databaseConfiguration.databaseUrl)
-        createMissingTables()
+        generateMissingTables()
         resolveSchemaChanges()
     }
 
-    private fun createMissingTables() {
+    private fun generateMissingTables() {
         transaction {
-            SchemaUtils.create(*databaseTables.toTypedArray())
+            val allTables = databaseTables.toTypedArray()
+            SchemaUtils.create(*allTables)
         }
     }
 
     private fun resolveSchemaChanges() {
         transaction {
-            val changes = SchemaUtils.checkMappingConsistence(*databaseTables.toTypedArray())
-            if (changes.isNotEmpty()) {
-                execInBatch(changes)
-                commit()
-            }
+            val tables = databaseTables.toTypedArray()
+            
+            val updateSchemaStatements = SchemaUtils.addMissingColumnsStatements(*tables)
+            if (updateSchemaStatements.isNotEmpty()) execInBatch(updateSchemaStatements)
+
+            val changes = SchemaUtils.checkMappingConsistence(*tables)
+            if (changes.isNotEmpty()) execInBatch(changes)
         }
     }
 

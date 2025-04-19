@@ -2,6 +2,7 @@ package io.drullar.inventar.persistence.repositories.impl
 
 import io.drullar.inventar.persistence.DatabaseException
 import io.drullar.inventar.persistence.repositories.AbstractRepository
+import io.drullar.inventar.persistence.schema.Orders
 import io.drullar.inventar.persistence.schema.Products
 import io.drullar.inventar.persistence.schema.Products.uid
 import io.drullar.inventar.persistence.schema.Products.availableQuantity
@@ -13,6 +14,7 @@ import io.drullar.inventar.persistence.schema.associative.ProductOrderAssociatio
 import io.drullar.inventar.persistence.schema.associative.ProductOrderAssociation.productUid
 import io.drullar.inventar.result
 import io.drullar.inventar.shared.ISortBy
+import io.drullar.inventar.shared.OrderStatus
 import io.drullar.inventar.shared.Page
 import io.drullar.inventar.shared.PagedRequest
 import io.drullar.inventar.shared.ProductCreationDTO
@@ -46,6 +48,7 @@ object ProductsRepository :
         id: Int,
         dto: ProductCreationDTO
     ): Result<ProductDTO> {
+        val beforeUpdate = getById(id).getOrThrow()
         withTransaction {
             table.update(where = { table.uid.eq(id) }) {
                 it[name] = dto.name
@@ -54,6 +57,20 @@ object ProductsRepository :
                 it[barcode] = dto.barcode
                 it[isMarkedForDeletion] = dto.isMarkedForDeletion
                 dto.providerPrice?.let { price -> it[providerPrice] = price }
+            }
+
+            // Update selling price in all unfinished orders
+            if (beforeUpdate.sellingPrice != dto.sellingPrice) {
+                ProductOrderAssociation.update(
+                    where = {
+                        productUid eq id and (
+                                ProductOrderAssociation.orderUid inSubQuery (Orders.select(Orders.id)
+                                    .where { Orders.orderStatus eq OrderStatus.DRAFT })
+                                )
+                    }
+                ) {
+                    it[sellingPrice] = dto.sellingPrice
+                }
             }
         }
         return getById(id)

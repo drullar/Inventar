@@ -31,7 +31,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import io.drullar.inventar.persistence.repositories.impl.OrderRepository
 import io.drullar.inventar.shared.OrderDTO
-import io.drullar.inventar.shared.OrderStatus
 import io.drullar.inventar.shared.PagedRequest
 import io.drullar.inventar.shared.SortingOrder
 import io.drullar.inventar.ui.components.button.TextButton
@@ -56,34 +55,34 @@ fun OrdersView(viewModel: OrderViewViewModel) {
     var isSortingOrderDropDownExtended by remember { mutableStateOf(false) }
     val scrollState = rememberLazyListState()
 
-    var _page by remember { mutableStateOf(1) }
-    var _orders = remember {
+    var page by remember { mutableStateOf(1) }
+    val orders = remember {
         mutableStateListOf<OrderDTO>().apply {
             addAll(
                 viewModel.fetchOrders(
                     PagedRequest(
-                        page = _page,
+                        page = page,
                         pageSize = PAGE_SIZE,
                         sortBy = sortingBy,
                         order = sortingOrder
                     )
-                ).getOrNull()?.items ?: emptyList()
+                ).items
             )
         }
     }
 
     LaunchedEffect(sortingOrder, sortingBy) {
-        _page = 1
-        _orders.clear()
-        _orders.addAll(
+        page = 1
+        orders.clear()
+        orders.addAll(
             viewModel.fetchOrders(
                 PagedRequest(
-                    page = _page,
+                    page = page,
                     pageSize = PAGE_SIZE,
                     sortBy = sortingBy,
                     order = sortingOrder
                 )
-            ).getOrNull()?.items ?: emptyList()
+            ).items
         )
     }
 
@@ -94,7 +93,7 @@ fun OrdersView(viewModel: OrderViewViewModel) {
         ) {
             TextButton(
                 text = getText("order.new"),
-                onClick = { viewModel.newOrder() },
+                onClick = { viewModel.createOrder(emptyMap()) },
                 backgroundColor = Colors.DarkGreen,
                 borderColor = Colors.DarkGreen
             )
@@ -165,18 +164,18 @@ fun OrdersView(viewModel: OrderViewViewModel) {
         Box {
             LazyColumn(state = scrollState, modifier = Modifier.padding(end = 12.dp)) {
                 itemsIndexed(
-                    items = _orders,
+                    items = orders,
                     key = { _, item -> item.orderId.toString().plus(item.status) }) { index, item ->
-                    if (scrollState.layoutInfo.visibleItemsInfo.lastOrNull()?.index == _orders.size - 1) {
-                        _page += 1
-                        _orders += viewModel.fetchOrders(
+                    if (scrollState.layoutInfo.visibleItemsInfo.lastOrNull()?.index == orders.size - 1) {
+                        page += 1
+                        orders += viewModel.fetchOrders(
                             PagedRequest(
-                                _page,
+                                page,
                                 PAGE_SIZE,
                                 sortingOrder,
                                 sortingBy
                             )
-                        ).getOrNull()?.items ?: emptyList()
+                        ).items
                     }
 
                     if (getLayoutStyle() == LayoutStyle.NORMAL)
@@ -184,24 +183,21 @@ fun OrdersView(viewModel: OrderViewViewModel) {
                             orderDTO = item,
                             activeLocale = settings.language.locale,
                             onComplete = {
-                                val itemIndex = _orders.indexOf(item)
+                                val itemIndex = orders.indexOf(item)
                                 val updateItem =
-                                    viewModel.changeOrderStatus(item, OrderStatus.COMPLETED)
+                                    viewModel.completeOrder(item)
 
-                                if (updateItem.isSuccess)
-                                    updateItem(_orders, itemIndex, updateItem.getOrNull()!!)
+                                updateItem(orders, itemIndex, updateItem)
                             },
                             onSelect = { order ->
                                 viewModel.setPreview(OrderDetailsPreview(order))
                                 viewModel.setNavigationDestination(NavigationDestination.PRODUCTS_PAGE)
                             },
                             onTerminate = {
-                                val itemIndex = _orders.indexOf(item)
+                                val itemIndex = orders.indexOf(item)
                                 val updateItem =
-                                    viewModel.changeOrderStatus(item, OrderStatus.TERMINATED)
-
-                                if (updateItem.isSuccess)
-                                    updateItem(_orders, itemIndex, updateItem.getOrNull()!!)
+                                    viewModel.terminateOrder(item)
+                                updateItem(orders, itemIndex, updateItem)
                             },
                             showOrderStatus = true,
                             settings.defaultCurrency
@@ -209,24 +205,20 @@ fun OrdersView(viewModel: OrderViewViewModel) {
                     else CompactOrderPreviewRow(
                         orderDTO = item,
                         onComplete = {
-                            val itemIndex = _orders.indexOf(item)
+                            val itemIndex = orders.indexOf(item)
                             val updateItem =
-                                viewModel.changeOrderStatus(item, OrderStatus.COMPLETED)
-
-                            if (updateItem.isSuccess)
-                                updateItem(_orders, itemIndex, updateItem.getOrNull()!!)
+                                viewModel.completeOrder(item)
+                            updateItem(orders, itemIndex, updateItem)
                         },
                         onSelect = { order ->
                             viewModel.setPreview(OrderDetailsPreview(order))
                             viewModel.setNavigationDestination(NavigationDestination.PRODUCTS_PAGE)
                         },
                         onTerminate = {
-                            val itemIndex = _orders.indexOf(item)
+                            val itemIndex = orders.indexOf(item)
                             val updateItem =
-                                viewModel.changeOrderStatus(item, OrderStatus.TERMINATED)
-
-                            if (updateItem.isSuccess)
-                                updateItem(_orders, itemIndex, updateItem.getOrNull()!!)
+                                viewModel.terminateOrder(item)
+                            updateItem(orders, itemIndex, updateItem)
                         },
                         showOrderStatus = true,
                         currency = settings.defaultCurrency

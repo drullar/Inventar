@@ -23,6 +23,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -57,6 +58,7 @@ import io.drullar.inventar.ui.data.OrdersListPreview
 import io.drullar.inventar.ui.provider.getText
 import io.drullar.inventar.ui.style.LayoutStyle
 import io.drullar.inventar.ui.style.roundedBorder
+import kotlinx.coroutines.flow.drop
 import java.util.Currency
 
 const val PRODUCTS_PER_PAGE = 40
@@ -70,7 +72,7 @@ fun DefaultView(
     val activeDialogWindow by viewModel.getActiveDialog().collectAsState()
     val activeExternalWindow by viewModel.getActiveWindow().collectAsState()
     val previewChangeIsAllowed by viewModel.previewChangeIsAllowed.collectAsState()
-    val draftOrdersCount = viewModel.draftOrdersCount.collectAsState()
+    val draftOrdersCount by viewModel.getDraftOrdersCount().collectAsState()
     val preview by viewModel.preview.collectAsState()
     val settings by viewModel.getSettings().collectAsState()
     val selectedProductId =
@@ -89,41 +91,18 @@ fun DefaultView(
         }
     }
 
-    val lastScannedBarcode by viewModel.lastScannedBarcode.collectAsState()
+    val lastScanTime by viewModel.getLastScanTime().collectAsState()
 
-    LaunchedEffect(Unit) {
-        viewModel.cleanLastScannedBarcode()
+    LaunchedEffect(lastScanTime) {
+        snapshotFlow { lastScanTime }
+            .drop(1) // Ignore on initial composition, otherwise when switching back and forth a dialog window based on the scan will be rendered
+            .collect {
+                handleBarcodeScan(viewModel)
+            }
     }
 
-    LaunchedEffect(lastScannedBarcode) {
-        if (lastScannedBarcode.isBlank()) return@LaunchedEffect
-        val product = viewModel.searchProducts(
-            lastScannedBarcode,
-            PagedRequest(0, 1, SortingOrder.DESCENDING, ProductsRepository.SortBy.NAME)
-        ).items.firstOrNull()
-
-        if (product == null) {
-            viewModel.setActiveDialog(
-                DialogWindowType.NEW_PRODUCT,
-                BarcodePayload(lastScannedBarcode)
-            )
-            return@LaunchedEffect
-        }
-
-        when (settings.onScan) {
-            OnScan.ADD_TO_ORDER -> {
-                viewModel.showAddProductToOrderDialog(product)
-                viewModel.cleanLastScannedBarcode()
-            }
-
-            OnScan.RESTOCK -> {
-                viewModel.showChangeProductQuantity(product)
-                viewModel.cleanLastScannedBarcode()
-            }
-        }
-    }
-
-    handleLayoutChange(layout, viewModel)
+    // Handle switching between Normal and Compact layout
+    handleLayoutStyleChange(layout, viewModel)
 
     Column(modifier = modifier) {
         Row(
@@ -157,7 +136,7 @@ fun DefaultView(
 
             DraftOrderButton(
                 modifier = Modifier.align(Alignment.CenterVertically).padding(end = 10.dp),
-                draftOrdersCount = draftOrdersCount.value,
+                draftOrdersCount = draftOrdersCount,
                 onClick = { viewModel.showDraftOrders() })
         }
 
@@ -282,13 +261,14 @@ fun DefaultView(
                             orders = draftOrders,
                             style = layout,
                             activeLocale = settings.language.locale,
-                            onOrderCompletion = { completedOrder ->
+                            onComplete = { completedOrder ->
                                 viewModel.completeOrder(completedOrder)
                             },
-                            onOrderSelect = { selectedOrder ->
+                            onSelect = { selectedOrder ->
                                 viewModel.selectOrder(selectedOrder)
                             },
-                            onOrderTermination = { terminatedOrder ->
+                            onTerminate = { terminatedOrder ->
+                                viewModel.terminateOrder(terminatedOrder)
                             },
                             currency = settings.defaultCurrency
                         )
@@ -305,6 +285,9 @@ fun DefaultView(
             products.add(viewModel.saveProduct(productCreationDTO))
             viewModel.closeDialogWindow()
             //TODO consider triggering reorder of [products]
+        },
+        onChangeProductQuantity = { oldProduct, newProduct ->
+            products[products.indexOf(oldProduct)] = newProduct
         }
     )
     handleActiveExternalWindowRender(
@@ -321,7 +304,12 @@ fun DefaultView(
 private fun handleDialogWindowRender(
     activeDialogWindow: DialogWindowType?,
     viewModel: DefaultViewViewModel,
-    onAddNewProduct: (ProductCreationDTO) -> Unit
+    onAddNewProduct: (ProductCreationDTO) -> Unit,
+    /**
+     * first argument - oldProduct
+     * second arguments - updatedProduct
+     */
+    onChangeProductQuantity: (ProductDTO, ProductDTO) -> Unit
 ) {
     when (activeDialogWindow) {
         DialogWindowType.NEW_PRODUCT -> {
@@ -372,8 +360,10 @@ private fun handleDialogWindowRender(
                 product = product,
                 initialQuantity = product.availableQuantity,
                 onConfirm = { newQuantity ->
-                    viewModel.updateProduct(product.copy(availableQuantity = newQuantity))
+                    val updatedProduct =
+                        viewModel.updateProduct(product.copy(availableQuantity = newQuantity))
                     viewModel.setActiveDialog(null, EmptyPayload())
+                    onChangeProductQuantity(product, updatedProduct)
                 },
                 onCancel = {
                     viewModel.setActiveDialog(null, EmptyPayload())
@@ -440,7 +430,7 @@ private fun mergeProductChanges(
     }
 }
 
-private fun handleLayoutChange(layout: LayoutStyle, viewModel: DefaultViewViewModel) {
+private fun handleLayoutStyleChange(layout: LayoutStyle, viewModel: DefaultViewViewModel) {
     when (layout) {
         LayoutStyle.COMPACT -> {
             swapOrderPreviewToCompactLayout(viewModel)
@@ -461,5 +451,34 @@ private fun swapOrderPreviewToCompactLayout(viewModel: DefaultViewViewModel) {
             OrderWindowPayload(order)
         )
         viewModel.setPreview<Unit>(null)
+    }
+}
+
+private fun handleBarcodeScan(viewModel: DefaultViewViewModel) {
+    val lastScannedBarcode = viewModel.getLastScannedBarcode().value
+    if (lastScannedBarcode.isBlank()) return
+
+    val settings = viewModel.getSettings().value
+    val product = viewModel.searchProducts(
+        lastScannedBarcode,
+        PagedRequest(0, 1, SortingOrder.DESCENDING, ProductsRepository.SortBy.NAME)
+    ).items.firstOrNull()
+
+    if (product == null) {
+        viewModel.setActiveDialog(
+            DialogWindowType.NEW_PRODUCT,
+            BarcodePayload(lastScannedBarcode)
+        )
+        return
+    }
+
+    when (settings.onScan) {
+        OnScan.ADD_TO_ORDER -> {
+            viewModel.showAddProductToOrderDialog(product)
+        }
+
+        OnScan.RESTOCK -> {
+            viewModel.showChangeProductQuantity(product)
+        }
     }
 }

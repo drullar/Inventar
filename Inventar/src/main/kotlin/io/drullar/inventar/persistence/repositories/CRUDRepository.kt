@@ -20,7 +20,7 @@ interface CRUDRepository<T : Table, R, C, ID, S : ISortBy> {
     /**
      * Save a new entity based on the provided [dto]
      */
-    fun save(dto: C): Result<R?>
+    fun save(dto: C): Result<R>
 
     /**
      * Update an entity if it exists. If an entity with the provided [id] doesn't exist, no action is taken.

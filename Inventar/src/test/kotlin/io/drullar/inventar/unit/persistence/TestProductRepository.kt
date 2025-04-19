@@ -15,6 +15,7 @@ import io.drullar.inventar.persistence.repositories.impl.ProductsRepository
 import io.drullar.inventar.shared.ProductCreationDTO
 import io.drullar.inventar.persistence.DatabaseException
 import io.drullar.inventar.persistence.repositories.impl.OrderRepository
+import io.drullar.inventar.shared.OrderStatus
 import io.drullar.inventar.shared.PagedRequest
 import io.drullar.inventar.shared.SortingOrder
 import io.drullar.inventar.unit.utils.Factory.createOrder
@@ -334,5 +335,40 @@ class TestProductRepository : AbstractPersistenceTest() {
         productRepository.deleteAll().getOrThrow()
         assertThat(productRepository.getCount().getOrThrow()).isEqualTo(0)
         assertThat(productRepository.getByIdRegardlessOfDeletionMark(orderedProduct.uid)).isSuccess()
+    }
+
+    @Test
+    fun productPriceIsUpdatedAccordingly() {
+        val product =
+            productRepository.save(
+                createProduct(sellingPrice = BigDecimal(1.0)).toProductCreationDTO()
+            ).getOrThrow()
+        val orderCreationDTO =
+            createOrder().copy(productToQuantity = mapOf(product to 1)).toOrderCreationDTO()
+        val savedOrder = orderRepository.save(orderCreationDTO).getOrThrow()!!
+        val completedOrder = orderRepository.save(
+            createOrder(
+                orderId = 10,
+                productToQuantity = mapOf(product to 1),
+                status = OrderStatus.COMPLETED
+            ).toOrderCreationDTO()
+        ).getOrThrow()
+
+        productRepository.update(
+            product.uid,
+            product.toProductCreationDTO().copy(sellingPrice = BigDecimal(2.0))
+        ).getOrThrow()
+
+        // Product price is updated in draft order
+        val draftOrder = orderRepository.getById(savedOrder.orderId).getOrThrow()
+        assertThat(draftOrder.productToQuantity.keys).extracting { it.sellingPrice.toDouble() }
+            .containsOnly(2.00)
+
+        // Product price is not updated in completed order
+        val completedOrderFetch = orderRepository.getById(completedOrder!!.orderId).getOrThrow()
+        assertThat(completedOrderFetch.productToQuantity.keys).extracting { it.sellingPrice.toDouble() }
+            .containsOnly(
+                1.00
+            )
     }
 }

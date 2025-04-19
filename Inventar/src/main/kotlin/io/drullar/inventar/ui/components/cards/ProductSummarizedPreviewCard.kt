@@ -147,7 +147,9 @@ fun ProductSummarizedPreviewCard(
                         )
                     }
                     FilledTonalIconButton(
-                        onClick = { onAddToOrderRequest(productData) },
+                        onClick = {
+                            onAddToOrderRequest(productData)
+                        },
                         colors = IconButtonDefaults.filledTonalIconButtonColors()
                             .copy(containerColor = Colors.Green),
                     ) {

@@ -5,10 +5,10 @@ import io.drullar.inventar.ui.viewmodel.delegate.SharedAppStateDelegate
 import io.drullar.inventar.ui.data.Preview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 
-class SharedAppStateDelegateImpl(initialNavigationDestination: NavigationDestination) :
-    SharedAppStateDelegate {
+class SharedAppStateDelegateImpl(
+    initialNavigationDestination: NavigationDestination
+) : SharedAppStateDelegate {
     private val preview = MutableStateFlow<Preview<*>?>(null)
     private var navigationDestination = MutableStateFlow(initialNavigationDestination)
 
@@ -18,11 +18,8 @@ class SharedAppStateDelegateImpl(initialNavigationDestination: NavigationDestina
         this.preview.value = preview
     }
 
-    override fun getNavigationDestination(): MutableStateFlow<NavigationDestination> =
+    override fun getNavigationDestination(): StateFlow<NavigationDestination> =
         navigationDestination
-
-    override fun getNavigationDestinationAsStateFlow(): StateFlow<NavigationDestination> =
-        navigationDestination.asStateFlow()
 
     override fun setNavigationDestination(navigationDestination: NavigationDestination) {
         this.navigationDestination.value = navigationDestination

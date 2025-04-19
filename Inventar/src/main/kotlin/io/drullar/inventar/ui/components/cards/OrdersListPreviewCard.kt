@@ -46,9 +46,9 @@ fun OrdersListPreviewCard(
     orders: List<OrderDTO>,
     style: LayoutStyle,
     activeLocale: Locale,
-    onOrderCompletion: (OrderDTO) -> Unit,
-    onOrderSelect: (OrderDTO) -> Unit,
-    onOrderTermination: (OrderDTO) -> Unit,
+    onComplete: (OrderDTO) -> Unit,
+    onSelect: (OrderDTO) -> Unit,
+    onTerminate: (OrderDTO) -> Unit,
     currency: Currency
 ) {
     val scrollableState = rememberScrollState()
@@ -67,18 +67,18 @@ fun OrdersListPreviewCard(
                     NormalOrderPreviewRow(
                         order,
                         activeLocale,
-                        onOrderCompletion,
-                        onOrderSelect,
-                        onOrderTermination,
+                        onComplete,
+                        onSelect,
+                        onTerminate,
                         false,
                         currency
                     )
                 else
                     CompactOrderPreviewRow(
                         order,
-                        onOrderCompletion,
-                        onOrderTermination,
-                        onOrderSelect,
+                        onComplete,
+                        onTerminate,
+                        onSelect,
                         false,
                         currency
                     )

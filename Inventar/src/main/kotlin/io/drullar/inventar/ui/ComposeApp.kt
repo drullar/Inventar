@@ -45,6 +45,7 @@ import io.drullar.inventar.ui.provider.getText
 import io.drullar.inventar.ui.provider.impl.LayoutStyleProviderImpl
 import io.drullar.inventar.ui.provider.impl.TextProviderImpl
 import io.drullar.inventar.ui.viewmodel.AnalyticsViewModel
+import io.drullar.inventar.ui.viewmodel.delegate.ViewModelFactory
 import io.drullar.inventar.ui.viewmodel.delegate.WindowManagerFacade
 import io.drullar.inventar.ui.viewmodel.delegate.impl.OrderDataCsvExporter
 import io.drullar.inventar.utils.file.DataExportFile
@@ -54,25 +55,21 @@ import java.util.Locale
 
 @Composable
 fun ComposeApp(
-    sharedAppState: SharedAppStateDelegate,
-    alertManager: AlertManager,
-    defaultViewViewModel: DefaultViewViewModel,
-    orderViewViewModel: OrderViewViewModel,
-    settingsViewModel: SettingsViewModel,
-    analyticsViewModel: AnalyticsViewModel,
-    windowManager: WindowManagerFacade,
+    viewModelFactory: ViewModelFactory,
     windowSize: DpSize
 ) {
-    val activeExternalWindow = windowManager.getActiveWindow().collectAsState()
-    val activeDialogWindow = windowManager.getActiveDialog().collectAsState()
+    val activeExternalWindow =
+        viewModelFactory.globalWindowManager.getActiveWindow().collectAsState()
+    val activeDialogWindow = viewModelFactory.globalWindowManager.getActiveDialog().collectAsState()
 
-    val settingsState = settingsViewModel.getSettings().collectAsState()
+    val settingsState = viewModelFactory.settingsViewModel.getSettings().collectAsState()
     val activeLanguage = settingsState.value.language
 
     initializeProviders(activeLanguage, windowSize)
 
-    val currentView = sharedAppState.getNavigationDestination().collectAsState()
-    val activeAlert = alertManager.getActiveAlert().collectAsState()
+    val currentView =
+        viewModelFactory.sharedAppStateHolder.getNavigationDestination().collectAsState()
+    val activeAlert = viewModelFactory.alertManagerDelegate.getActiveAlert().collectAsState()
 
     Column(modifier = Modifier.fillMaxWidth().fillMaxHeight().focusable()) {
         Row(
@@ -82,12 +79,20 @@ fun ComposeApp(
 
             NavigationBar(
                 selectedView = currentView.value,
-                onNavigationChange = { sharedAppState.setNavigationDestination(it) }
+                onNavigationChange = {
+                    viewModelFactory.sharedAppStateHolder.setNavigationDestination(
+                        it
+                    )
+                }
             )
 
             Row {
                 IconButton(
-                    onClick = { sharedAppState.setNavigationDestination(NavigationDestination.SETTINGS_PAGE) },
+                    onClick = {
+                        viewModelFactory.sharedAppStateHolder.setNavigationDestination(
+                            NavigationDestination.SETTINGS_PAGE
+                        )
+                    },
                     buttonColors = ButtonColors(
                         Color.Transparent,
                         Color.Black,
@@ -103,7 +108,11 @@ fun ComposeApp(
                 }
 
                 IconButton(
-                    onClick = { sharedAppState.setNavigationDestination(NavigationDestination.ANALYTICS_PAGE) },
+                    onClick = {
+                        viewModelFactory.sharedAppStateHolder.setNavigationDestination(
+                            NavigationDestination.ANALYTICS_PAGE
+                        )
+                    },
                     buttonColors = ButtonColors(
                         Color.Transparent,
                         Color.Black,
@@ -123,19 +132,19 @@ fun ComposeApp(
         val viewModifier = Modifier.fillMaxWidth().fillMaxHeight()
         when (currentView.value) {
             NavigationDestination.PRODUCTS_PAGE -> {
-                DefaultView(defaultViewViewModel, viewModifier, getLayoutStyle())
+                DefaultView(viewModelFactory.defaultViewViewModel, viewModifier, getLayoutStyle())
             }
 
             NavigationDestination.ORDERS_PAGE -> {
-                OrdersView(orderViewViewModel)
+                OrdersView(viewModelFactory.orderViewViewModel)
             }
 
             NavigationDestination.SETTINGS_PAGE -> {
-                SettingsView(settingsViewModel)
+                SettingsView(viewModelFactory.settingsViewModel)
             }
 
             NavigationDestination.ANALYTICS_PAGE -> {
-                AnalyticsView(analyticsViewModel)
+                AnalyticsView(viewModelFactory.analyticsViewModel)
             }
         }
 
@@ -145,7 +154,7 @@ fun ComposeApp(
                     text = getText("warning.unsaved.changes"),
                     actionButtonText = getText("label.acknowledge")
                 ) {
-                    alertManager.setActiveAlert(null)
+                    viewModelFactory.alertManagerDelegate.setActiveAlert(null)
                 }
             }
 
@@ -156,17 +165,22 @@ fun ComposeApp(
 
     handleExternalWindowRender(
         externalWindowType = activeExternalWindow.value,
-        onWindowClose = { windowManager.setActiveWindow(null, EmptyPayload()) },
+        onWindowClose = {
+            viewModelFactory.globalWindowManager.setActiveWindow(
+                null,
+                EmptyPayload()
+            )
+        },
         locale = activeLanguage.locale,
         onDataExport = { request ->
             runAsync {
                 val file =
-                    OrderDataCsvExporter(settingsViewModel.getSettings().value.defaultCurrency).export(
+                    OrderDataCsvExporter(viewModelFactory.settingsViewModel.getSettings().value.defaultCurrency).export(
                         request
                     )
 
-                windowManager.setActiveWindow(null, EmptyPayload())
-                windowManager.setActiveDialog(
+                viewModelFactory.globalWindowManager.setActiveWindow(null, EmptyPayload())
+                viewModelFactory.globalWindowManager.setActiveDialog(
                     DialogWindowType.EXPORT_RESULT,
                     ExportCompletionPayload(file)
                 )
@@ -176,9 +190,9 @@ fun ComposeApp(
 
     handleDialogWindowRender(
         dialogWindowType = activeDialogWindow.value,
-        dialogWindowPayload = windowManager.getActiveDialogPayload<Any>().value,
+        dialogWindowPayload = viewModelFactory.globalWindowManager.getActiveDialogPayload<Any>().value,
         onWindowClose = {
-            windowManager.setActiveDialog(null, EmptyPayload())
+            viewModelFactory.globalWindowManager.setActiveDialog(null, EmptyPayload())
         }
     )
 }

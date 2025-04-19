@@ -8,7 +8,6 @@ import kotlinx.coroutines.flow.StateFlow
 interface SharedAppStateDelegate {
     fun getPreview(): MutableStateFlow<Preview<*>?>
     fun <T> setPreview(preview: Preview<T>?)
-    fun getNavigationDestination(): MutableStateFlow<NavigationDestination>
-    fun getNavigationDestinationAsStateFlow(): StateFlow<NavigationDestination>
+    fun getNavigationDestination(): StateFlow<NavigationDestination>
     fun setNavigationDestination(navigationDestination: NavigationDestination)
 }

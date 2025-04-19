@@ -33,7 +33,7 @@ object OrderRepository :
     AbstractRepository<Orders, OrderDTO, OrderCreationDTO, Int, OrderRepository.OrderSortBy>(Orders) {
     private val productOrderAssociationTable = ProductOrderAssociation
 
-    override fun save(dto: OrderCreationDTO): Result<OrderDTO?> = result {
+    override fun save(dto: OrderCreationDTO): Result<OrderDTO> = result {
         withTransaction {
             val orderId =
                 table.insert {
@@ -55,7 +55,7 @@ object OrderRepository :
                 )
             }
 
-            return@withTransaction getById(orderId).getOrNull()
+            return@withTransaction getById(orderId).getOrThrow()
         }
     }
 

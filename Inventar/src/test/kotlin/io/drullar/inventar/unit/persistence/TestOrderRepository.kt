@@ -26,6 +26,7 @@ import io.drullar.inventar.unit.utils.Factory.createOrder
 import io.drullar.inventar.unit.utils.Factory.createProduct
 import org.junit.After
 import org.junit.Test
+import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
