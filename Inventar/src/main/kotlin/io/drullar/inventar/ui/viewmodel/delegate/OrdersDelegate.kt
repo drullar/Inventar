@@ -16,4 +16,5 @@ interface OrdersDelegate {
     fun fetchOrders(pagedRequest: PagedRequest<OrderRepository.OrderSortBy>): Page<OrderDTO>
     fun getAllByStatus(status: OrderStatus): List<OrderDTO>
     fun updateProductsQuantity(order: OrderDTO, products: Map<ProductDTO, Int>): OrderDTO
+    fun validateProductsAvailability(order: OrderDTO): Boolean
 }

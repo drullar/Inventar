@@ -5,10 +5,13 @@ import io.drullar.inventar.shared.OrderDTO
 import io.drullar.inventar.shared.ProductDTO
 import io.drullar.inventar.shared.SortingOrder
 import io.drullar.inventar.ui.components.navigation.NavigationDestination
+import io.drullar.inventar.ui.data.DialogWindowType
 import io.drullar.inventar.ui.data.OrderDetailsPreview
 import io.drullar.inventar.ui.viewmodel.delegate.OrdersDelegate
+import io.drullar.inventar.ui.viewmodel.delegate.PopupWindowManager
 import io.drullar.inventar.ui.viewmodel.delegate.SettingsProvider
 import io.drullar.inventar.ui.viewmodel.delegate.SharedAppStateDelegate
+import io.drullar.inventar.ui.viewmodel.delegate.impl.PopupWindowManagerImpl
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
@@ -16,9 +19,11 @@ class OrderViewViewModel(
     sharedAppStateDelegate: SharedAppStateDelegate,
     settingsProvider: SettingsProvider,
     private val ordersDelegate: OrdersDelegate,
+    dialogManager: PopupWindowManager<DialogWindowType> = PopupWindowManagerImpl()
 ) : SharedAppStateDelegate by sharedAppStateDelegate,
     SettingsProvider by settingsProvider,
-    OrdersDelegate by ordersDelegate {
+    OrdersDelegate by ordersDelegate,
+    PopupWindowManager<DialogWindowType> by dialogManager {
 
     private val sortingOrder by lazy {
         MutableStateFlow(SortingOrder.ASCENDING)

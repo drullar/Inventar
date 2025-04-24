@@ -42,14 +42,15 @@ import java.util.Currency
 import java.util.Locale
 
 @Composable
-fun OrdersListPreviewCard(
+fun OrdersList(
     orders: List<OrderDTO>,
     style: LayoutStyle,
     activeLocale: Locale,
-    onComplete: (OrderDTO) -> Unit,
+    onComplete: (Boolean, OrderDTO) -> Unit,
     onSelect: (OrderDTO) -> Unit,
     onTerminate: (OrderDTO) -> Unit,
-    currency: Currency
+    currency: Currency,
+    validateProductAvailability: (OrderDTO) -> Boolean
 ) {
     val scrollableState = rememberScrollState()
     OutlinedCard(
@@ -64,23 +65,25 @@ fun OrdersListPreviewCard(
                 items = orders.sortedByDescending { it.creationDate },
                 key = { it.orderId }) { order ->
                 if (style == LayoutStyle.NORMAL)
-                    NormalOrderPreviewRow(
+                    NormalOrderRow(
                         order,
                         activeLocale,
                         onComplete,
                         onSelect,
                         onTerminate,
                         false,
-                        currency
+                        currency,
+                        validateProductAvailability
                     )
                 else
-                    CompactOrderPreviewRow(
+                    CompactOrderRow(
                         order,
                         onComplete,
                         onTerminate,
                         onSelect,
                         false,
-                        currency
+                        currency,
+                        validateProductAvailability
                     )
             }
         }
@@ -88,25 +91,26 @@ fun OrdersListPreviewCard(
 }
 
 @Composable
-fun NormalOrderPreviewRow(
-    orderDTO: OrderDTO,
+fun NormalOrderRow(
+    order: OrderDTO,
     activeLocale: Locale,
-    onComplete: (OrderDTO) -> Unit,
+    onComplete: (Boolean, OrderDTO) -> Unit,
     onSelect: (OrderDTO) -> Unit,
     onTerminate: (OrderDTO) -> Unit,
     showOrderStatus: Boolean,
-    currency: Currency
+    currency: Currency,
+    validateProductAvailability: (OrderDTO) -> Boolean
 ) {
     Row(
         Modifier
             .border(0.5.dp, Color.Black)
             .wrapContentHeight()
-            .clickable(onClick = { onSelect(orderDTO) })
+            .clickable(onClick = { onSelect(order) })
             .fillMaxWidth()
     ) {
-        val day = orderDTO.creationDate.dayOfMonth
+        val day = order.creationDate.dayOfMonth
         val month =
-            orderDTO.creationDate.month.getDisplayName(TextStyle.FULL, activeLocale)
+            order.creationDate.month.getDisplayName(TextStyle.FULL, activeLocale)
         Column(Modifier.fillMaxWidth(0.2f).padding(horizontal = 5.dp, vertical = 2.dp)) {
             Text(
                 day.toString(),
@@ -124,14 +128,14 @@ fun NormalOrderPreviewRow(
             modifier = Modifier.fillMaxWidth(0.2f).align(Alignment.CenterVertically)
         ) {
             Text(
-                "${getText("label.order")} #${orderDTO.orderId}",
+                "${getText("label.order")} #${order.orderId}",
                 style = appTypography().bodyLarge,
                 modifier = Modifier.align(Alignment.CenterVertically)
             )
             if (showOrderStatus) {
                 Text(
-                    text = orderDTO.status.text.value.uppercase(),
-                    color = orderDTO.status.associatedColor.value,
+                    text = order.status.text.value.uppercase(),
+                    color = order.status.associatedColor.value,
                     style = appTypography().bodyLarge,
                     modifier = Modifier.align(Alignment.CenterVertically).padding(start = 5.dp)
                 )
@@ -146,20 +150,20 @@ fun NormalOrderPreviewRow(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                orderDTO.getTotalPrice().toString() + currency.symbol,
+                order.getTotalPrice().toString() + currency.symbol,
                 style = appTypography().bodyLarge,
                 modifier = Modifier.fillMaxWidth(0.2f)
             )
-            if (orderDTO.status == OrderStatus.DRAFT) {
+            if (order.status == OrderStatus.DRAFT) {
                 TextButton(
                     getText("label.complete"),
-                    onClick = { onComplete(orderDTO) },
+                    onClick = { onComplete(validateProductAvailability(order), order) },
                     backgroundColor = Colors.DarkGreen,
                     borderColor = Colors.DarkGreen
                 )
                 TextButton(
                     getText("label.terminate"),
-                    onClick = { onTerminate(orderDTO) },
+                    onClick = { onTerminate(order) },
                     backgroundColor = Color.Red,
                     borderColor = Color.Red
                 )
@@ -170,21 +174,22 @@ fun NormalOrderPreviewRow(
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun CompactOrderPreviewRow(
-    orderDTO: OrderDTO,
-    onComplete: (OrderDTO) -> Unit,
+fun CompactOrderRow(
+    order: OrderDTO,
+    onComplete: (Boolean, OrderDTO) -> Unit,
     onTerminate: (OrderDTO) -> Unit,
     onSelect: (OrderDTO) -> Unit,
     showOrderStatus: Boolean,
-    currency: Currency
+    currency: Currency,
+    validateProductAvailability: (OrderDTO) -> Boolean
 ) {
     Column(
-        Modifier.onClick { onSelect(orderDTO) }
+        Modifier.onClick { onSelect(order) }
             .fillMaxWidth()
             .border(0.5.dp, Color.Black)
     ) {
         Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
-            val (day, month) = orderDTO.creationDate.let {
+            val (day, month) = order.creationDate.let {
                 it.dayOfMonth to it.month.getDisplayName(
                     TextStyle.FULL_STANDALONE,
                     Locale.ENGLISH
@@ -203,14 +208,14 @@ fun CompactOrderPreviewRow(
             }
 
             Text(
-                "${getText("label.order")}# ${orderDTO.orderId}",
+                "${getText("label.order")}# ${order.orderId}",
                 style = appTypography().bodyMedium
             )
             if (showOrderStatus) {
                 Text(
-                    text = orderDTO.status.text.value.uppercase(),
+                    text = order.status.text.value.uppercase(),
                     style = appTypography().bodyLarge,
-                    color = orderDTO.status.associatedColor.value
+                    color = order.status.associatedColor.value
                 )
             }
 
@@ -222,19 +227,19 @@ fun CompactOrderPreviewRow(
                 style = appTypography().bodyLarge,
             )
             Text(
-                text = orderDTO.getTotalPrice().toString() + currency,
+                text = order.getTotalPrice().toString() + currency,
                 style = appTypography().bodyLarge,
             )
         }
 
-        if (orderDTO.status == OrderStatus.DRAFT) {
+        if (order.status == OrderStatus.DRAFT) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
                 val iconSize = 30.dp
                 IconButton(onClick = {
-                    onComplete(orderDTO)
+                    onComplete(validateProductAvailability(order), order)
                 }, onHoverText = getText("label.complete")) {
                     Image(
                         painterResource(Icons.POSITIVE_SIGN),
@@ -244,7 +249,7 @@ fun CompactOrderPreviewRow(
                 }
 
                 IconButton(onClick = {
-                    onTerminate(orderDTO)
+                    onTerminate(order)
                 }, onHoverText = getText("label.terminate")) {
                     Image(
                         painterResource(Icons.NEGATIVE_SIGN),

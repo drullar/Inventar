@@ -1,6 +1,5 @@
 package io.drullar.inventar.ui.components.views.default
 
-import androidx.annotation.Nullable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -35,12 +34,12 @@ import io.drullar.inventar.shared.ProductCreationDTO
 import io.drullar.inventar.shared.ProductDTO
 import io.drullar.inventar.shared.SortingOrder
 import io.drullar.inventar.ui.components.cards.OrderDetailCardRenderContext
-import io.drullar.inventar.ui.components.cards.OrderDetailPreviewCard
-import io.drullar.inventar.ui.components.cards.OrdersListPreviewCard
+import io.drullar.inventar.ui.components.cards.OrderCreationCard
+import io.drullar.inventar.ui.components.cards.OrdersList
 import io.drullar.inventar.ui.components.cards.ProductDetailedViewCard
 import io.drullar.inventar.ui.components.cards.ProductSummarizedPreviewCard
 import io.drullar.inventar.ui.components.window.dialog.NewProductDialog
-import io.drullar.inventar.ui.components.window.external.OrderPreviewWindow
+import io.drullar.inventar.ui.components.window.external.OrderCreationWindow
 import io.drullar.inventar.ui.data.DialogWindowType
 import io.drullar.inventar.ui.components.window.dialog.ChangeProductQuantityDialog
 import io.drullar.inventar.ui.viewmodel.DefaultViewViewModel
@@ -225,7 +224,7 @@ fun DefaultView(
 
                     is OrderDetailsPreview -> {
                         val order = (preview as OrderDetailsPreview).getData().data
-                        OrderDetailPreviewCard(
+                        OrderCreationCard(
                             order = order,
                             onTerminate = {
                                 viewModel.terminateOrder(order)
@@ -257,12 +256,16 @@ fun DefaultView(
 
                     is OrdersListPreview -> {
                         val draftOrders = (preview as OrdersListPreview).getData().data
-                        OrdersListPreviewCard(
+                        OrdersList(
                             orders = draftOrders,
                             style = layout,
                             activeLocale = settings.language.locale,
-                            onComplete = { completedOrder ->
-                                viewModel.completeOrder(completedOrder)
+                            onComplete = { hasProblems, order ->
+                                if (!hasProblems) viewModel.completeOrder(order)
+                                else viewModel.setActiveDialog(
+                                    DialogWindowType.ORDER_QUANTITY_ISSUES_ALERT,
+                                    OrderWindowPayload(order)
+                                )
                             },
                             onSelect = { selectedOrder ->
                                 viewModel.selectOrder(selectedOrder)
@@ -270,7 +273,12 @@ fun DefaultView(
                             onTerminate = { terminatedOrder ->
                                 viewModel.terminateOrder(terminatedOrder)
                             },
-                            currency = settings.defaultCurrency
+                            currency = settings.defaultCurrency,
+                            validateProductAvailability = { order ->
+                                viewModel.validateProductsAvailability(
+                                    order
+                                )
+                            }
                         )
                     }
                 }
@@ -382,19 +390,26 @@ private fun handleActiveExternalWindowRender(
     onOrderCompletionCallback: (OrderDTO) -> Unit,
     currency: Currency
 ) {
-    val payload by viewModel.getActiveWindowPayload<Nullable>().collectAsState()
+    val payload by viewModel.getActiveWindowPayload<Any>().collectAsState()
 
     when (activeExternalWindowType) {
         ExternalWindowType.ORDER_PREVIEW -> {
             val order = payload.getData() as OrderDTO
-            OrderPreviewWindow(
+            OrderCreationWindow(
                 orderDTO = order,
                 onClose = { viewModel.closeExternalWindow() },
                 onTerminate = { viewModel.terminateOrder(order) },
-                onComplete = {
-                    val completedOrder = viewModel.completeOrder(it)
-                    viewModel.closeExternalWindow()
-                    onOrderCompletionCallback(completedOrder)
+                onComplete = { hasProblems, completedOrder ->
+                    if (!hasProblems) {
+                        val updatedOrder = viewModel.completeOrder(completedOrder)
+                        viewModel.closeExternalWindow()
+                        onOrderCompletionCallback(updatedOrder)
+                    } else {
+                        viewModel.setActiveDialog(
+                            DialogWindowType.ORDER_QUANTITY_ISSUES_ALERT,
+                            OrderWindowPayload(completedOrder)
+                        )
+                    }
                 },
                 onProductValueChange = { product, quantity ->
                     viewModel.changeProductQuantityInOrder(
@@ -402,14 +417,19 @@ private fun handleActiveExternalWindowRender(
                         quantity
                     )
                 },
-                onProductRemove = { product, order ->
+                onProductRemove = { product, targetOrder ->
                     viewModel.removeProductFromOrder(
                         product,
-                        order
+                        targetOrder
                     )
                 },
                 currency = currency,
-                viewModel
+                barcodeScanManager = viewModel,
+                validateProductAvailability = {
+                    viewModel.validateProductsAvailability(
+                        it
+                    )
+                }
             )
         }
 

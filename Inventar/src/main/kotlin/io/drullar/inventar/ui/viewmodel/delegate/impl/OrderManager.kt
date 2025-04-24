@@ -64,6 +64,13 @@ class OrdersDelegateImpl : OrdersDelegate {
         return OrderRepository.update(order.orderId, orderCreationDTO).getOrThrow()
     }
 
+    override fun validateProductsAvailability(order: OrderDTO): Boolean {
+        if (order.status != OrderStatus.DRAFT) return false
+        return order.productToQuantity.any { (product, quantity) ->
+            product.availableQuantity < quantity
+        }
+    }
+
     private fun changeOrderState(order: OrderDTO, status: OrderStatus): OrderDTO {
         val updatedOrder = OrderRepository.update(
             order.orderId,

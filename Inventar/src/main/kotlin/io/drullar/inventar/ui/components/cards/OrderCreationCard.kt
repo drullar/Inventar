@@ -1,12 +1,10 @@
 package io.drullar.inventar.ui.components.cards
 
-import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.LocalScrollbarStyle
 import androidx.compose.foundation.VerticalScrollbar
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,8 +26,14 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -53,7 +57,7 @@ import java.time.format.DateTimeFormatter
 import java.util.Currency
 
 @Composable
-fun OrderDetailPreviewCard(
+fun OrderCreationCard(
     order: OrderDTO,
     onTerminate: () -> Unit,
     onComplete: (Boolean) -> Unit,
@@ -121,12 +125,12 @@ fun OrderDetailPreviewCard(
                             productDTO = product,
                             isModifiable = isDraftOrder,
                             quantity = quantity,
-                            onSelectCallback = { /*TODO*/ },
                             onQuantityChangeCallback = { newQuantity ->
                                 onProductValueChange(product, newQuantity)
                             },
                             onRemoveCallback = { onProductRemove(it) },
-                            showQuantityWarning = (isDraftOrder && product.availableQuantity < quantity)
+                            showQuantityWarning = (isDraftOrder && product.availableQuantity < quantity),
+                            currency = currency
                         )
                     }
                 }
@@ -180,31 +184,44 @@ private fun OrderCreationRow(
     isModifiable: Boolean,
     quantity: Int,
     showQuantityWarning: Boolean,
-    onSelectCallback: () -> Unit,
     onQuantityChangeCallback: (Int) -> Unit,
-    onRemoveCallback: (ProductDTO) -> Unit
+    onRemoveCallback: (ProductDTO) -> Unit,
+    currency: Currency
 ) {
+    var currentQuantity: Int? by remember { mutableStateOf(quantity) }
+    var isFocused by remember { mutableStateOf(false) }
+
+    LaunchedEffect(quantity) {
+        currentQuantity = quantity
+    }
+    LaunchedEffect(currentQuantity) {
+        if (currentQuantity != null && currentQuantity != quantity) {
+            onQuantityChangeCallback(currentQuantity!!)
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .border(1.dp, Color.Black)
-            .height(75.dp)
-            .clickable(onClick = onSelectCallback),
+            .wrapContentHeight()
+            .padding(5.dp),
         verticalArrangement = Arrangement.SpaceAround
     ) {
         Row(
-            modifier = Modifier.padding(5.dp).fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Row(Modifier) {
                 BasicTextField(
-                    value = if (quantity > 0) quantity.toString() else "",
+                    value = currentQuantity?.toString() ?: "",
                     onValueChange = { value ->
                         if (isModifiable) {
-                            if (value.isEmpty()) onQuantityChangeCallback(0)
-                            else value.toIntOrNull()?.let {
-                                onQuantityChangeCallback(it)
+                            if (value.isEmpty()) {
+                                currentQuantity = null
+                            } else value.toIntOrNull()?.let {
+                                currentQuantity = it
                             }
                         }
                     },
@@ -218,6 +235,7 @@ private fun OrderCreationRow(
                         .widthIn(15.dp, 25.dp)
                         .align(Alignment.CenterVertically)
                         .wrapContentWidth()
+                        .onFocusChanged { isFocused = it.isFocused }
                 )
                 Text(
                     "x",
@@ -244,11 +262,33 @@ private fun OrderCreationRow(
                     borderColor = Color.Red
                 )
         }
+
+        Text(
+            text = getText(
+                "label.price.per.unit",
+                (productDTO.sellingPrice.toString() + currency.symbol)
+            ),
+            modifier = Modifier.semantics {
+                contentDescription = "${productDTO.name} price per unit"
+            }
+        )
+        Text(
+            text = StringBuilder(getText("field.total") + " ")
+                .append(productDTO.sellingPrice.multiply(quantity.toBigDecimal()))
+                .append(currency.symbol)
+                .toString(),
+            fontWeight = FontWeight.W500,
+            modifier = Modifier.semantics {
+                contentDescription = "${productDTO.name} total order price"
+            }
+        )
+
         if (showQuantityWarning) {
             Text(
                 text = getText("warning.product.quantity", productDTO.availableQuantity),
                 color = Color.Red,
-                modifier = Modifier.align(Alignment.Start)
+                modifier = Modifier.align(Alignment.Start).padding(top = 5.dp),
+                fontWeight = FontWeight.Bold
             )
         }
     }
@@ -261,12 +301,6 @@ private fun hasQuantityIssue(productsToQuantity: Map<ProductDTO, Int>) = product
     val product = it.key
     val specifiedQuantity = it.value
     product.availableQuantity < specifiedQuantity
-}
-
-@Composable
-@Preview
-private fun OrderCreationRowPreview() {
-    OrderCreationRow(ProductDTO(1, "name", 2.0.toBigDecimal()), true, 3, true, {}, {}, {})
 }
 
 enum class OrderDetailCardRenderContext {

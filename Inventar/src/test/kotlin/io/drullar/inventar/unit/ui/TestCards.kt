@@ -19,7 +19,7 @@ import io.drullar.inventar.shared.OrderDTO
 import io.drullar.inventar.shared.OrderStatus
 import io.drullar.inventar.shared.ProductDTO
 import io.drullar.inventar.ui.components.cards.OrderDetailCardRenderContext
-import io.drullar.inventar.ui.components.cards.OrderDetailPreviewCard
+import io.drullar.inventar.ui.components.cards.OrderCreationCard
 import io.drullar.inventar.ui.components.cards.ProductSummarizedPreviewCard
 import io.drullar.inventar.ui.provider.getText
 import io.drullar.inventar.unit.utils.Factory.createOrder
@@ -88,7 +88,7 @@ class TestCards : AbstractUiTest() {
         setContent {
             var order by remember { mutableStateOf(assertionOrder) }
 
-            OrderDetailPreviewCard(
+            OrderCreationCard(
                 order,
                 onTerminate = {
                     order = order.copy(status = OrderStatus.TERMINATED)

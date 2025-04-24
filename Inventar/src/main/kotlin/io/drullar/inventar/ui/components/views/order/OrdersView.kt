@@ -34,11 +34,15 @@ import io.drullar.inventar.shared.OrderDTO
 import io.drullar.inventar.shared.PagedRequest
 import io.drullar.inventar.shared.SortingOrder
 import io.drullar.inventar.ui.components.button.TextButton
-import io.drullar.inventar.ui.components.cards.CompactOrderPreviewRow
-import io.drullar.inventar.ui.components.cards.NormalOrderPreviewRow
+import io.drullar.inventar.ui.components.cards.CompactOrderRow
+import io.drullar.inventar.ui.components.cards.NormalOrderRow
 import io.drullar.inventar.ui.components.navigation.NavigationDestination
+import io.drullar.inventar.ui.components.window.dialog.AlertDialog
+import io.drullar.inventar.ui.data.DialogWindowType
+import io.drullar.inventar.ui.data.EmptyPayload
 import io.drullar.inventar.ui.viewmodel.OrderViewViewModel
 import io.drullar.inventar.ui.data.OrderDetailsPreview
+import io.drullar.inventar.ui.data.OrderWindowPayload
 import io.drullar.inventar.ui.provider.getLayoutStyle
 import io.drullar.inventar.ui.style.Colors
 import io.drullar.inventar.ui.provider.getText
@@ -48,6 +52,8 @@ const val PAGE_SIZE = 20
 
 @Composable
 fun OrdersView(viewModel: OrderViewViewModel) {
+    val activeDialog = viewModel.getActiveWindow().collectAsState()
+
     val sortingOrder by viewModel._sortingOrder.collectAsState()
     val sortingBy by viewModel._sortBy.collectAsState()
     val settings by viewModel.getSettings().collectAsState()
@@ -179,15 +185,20 @@ fun OrdersView(viewModel: OrderViewViewModel) {
                     }
 
                     if (getLayoutStyle() == LayoutStyle.NORMAL)
-                        NormalOrderPreviewRow(
-                            orderDTO = item,
+                        NormalOrderRow(
+                            order = item,
                             activeLocale = settings.language.locale,
-                            onComplete = {
-                                val itemIndex = orders.indexOf(item)
-                                val updateItem =
-                                    viewModel.completeOrder(item)
-
-                                updateItem(orders, itemIndex, updateItem)
+                            onComplete = { hasProblems, order ->
+                                if (!hasProblems) {
+                                    val itemIndex = orders.indexOf(item)
+                                    val updateItem = viewModel.completeOrder(item)
+                                    updateItem(orders, itemIndex, updateItem)
+                                } else {
+                                    viewModel.setActiveWindow(
+                                        DialogWindowType.ORDER_QUANTITY_ISSUES_ALERT,
+                                        OrderWindowPayload(order)
+                                    )
+                                }
                             },
                             onSelect = { order ->
                                 viewModel.setPreview(OrderDetailsPreview(order))
@@ -200,15 +211,22 @@ fun OrdersView(viewModel: OrderViewViewModel) {
                                 updateItem(orders, itemIndex, updateItem)
                             },
                             showOrderStatus = true,
-                            settings.defaultCurrency
+                            currency = settings.defaultCurrency,
+                            validateProductAvailability = {
+                                viewModel.validateProductsAvailability(
+                                    it
+                                )
+                            }
                         )
-                    else CompactOrderPreviewRow(
-                        orderDTO = item,
-                        onComplete = {
-                            val itemIndex = orders.indexOf(item)
-                            val updateItem =
-                                viewModel.completeOrder(item)
-                            updateItem(orders, itemIndex, updateItem)
+                    else CompactOrderRow(
+                        order = item,
+                        onComplete = { hasProblems, order ->
+                            if (!hasProblems) {
+                                val itemIndex = orders.indexOf(item)
+                                val updateItem =
+                                    viewModel.completeOrder(item)
+                                updateItem(orders, itemIndex, updateItem)
+                            }
                         },
                         onSelect = { order ->
                             viewModel.setPreview(OrderDetailsPreview(order))
@@ -221,7 +239,8 @@ fun OrdersView(viewModel: OrderViewViewModel) {
                             updateItem(orders, itemIndex, updateItem)
                         },
                         showOrderStatus = true,
-                        currency = settings.defaultCurrency
+                        currency = settings.defaultCurrency,
+                        validateProductAvailability = { viewModel.validateProductsAvailability(it) }
                     )
                 }
             }
@@ -233,6 +252,26 @@ fun OrdersView(viewModel: OrderViewViewModel) {
                 )
             )
         }
+    }
+
+    when (activeDialog.value) {
+        DialogWindowType.ORDER_QUANTITY_ISSUES_ALERT -> {
+            val order = viewModel.getWindowPayload<OrderDTO>().value.getData()
+            AlertDialog(
+                text = getText("warning.order.quantity"),
+                resolveButtonText = getText("label.continue.anyway"),
+                cancelButtonText = getText("label.cancel"),
+                onResolve = {
+                    val itemIndex = orders.indexOf(order)
+                    val updatedOrder = viewModel.completeOrder(order)
+                    updateItem(orders, itemIndex, updatedOrder)
+                    viewModel.setActiveWindow(null, EmptyPayload())
+                },
+                onCancel = { viewModel.setActiveWindow(null, EmptyPayload()) }
+            )
+        }
+
+        else -> Unit
     }
 }
 
