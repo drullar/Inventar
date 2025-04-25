@@ -18,6 +18,7 @@ import io.drullar.inventar.ui.utils.Icons
 import io.drullar.inventar.ui.viewmodel.delegate.impl.BarcodeScanManagerInterface
 import io.drullar.inventar.utils.scanner.ScannerInputHandler.handleEvent
 import java.util.Currency
+import java.util.Locale
 
 @Composable
 fun OrderCreationWindow(
@@ -28,6 +29,7 @@ fun OrderCreationWindow(
     onProductValueChange: (ProductDTO, Int) -> Unit,
     onProductRemove: (ProductDTO, OrderDTO) -> Unit,
     currency: Currency,
+    locale: Locale,
     barcodeScanManager: BarcodeScanManagerInterface,
     validateProductAvailability: (OrderDTO) -> Boolean
 ) {
@@ -51,7 +53,8 @@ fun OrderCreationWindow(
             onProductValueChange = onProductValueChange,
             onProductRemove = { product -> onProductRemove(product, orderDTO) },
             renderContext = OrderDetailCardRenderContext.EXTERNAL_WINDOW,
-            currency = currency
+            currency = currency,
+            locale = locale
         )
     }
 }

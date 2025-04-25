@@ -36,7 +36,7 @@ import io.drullar.inventar.shared.SortingOrder
 import io.drullar.inventar.ui.components.cards.OrderDetailCardRenderContext
 import io.drullar.inventar.ui.components.cards.OrderCreationCard
 import io.drullar.inventar.ui.components.cards.OrdersList
-import io.drullar.inventar.ui.components.cards.ProductDetailedViewCard
+import io.drullar.inventar.ui.components.cards.EditProductCard
 import io.drullar.inventar.ui.components.cards.ProductSummarizedPreviewCard
 import io.drullar.inventar.ui.components.window.dialog.NewProductDialog
 import io.drullar.inventar.ui.components.window.external.OrderCreationWindow
@@ -74,8 +74,6 @@ fun DefaultView(
     val draftOrdersCount by viewModel.getDraftOrdersCount().collectAsState()
     val preview by viewModel.preview.collectAsState()
     val settings by viewModel.getSettings().collectAsState()
-    val selectedProductId =
-        remember { (preview as? DetailedProductPreview)?.getData()?.data?.uid }
 
     var page by remember { mutableStateOf(1) }
     val sortBy by viewModel._sortBy.collectAsState()
@@ -181,7 +179,7 @@ fun DefaultView(
                             product,
                             currency = settings.defaultCurrency,
                             onClickCallback = { viewModel.selectProduct(it) },
-                            isSelected = product.uid == selectedProductId,
+                            locale = settings.language.locale,
                             selectionIsAllowed = previewChangeIsAllowed,
                             onEditRequest = { viewModel.selectProduct(it) },
                             onDeleteRequest = {
@@ -203,11 +201,8 @@ fun DefaultView(
                 when (preview) {
                     is DetailedProductPreview -> {
                         val product = (preview as DetailedProductPreview).getData().data
-                        ProductDetailedViewCard(
+                        EditProductCard(
                             productData = product,
-                            onChange = {
-                                viewModel.allowPreviewChange(false)
-                            },
                             onRevert = {
                                 viewModel.allowPreviewChange(true)
                                 product
@@ -250,7 +245,8 @@ fun DefaultView(
                                 viewModel.changeProductQuantityInOrder(product, newQuantity)
                             },
                             renderContext = OrderDetailCardRenderContext.PREVIEW,
-                            currency = settings.defaultCurrency
+                            currency = settings.defaultCurrency,
+                            locale = settings.language.locale
                         )
                     }
 
@@ -429,7 +425,8 @@ private fun handleActiveExternalWindowRender(
                     viewModel.validateProductsAvailability(
                         it
                     )
-                }
+                },
+                locale = viewModel.getSettings().value.language.locale
             )
         }
 
@@ -494,7 +491,7 @@ private fun handleBarcodeScan(viewModel: DefaultViewViewModel) {
 
     when (settings.onScan) {
         OnScan.ADD_TO_ORDER -> {
-            viewModel.showAddProductToOrderDialog(product)
+            viewModel.addProductToOrder(product, 1)
         }
 
         OnScan.RESTOCK -> {

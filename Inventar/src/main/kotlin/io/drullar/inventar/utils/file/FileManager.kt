@@ -31,8 +31,8 @@ class FileManager {
         }
     }
 
-    fun <T : ApplicationFile> getFile(fileType: FileType): T =
-        applicationFiles[fileType]!! as T //TODO redo generics implementation
+    fun getFile(fileType: FileType): ApplicationFile =
+        applicationFiles[fileType]!!
 
     private val applicationFiles = mapOf<FileType, ApplicationFile>(
         FileType.Settings to SettingsFile(appConfigDirectory),

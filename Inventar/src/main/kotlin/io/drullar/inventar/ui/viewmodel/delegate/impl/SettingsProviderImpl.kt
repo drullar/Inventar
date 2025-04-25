@@ -12,7 +12,7 @@ class SettingsProviderImpl(
     private val fileManager: FileManager
 ) : SettingsProvider {
     private var settings: MutableStateFlow<Settings> = MutableStateFlow(
-        fileManager.getFile<SettingsFile>(FileType.Settings).read()
+        (fileManager.getFile(FileType.Settings) as SettingsFile).read()
     )
 
     override fun getSettings(): StateFlow<Settings> {
@@ -21,6 +21,6 @@ class SettingsProviderImpl(
 
     override fun setSettings(settings: Settings) {
         this.settings.value = settings
-        fileManager.getFile<SettingsFile>(FileType.Settings).override(settings)
+        (fileManager.getFile(FileType.Settings) as SettingsFile).override(settings)
     }
 }

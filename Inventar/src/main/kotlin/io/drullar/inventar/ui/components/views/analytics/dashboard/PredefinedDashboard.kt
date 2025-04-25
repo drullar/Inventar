@@ -50,7 +50,6 @@ fun PredefinedDashboard(viewModel: AnalyticsViewModel) {
             item {
                 ProductSalesChart(
                     DpSize(600.dp, 400.dp),
-                    locale,
                     viewModel
                 )
             }
@@ -65,8 +64,8 @@ private fun ProductSalesAnalytics(
     modifier: Modifier = Modifier
 ) {
     DashboardItem(
-        title = "Product sales",
-        summary = "Shows the amount of sales the selected product has for the provided time range",
+        title = getText("label.product.sales"),
+        summary = getText("label.product.sales.description"),
         modifier = modifier
     ) { contentModifier ->
         var fromDate by remember { mutableStateOf(LocalDate.EPOCH) }
@@ -92,7 +91,7 @@ private fun ProductSalesAnalytics(
             }
 
             TextButton(
-                text = "Select product",
+                text = getText("label.select.product"),
                 onClick = { showProductsDialog = true },
                 modifier = Modifier.align(Alignment.CenterStart).padding(top = 30.dp)
             )

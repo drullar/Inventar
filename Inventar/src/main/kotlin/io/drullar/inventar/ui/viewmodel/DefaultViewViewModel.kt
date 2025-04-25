@@ -71,7 +71,8 @@ class DefaultViewViewModel(
     }
 
     fun saveProduct(product: ProductCreationDTO): ProductDTO {
-        return productsRepository.save(product).getOrThrow()
+        val cleanedUpProduct = product.copy(name = product.name.trim())
+        return productsRepository.save(cleanedUpProduct).getOrThrow()
     }
 
     fun showDraftOrders() {
@@ -90,16 +91,17 @@ class DefaultViewViewModel(
         product: ProductDTO,
         quantity: Int
     ) {
-        // If current preview is not OrderCreation and _preview change is not allowed
-        val isChangeAllowed = validatePreviewChange { getPreview().value !is OrderDetailsPreview }
-        if (!isChangeAllowed) return
-        val activeOrder: OrderDTO? = if (getLayoutStyle() == LayoutStyle.COMPACT)
-            getSelectedOrderFromCompactLayout()
-        else
-            getSelectedOrderFromNormalLayout()
+        val activeOrder: OrderDTO? =
+            if (getLayoutStyle() == LayoutStyle.COMPACT) getSelectedOrderFromCompactLayout()
+            else getSelectedOrderFromNormalLayout()
+
+        val currentProductOrderQuantity = activeOrder?.let { it.productToQuantity[product] } ?: 0
 
         val order: OrderDTO =
-            if (activeOrder != null) updateProductsQuantity(activeOrder, mapOf(product to quantity))
+            if (activeOrder != null) updateProductsQuantity(
+                activeOrder,
+                mapOf(product to quantity + currentProductOrderQuantity)
+            )
             else createOrder(mapOf(product to quantity))
 
         if (getLayoutStyle() == LayoutStyle.COMPACT)

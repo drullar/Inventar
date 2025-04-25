@@ -24,14 +24,10 @@ import io.drullar.inventar.ui.components.navigation.NavigationBar
 import io.drullar.inventar.ui.components.navigation.NavigationDestination
 import io.drullar.inventar.ui.components.views.analytics.AnalyticsView
 import io.drullar.inventar.ui.components.views.order.OrdersView
-import io.drullar.inventar.ui.viewmodel.DefaultViewViewModel
 import io.drullar.inventar.ui.components.views.default.DefaultView
 import io.drullar.inventar.ui.components.views.settings.SettingsView
 import io.drullar.inventar.ui.components.window.dialog.ExportResultDialog
 import io.drullar.inventar.ui.components.window.external.DataExportWindow
-import io.drullar.inventar.ui.viewmodel.OrderViewViewModel
-import io.drullar.inventar.ui.viewmodel.delegate.AlertManager
-import io.drullar.inventar.ui.viewmodel.delegate.SharedAppStateDelegate
 import io.drullar.inventar.ui.data.AlertType
 import io.drullar.inventar.ui.data.DialogWindowType
 import io.drullar.inventar.ui.data.EmptyPayload
@@ -40,13 +36,10 @@ import io.drullar.inventar.ui.data.ExternalWindowType
 import io.drullar.inventar.ui.data.WindowPayload
 import io.drullar.inventar.ui.provider.getLayoutStyle
 import io.drullar.inventar.ui.utils.Icons
-import io.drullar.inventar.ui.viewmodel.SettingsViewModel
 import io.drullar.inventar.ui.provider.getText
 import io.drullar.inventar.ui.provider.impl.LayoutStyleProviderImpl
 import io.drullar.inventar.ui.provider.impl.TextProviderImpl
-import io.drullar.inventar.ui.viewmodel.AnalyticsViewModel
 import io.drullar.inventar.ui.viewmodel.delegate.ViewModelFactory
-import io.drullar.inventar.ui.viewmodel.delegate.WindowManagerFacade
 import io.drullar.inventar.ui.viewmodel.delegate.impl.OrderDataCsvExporter
 import io.drullar.inventar.utils.file.DataExportFile
 import io.drullar.inventar.utils.file.ExportRequest
@@ -174,8 +167,12 @@ fun ComposeApp(
         locale = activeLanguage.locale,
         onDataExport = { request ->
             runAsync {
+                val settings = viewModelFactory.settingsViewModel.getSettings().value
                 val file =
-                    OrderDataCsvExporter(viewModelFactory.settingsViewModel.getSettings().value.defaultCurrency).export(
+                    OrderDataCsvExporter(
+                        currency = settings.defaultCurrency,
+                        locale = settings.language.locale
+                    ).export(
                         request
                     )
 

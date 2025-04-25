@@ -1,7 +1,6 @@
 package io.drullar.inventar.shared
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import io.drullar.inventar.ui.provider.getText
 import java.util.Currency
 import java.util.Locale
 
@@ -25,7 +24,14 @@ enum class SupportedLanguage(
     ENGLISH(Locale.ENGLISH, lazy { "English" }),
 
     @JsonProperty("BULGARIAN")
-    BULGARIAN(Locale("BG"), lazy { "Български" })
+    BULGARIAN(Locale("BG"), lazy { "Български" });
+
+    companion object {
+        fun fromLocale(locale: Locale) = when (locale.language) {
+            "BG" -> BULGARIAN
+            else -> ENGLISH
+        }
+    }
 }
 
 enum class OnScan(val textProperty: String) {

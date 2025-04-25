@@ -150,7 +150,7 @@ fun NormalOrderRow(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                order.getTotalPrice().toString() + currency.symbol,
+                order.getTotalPrice().toString() + currency.getSymbol(activeLocale),
                 style = appTypography().bodyLarge,
                 modifier = Modifier.fillMaxWidth(0.2f)
             )

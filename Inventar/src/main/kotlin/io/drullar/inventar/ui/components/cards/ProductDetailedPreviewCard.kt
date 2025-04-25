@@ -1,6 +1,5 @@
 package io.drullar.inventar.ui.components.cards
 
-import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Column
@@ -35,9 +34,8 @@ import io.drullar.inventar.ui.utils.ContentDescription
 import java.math.BigDecimal
 
 @Composable
-fun ProductDetailedViewCard(
+fun EditProductCard(
     productData: ProductDTO,
-    onChange: () -> Unit, // TODO use initialProductData to compare if there is change
     onSave: (ProductDTO) -> Unit,
     onRevert: () -> ProductDTO,
     modifier: Modifier = Modifier

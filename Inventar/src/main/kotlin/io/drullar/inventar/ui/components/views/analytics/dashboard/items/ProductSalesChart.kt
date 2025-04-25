@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import io.drullar.inventar.shared.ProductDTO
 import io.drullar.inventar.ui.components.button.TextButton
 import io.drullar.inventar.ui.components.window.dialog.ProductPickerDialog
+import io.drullar.inventar.ui.provider.getText
 import io.drullar.inventar.ui.style.appTypography
 import io.drullar.inventar.ui.viewmodel.AnalyticsViewModel
 import org.jfree.chart.ChartFactory
@@ -34,12 +35,12 @@ import org.jfree.chart.ChartPanel
 import org.jfree.chart.title.TextTitle
 import org.jfree.data.category.DefaultCategoryDataset
 import java.time.LocalDate
-import java.util.Locale
 
 @Composable
-fun ProductSalesChart(chartSize: DpSize, locale: Locale, viewModel: AnalyticsViewModel) {
+fun ProductSalesChart(chartSize: DpSize, viewModel: AnalyticsViewModel) {
     DashboardItem(
-        title = "Product overtime sales"
+        title = getText("label.product.period.sales"),
+        summary = getText("label.product.period.sales.description")
     ) {
         var showDropDownMenu by remember { mutableStateOf(false) }
         var currentPeriodSelection by remember { mutableStateOf(Period.DAYS) }
@@ -82,7 +83,7 @@ fun ProductSalesChart(chartSize: DpSize, locale: Locale, viewModel: AnalyticsVie
                     modifier = Modifier.widthIn(75.dp, 110.dp).padding(end = 10.dp)
                 )
                 TextButton(
-                    text = currentPeriodSelection.name,
+                    text = getText(currentPeriodSelection.textProperty),
                     onClick = {
                         showDropDownMenu = !showDropDownMenu
                     },
@@ -99,7 +100,7 @@ fun ProductSalesChart(chartSize: DpSize, locale: Locale, viewModel: AnalyticsVie
                 }
             }
             TextButton(
-                text = "Select product",
+                text = getText("label.select.product"),
                 onClick = { showProductsDialog = true },
                 modifier = Modifier.padding(top = 30.dp).align(Alignment.BottomStart)
             )
@@ -120,7 +121,7 @@ fun ProductSalesChart(chartSize: DpSize, locale: Locale, viewModel: AnalyticsVie
                         ChartFactory.createLineChart(
                             chartTitle,
                             chartXAxisText,
-                            "Sales",
+                            getText("label.sales"),
                             dataset
                         )
                     )
@@ -142,9 +143,9 @@ fun ProductSalesChart(chartSize: DpSize, locale: Locale, viewModel: AnalyticsVie
 }
 
 private fun calculateXAxisText(timeValue: Int, period: Period): String {
-    return if (period == Period.MONTHS || period == Period.YEAR && timeValue == 1) "Month"
-    else if (period == Period.YEAR) "Year"
-    else "Day"
+    return if (period == Period.MONTHS || period == Period.YEAR && timeValue == 1) getText("period.month")
+    else if (period == Period.YEAR) getText("period.year")
+    else getText("period.day")
 }
 
 private fun setDataSet(
@@ -185,7 +186,7 @@ private fun setDataSet(
         val sale = viewModel.getSalesForProduct(product, startDate, untilDate)
         dataSet.addValue(
             sale.soldQuantity,
-            "Sales",
+            getText("label.sales"),
             when (period) {
                 Period.YEAR -> {
                     untilDate.year
@@ -203,8 +204,8 @@ private fun setDataSet(
     }
 }
 
-enum class Period {
-    YEAR,
-    MONTHS,
-    DAYS
+enum class Period(val textProperty: String) {
+    YEAR("period.year"),
+    MONTHS("period.month"),
+    DAYS("period.day")
 }

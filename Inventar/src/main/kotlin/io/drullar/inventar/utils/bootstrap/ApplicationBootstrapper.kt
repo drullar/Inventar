@@ -11,7 +11,7 @@ class ApplicationBootstrapper(
 
     override fun bootstrap() {
         fileManager.setupMandatoryFiles()
-        val databaseFile = fileManager.getFile<DatabaseFile>(FileType.Database)
-        databaseBootstrapperFactory(databaseFile).bootstrap()
+        val databaseFile = fileManager.getFile(FileType.Database)
+        databaseBootstrapperFactory(databaseFile as DatabaseFile).bootstrap()
     }
 }

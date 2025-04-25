@@ -55,6 +55,7 @@ import io.drullar.inventar.ui.style.roundedBorderShape
 import io.drullar.inventar.ui.provider.getText
 import java.time.format.DateTimeFormatter
 import java.util.Currency
+import java.util.Locale
 
 @Composable
 fun OrderCreationCard(
@@ -64,7 +65,8 @@ fun OrderCreationCard(
     onProductValueChange: (ProductDTO, Int) -> Unit,
     onProductRemove: (ProductDTO) -> Unit,
     renderContext: OrderDetailCardRenderContext,
-    currency: Currency
+    currency: Currency,
+    locale: Locale
 ) {
     val productsMap = order.productToQuantity
 
@@ -130,7 +132,8 @@ fun OrderCreationCard(
                             },
                             onRemoveCallback = { onProductRemove(it) },
                             showQuantityWarning = (isDraftOrder && product.availableQuantity < quantity),
-                            currency = currency
+                            currency = currency,
+                            locale = locale
                         )
                     }
                 }
@@ -150,7 +153,11 @@ fun OrderCreationCard(
 
         Column(modifier = Modifier.fillMaxWidth().wrapContentHeight()) {
             Text(
-                text = "${getText("field.total.price")}: ${order.getTotalPrice()} ${currency.symbol}",
+                text = "${getText("field.total.price")}: ${order.getTotalPrice()} ${
+                    currency.getSymbol(
+                        locale
+                    )
+                }",
                 textAlign = TextAlign.Start,
                 fontWeight = FontWeight.W100,
                 fontSize = TextUnit(30f, TextUnitType.Sp)
@@ -186,7 +193,8 @@ private fun OrderCreationRow(
     showQuantityWarning: Boolean,
     onQuantityChangeCallback: (Int) -> Unit,
     onRemoveCallback: (ProductDTO) -> Unit,
-    currency: Currency
+    currency: Currency,
+    locale: Locale
 ) {
     var currentQuantity: Int? by remember { mutableStateOf(quantity) }
     var isFocused by remember { mutableStateOf(false) }
@@ -266,7 +274,7 @@ private fun OrderCreationRow(
         Text(
             text = getText(
                 "label.price.per.unit",
-                (productDTO.sellingPrice.toString() + currency.symbol)
+                (productDTO.sellingPrice.toString() + currency.getSymbol(locale))
             ),
             modifier = Modifier.semantics {
                 contentDescription = "${productDTO.name} price per unit"
@@ -275,7 +283,7 @@ private fun OrderCreationRow(
         Text(
             text = StringBuilder(getText("field.total") + " ")
                 .append(productDTO.sellingPrice.multiply(quantity.toBigDecimal()))
-                .append(currency.symbol)
+                .append(currency.getSymbol(locale))
                 .toString(),
             fontWeight = FontWeight.W500,
             modifier = Modifier.semantics {

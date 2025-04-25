@@ -7,6 +7,7 @@ import io.drullar.inventar.shared.SupportedLanguage
 import io.drullar.inventar.utils.parser.JsonParser
 import java.io.File
 import java.util.Currency
+import java.util.Locale
 
 class SettingsFile(
     private val parentDirectory: File
@@ -37,7 +38,7 @@ class SettingsFile(
     private companion object {
         val defaultSettings = Settings(
             defaultCurrency = Currency.getInstance("BGN"),
-            language = SupportedLanguage.ENGLISH,
+            language = SupportedLanguage.fromLocale(Locale.getDefault()),
             onScan = OnScan.ADD_TO_ORDER
         )
     }
