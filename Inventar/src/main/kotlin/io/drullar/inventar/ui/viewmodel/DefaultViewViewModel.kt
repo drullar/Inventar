@@ -1,7 +1,9 @@
 package io.drullar.inventar.ui.viewmodel
 
+import androidx.compose.runtime.collectAsState
 import io.drullar.inventar.shared.OrderStatus
 import io.drullar.inventar.persistence.repositories.impl.ProductsRepository
+import io.drullar.inventar.shared.OnScan
 import io.drullar.inventar.shared.OrderDTO
 import io.drullar.inventar.shared.PagedRequest
 import io.drullar.inventar.shared.ProductCreationDTO
@@ -11,6 +13,7 @@ import io.drullar.inventar.ui.viewmodel.delegate.AlertManager
 import io.drullar.inventar.ui.data.DialogWindowType
 import io.drullar.inventar.ui.viewmodel.delegate.SharedAppStateDelegate
 import io.drullar.inventar.ui.data.AlertType
+import io.drullar.inventar.ui.data.BarcodePayload
 import io.drullar.inventar.ui.data.DetailedProductPreview
 import io.drullar.inventar.ui.data.EmptyPayload
 import io.drullar.inventar.ui.data.ExternalWindowType
@@ -26,8 +29,15 @@ import io.drullar.inventar.ui.viewmodel.delegate.WindowManagerFacade
 import io.drullar.inventar.ui.viewmodel.delegate.impl.BarcodeScanManager
 import io.drullar.inventar.ui.viewmodel.delegate.impl.BarcodeScanManagerInterface
 import io.drullar.inventar.ui.viewmodel.delegate.impl.WindowManagerFacadeImpl
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.onSubscription
+import kotlinx.coroutines.launch
 
 /**
  * View-Model used by [DefaultView] to persist UI state and handle business logic
@@ -36,7 +46,7 @@ class DefaultViewViewModel(
     sharedAppStateDelegate: SharedAppStateDelegate,
     alertManagerDelegate: AlertManager,
     settingsProvider: SettingsProvider,
-    barcodeScanManager: BarcodeScanManager,
+    private val barcodeScanManager: BarcodeScanManager,
     private val ordersDelegate: OrdersDelegate,
     windowManager: WindowManagerFacade = WindowManagerFacadeImpl(),
     private val productsRepository: ProductsRepository = ProductsRepository,
@@ -56,6 +66,48 @@ class DefaultViewViewModel(
     private val sortBy = MutableStateFlow(ProductsRepository.SortBy.NAME)
     val _sortBy = sortBy.asStateFlow()
     var preview = getPreview().asStateFlow()
+
+    private val scope = CoroutineScope(Dispatchers.Default)
+
+    init {
+        collectFlows()
+    }
+
+    private fun collectFlows() {
+        scope.launch {
+            barcodeScanManager.getLastScanTime().collect {
+                if (it != null) handleBarcodeScan()
+            }
+        }
+    }
+
+    private fun handleBarcodeScan() {
+        val lastScannedBarcode = barcodeScanManager.getLastScannedBarcode().value
+        if (lastScannedBarcode.isBlank()) return
+
+        val product = searchProducts(
+            lastScannedBarcode,
+            PagedRequest(0, 1, SortingOrder.DESCENDING, ProductsRepository.SortBy.NAME)
+        ).items.firstOrNull()
+
+        if (product == null) {
+            setActiveDialog(
+                DialogWindowType.NEW_PRODUCT,
+                BarcodePayload(lastScannedBarcode)
+            )
+            return
+        }
+
+        when (getSettings().value.onScan) {
+            OnScan.ADD_TO_ORDER -> {
+                addProductToOrder(product, 1)
+            }
+
+            OnScan.RESTOCK -> {
+                setActiveDialog(DialogWindowType.CHANGE_PRODUCT_QUANTITY, ProductPayload(product))
+            }
+        }
+    }
 
     fun updateProduct(product: ProductDTO): ProductDTO {
         _previewChangeIsAllowed.value = true
@@ -81,10 +133,6 @@ class DefaultViewViewModel(
 
     fun showAddProductToOrderDialog(product: ProductDTO) {
         setActiveDialog(DialogWindowType.ADD_PRODUCT_TO_ORDER, ProductPayload(product))
-    }
-
-    fun showChangeProductQuantity(product: ProductDTO) {
-        setActiveDialog(DialogWindowType.CHANGE_PRODUCT_QUANTITY, ProductPayload(product))
     }
 
     fun addProductToOrder(
@@ -186,11 +234,6 @@ class DefaultViewViewModel(
 
     fun closeExternalWindow() {
         setActiveWindow(null, EmptyPayload())
-    }
-
-    fun getCurrentOrderTargetProductQuantity(product: ProductDTO): Int? {
-        val activeOrder = getSelectedOrderFromNormalLayout() ?: getSelectedOrderFromCompactLayout()
-        return activeOrder?.let { it.productToQuantity[product] }
     }
 
     fun fetchProducts(

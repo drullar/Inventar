@@ -1,7 +1,6 @@
 package io.drullar.inventar.ui.components.views.analytics.dashboard.items
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
@@ -21,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Window
 import io.drullar.inventar.ui.components.button.IconButton
 import io.drullar.inventar.ui.components.button.TextButton
 import io.drullar.inventar.ui.provider.getText
@@ -77,22 +77,24 @@ fun DateSelector(
     }
 
     if (showDatePicker) {
-        DatePickerDialog(
-            onDismissRequest = { showDatePicker = false },
-            confirmButton = {
-                TextButton(getText("label.save"), {
-                    datePickerState.selectedDateMillis?.let {
-                        val selectedDate = LocalDate.ofInstant(
-                            Instant.ofEpochMilli(it),
-                            ZoneId.systemDefault()
-                        )
-                        onDateSelect(selectedDate)
-                        showDatePicker = false
-                    }
-                })
+        Window(onCloseRequest = { showDatePicker = false }, alwaysOnTop = true) {
+            DatePickerDialog(
+                onDismissRequest = { showDatePicker = false },
+                confirmButton = {
+                    TextButton(getText("label.save"), {
+                        datePickerState.selectedDateMillis?.let {
+                            val selectedDate = LocalDate.ofInstant(
+                                Instant.ofEpochMilli(it),
+                                ZoneId.systemDefault()
+                            )
+                            onDateSelect(selectedDate)
+                            showDatePicker = false
+                        }
+                    })
+                }
+            ) {
+                DatePicker(datePickerState)
             }
-        ) {
-            DatePicker(datePickerState)
         }
     }
 }

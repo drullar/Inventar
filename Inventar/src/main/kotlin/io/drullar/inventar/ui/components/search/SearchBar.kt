@@ -2,6 +2,8 @@ package io.drullar.inventar.ui.components.search
 
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.border
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -34,6 +36,8 @@ fun SearchBar(
 ) {
     var searchQuery by remember { mutableStateOf("") }
     val fontSize = 14
+    val interactionSource = remember { MutableInteractionSource() }
+    val isSearchBarFocused = interactionSource.collectIsFocusedAsState()
 
     Row(
         modifier = modifier
@@ -61,18 +65,14 @@ fun SearchBar(
                 }
                 innerTextField() // has to be called as per the documentation
             },
-            keyboardActions = KeyboardActions(onSearch = { onSearch(searchQuery) })
+            keyboardActions = KeyboardActions(onSearch = { onSearch(searchQuery) }),
+            interactionSource = interactionSource
         )
         TextButton(
-            getText("label.search"),
+            text = getText("label.search"),
             onClick = { onSearch(searchQuery) },
-            modifier = Modifier.padding(horizontal = 5.dp)
+            modifier = Modifier.padding(horizontal = 5.dp),
+            focusable = isSearchBarFocused.value
         )
     }
-}
-
-@Preview
-@Composable
-private fun SearchbarPreview() {
-    SearchBar(modifier = Modifier.height(50.dp), {})
 }

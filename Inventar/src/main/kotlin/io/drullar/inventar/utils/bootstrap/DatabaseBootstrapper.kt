@@ -1,7 +1,9 @@
 package io.drullar.inventar.utils.bootstrap
 
+import io.drullar.inventar.persistence.repositories.impl.OrderRepository.withTransaction
 import io.drullar.inventar.utils.TableScanner
 import io.drullar.inventar.utils.file.DatabaseFile
+import jdk.internal.org.jline.utils.ExecHelper.exec
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 
@@ -35,7 +37,6 @@ abstract class AbstractDatabaseBootstrapper : DatabaseBootstrapper {
     private fun resolveSchemaChanges() {
         transaction {
             val tables = databaseTables.toTypedArray()
-            
             val updateSchemaStatements = SchemaUtils.addMissingColumnsStatements(*tables)
             if (updateSchemaStatements.isNotEmpty()) execInBatch(updateSchemaStatements)
 

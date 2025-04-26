@@ -3,11 +3,8 @@ package io.drullar.inventar.persistence.schema.associative
 import io.drullar.inventar.persistence.Relation
 import io.drullar.inventar.persistence.schema.Orders
 import io.drullar.inventar.persistence.schema.Products
-import org.jetbrains.exposed.sql.Column
-import org.jetbrains.exposed.sql.DecimalColumnType
 import org.jetbrains.exposed.sql.ReferenceOption
 import org.jetbrains.exposed.sql.Table
-import java.math.BigDecimal
 
 @Relation
 object ProductOrderAssociation : Table("product_order") {

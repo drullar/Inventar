@@ -12,7 +12,7 @@ data class Page<T>(
 data class PagedRequest<S : ISortBy>(
     val page: Int,
     val pageSize: Int,
-    val order: SortingOrder,
+    val order: SortingOrder = SortingOrder.ASCENDING,
     val sortBy: S
 )
 

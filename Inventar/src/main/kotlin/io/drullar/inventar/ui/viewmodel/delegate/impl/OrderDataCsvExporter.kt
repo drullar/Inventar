@@ -6,11 +6,9 @@ import io.drullar.inventar.shared.OrderStatus
 import io.drullar.inventar.ui.viewmodel.delegate.DataExporter
 import io.drullar.inventar.utils.file.DataExportFile
 import io.drullar.inventar.utils.file.ExportRequest
-import java.util.Currency
-import java.util.Locale
 import java.util.StringJoiner
 
-class OrderDataCsvExporter(private val currency: Currency, private val locale: Locale) :
+class OrderDataCsvExporter :
     DataExporter<ExportRequest, DataExportFile> {
     private val orderRepository = OrderRepository
 
@@ -25,8 +23,6 @@ class OrderDataCsvExporter(private val currency: Currency, private val locale: L
             val linesToAppend = orderDataToCsvString(it)
             file.append(linesToAppend.joinToString("\n").plus("\n"))
         }
-
-        println("Exported orders data to: ${file.getAbsolutePath()}")
         return file
     }
 
@@ -37,16 +33,16 @@ class OrderDataCsvExporter(private val currency: Currency, private val locale: L
             StringJoiner(",")
                 .add(order.orderId.toString())
                 .add(order.creationDate.toString())
+                .add(product.uid.toString())
                 .add(product.name)
                 .add(quantity.toString())
                 .add(order.getTotalPrice().toString())
-                .add(currency.getSymbol(locale))
                 .add(product.sellingPrice.toString())
                 .toString()
         }
 
     companion object {
         const val ORDER_DATA_CSV_KEYS =
-            "order,orderDate,productName,soldQuantity,orderSum,currency,productPrice"
+            "order,orderDate,productNumber,productName,soldQuantity,orderSum,productPrice"
     }
 }

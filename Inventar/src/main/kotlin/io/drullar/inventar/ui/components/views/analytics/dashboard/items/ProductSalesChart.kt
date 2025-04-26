@@ -26,7 +26,7 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import io.drullar.inventar.shared.ProductDTO
 import io.drullar.inventar.ui.components.button.TextButton
-import io.drullar.inventar.ui.components.window.dialog.ProductPickerDialog
+import io.drullar.inventar.ui.components.window.external.ProductPickerDialog
 import io.drullar.inventar.ui.provider.getText
 import io.drullar.inventar.ui.style.appTypography
 import io.drullar.inventar.ui.viewmodel.AnalyticsViewModel
@@ -93,7 +93,7 @@ fun ProductSalesChart(chartSize: DpSize, viewModel: AnalyticsViewModel) {
                         onDismissRequest = { showDropDownMenu = false }) {
                         Period.entries.forEach {
                             DropdownMenuItem(
-                                text = { Text(it.name) },
+                                text = { Text(getText(it.textProperty)) },
                                 onClick = { currentPeriodSelection = it })
                         }
                     }

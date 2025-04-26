@@ -60,8 +60,7 @@ fun DataExportWindow(
 
         Column {
             Text(
-                "To export order history select the date wanted date range and press the export button",
-                textAlign = TextAlign.Justify,
+                getText("how.to.export"),
                 style = appTypography().bodyMedium
             )
 
@@ -79,14 +78,15 @@ fun DataExportWindow(
                 onDateSelect = { untilDate = it }
             )
 
-            Row {
-                Text(selectedDirectory?.absolutePathString() ?: getText("label.select.directory"))
-                TextButton(text = getText("label.select"),
-                    onClick = {
-                        showFilePicker = true
-                    }
-                )
-            }
+            Text(
+                text = selectedDirectory?.absolutePathString() ?: getText("label.select.directory"),
+                style = appTypography().bodyMedium
+            )
+            TextButton(text = getText("label.select"),
+                onClick = {
+                    showFilePicker = true
+                }
+            )
 
             if (selectedDirectory != null && !isExporting)
                 TextButton(

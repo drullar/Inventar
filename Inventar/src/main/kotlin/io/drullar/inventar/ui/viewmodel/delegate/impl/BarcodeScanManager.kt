@@ -37,6 +37,8 @@ class BarcodeScanManager : BarcodeScanManagerInterface {
     }
 
     override fun getLastScannedBarcode(): StateFlow<String> {
-        return lastScannedBarcode
+        return lastScannedBarcode.also {
+            barcodeBuffer = "" // clear buffer once this is collected
+        }
     }
 }

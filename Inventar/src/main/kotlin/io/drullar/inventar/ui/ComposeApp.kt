@@ -169,10 +169,7 @@ fun ComposeApp(
             runAsync {
                 val settings = viewModelFactory.settingsViewModel.getSettings().value
                 val file =
-                    OrderDataCsvExporter(
-                        currency = settings.defaultCurrency,
-                        locale = settings.language.locale
-                    ).export(
+                    OrderDataCsvExporter().export(
                         request
                     )
 

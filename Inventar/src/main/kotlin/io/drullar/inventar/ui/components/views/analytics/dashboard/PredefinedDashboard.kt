@@ -28,7 +28,7 @@ import io.drullar.inventar.ui.viewmodel.AnalyticsViewModel
 import java.time.LocalDate
 import io.drullar.inventar.ui.components.views.analytics.dashboard.items.DashboardItem
 import io.drullar.inventar.ui.components.views.analytics.dashboard.items.ProductSalesChart
-import io.drullar.inventar.ui.components.window.dialog.ProductPickerDialog
+import io.drullar.inventar.ui.components.window.external.ProductPickerDialog
 import io.drullar.inventar.ui.provider.getText
 import java.util.Locale
 

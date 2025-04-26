@@ -1,4 +1,4 @@
-package io.drullar.inventar.ui.components.window.dialog
+package io.drullar.inventar.ui.components.window.external
 
 import androidx.compose.foundation.ScrollbarAdapter
 import androidx.compose.foundation.VerticalScrollbar
@@ -97,9 +97,7 @@ fun ProductPickerDialog(
                     )
                 }
         }
-
-        println(scrollState.layoutInfo.visibleItemsInfo.lastOrNull()?.index)
-
+        
         OutlinedCard(modifier = Modifier.fillMaxWidth().fillMaxHeight()) {
             SearchBar {
                 searchQuery = it

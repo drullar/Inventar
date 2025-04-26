@@ -7,6 +7,7 @@ import io.drullar.inventar.persistence.schema.Products
 import io.drullar.inventar.persistence.schema.Products.uid
 import io.drullar.inventar.persistence.schema.Products.availableQuantity
 import io.drullar.inventar.persistence.schema.Products.barcode
+import io.drullar.inventar.persistence.schema.Products.isMarkedForDeletion
 import io.drullar.inventar.persistence.schema.Products.name
 import io.drullar.inventar.persistence.schema.Products.providerPrice
 import io.drullar.inventar.persistence.schema.Products.sellingPrice
@@ -118,34 +119,43 @@ object ProductsRepository :
         searchQuery: String,
         pageRequest: PagedRequest<SortBy>
     ): Result<Page<ProductDTO>> = result {
-        val shouldSearchById = searchQuery.toIntOrNull() != null
-        var count: Long = 0
-        val items = withTransaction {
-            val searchPattern = "%$searchQuery%"
-            table.selectAll().where {
-                table.name.like(searchPattern).or {
-                    table.barcode.like(searchPattern)
-                }.let { predicate ->
-                    if (shouldSearchById) predicate.or {
-                        table.uid.eq(searchQuery.toInt())
+        var totalMatchingItems: Long = 0
+        val searchByIdOnly =
+            searchQuery.firstOrNull() == '#' && searchQuery.removePrefix("#").toIntOrNull() != null
+
+        val query = withTransaction {
+            if (searchByIdOnly)
+                searchByUid(searchQuery.removePrefix("#").toInt())
+            else {
+                val shouldSearchById = searchQuery.toIntOrNull() != null
+                val searchPattern = "%${searchQuery.lowercase()}%"
+                table.selectAll().where {
+                    table.name.lowerCase().like(searchPattern).or {
+                        table.barcode.like(searchPattern)
+                    }.let { predicate ->
+                        if (shouldSearchById) predicate.or {
+                            table.uid.eq(searchQuery.toInt())
+                        }
+                        else predicate
                     }
-                    else predicate
                 }
-            }.also {
-                count = it.count()
-            }.limit(
-                pageRequest.pageSize,
-                ((pageRequest.page - 1) * pageRequest.pageSize).toLong()
-            ).map {
-                transformResultRowToModel(it)
             }
         }
+
+        val items = withTransaction {
+            totalMatchingItems = query.count()
+            query.limit(
+                pageRequest.pageSize,
+                ((pageRequest.page - 1) * pageRequest.pageSize).toLong()
+            ).map { transformResultRowToModel(it) }
+        }
+
         Page(
             pageNumber = pageRequest.page,
-            isLastPage = pageRequest.pageSize * pageRequest.page >= count,
+            isLastPage = pageRequest.pageSize * pageRequest.page >= totalMatchingItems,
             items = items,
             itemsPerPage = pageRequest.pageSize,
-            totalItems = count
+            totalItems = totalMatchingItems
         )
     }
 
@@ -213,6 +223,11 @@ object ProductsRepository :
             it[isMarkedForDeletion] = true
         }
     }
+
+    private fun searchByUid(uid: Int) =
+        Products.selectAll().where {
+            Products.uid.eq(uid)
+        }
 
     enum class SortBy : ISortBy {
         NAME,

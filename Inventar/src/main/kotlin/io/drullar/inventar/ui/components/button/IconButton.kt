@@ -14,6 +14,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
@@ -24,6 +25,7 @@ import io.drullar.inventar.ui.style.highlightedLabelSmall
 @Composable
 fun IconButton(
     onClick: () -> Unit,
+    focusable: Boolean = false,
     modifier: Modifier = Modifier,
     onHoverText: String? = null,
     buttonColors: ButtonColors? = null,
@@ -42,7 +44,11 @@ fun IconButton(
                 Color.White,
                 Color.LightGray,
                 Color.LightGray
-            )
+            ),
+            interactionSource = interactionSource,
+            modifier = Modifier.focusProperties {
+                canFocus = focusable // Used to prevent the button from reacting on Key.Enter event
+            }
         ) {
             icon()
         }

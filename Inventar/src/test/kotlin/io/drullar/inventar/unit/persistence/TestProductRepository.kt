@@ -5,6 +5,7 @@ import assertk.assertions.contains
 import assertk.assertions.containsExactly
 import assertk.assertions.containsOnly
 import assertk.assertions.extracting
+import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
 import assertk.assertions.isFailure
 import assertk.assertions.isFalse
@@ -21,6 +22,7 @@ import io.drullar.inventar.shared.SortingOrder
 import io.drullar.inventar.unit.utils.Factory.createOrder
 import io.drullar.inventar.unit.utils.Factory.createProduct
 import org.junit.After
+import org.junit.Ignore
 import org.junit.Test
 import java.math.BigDecimal
 
@@ -314,6 +316,56 @@ class TestProductRepository : AbstractPersistenceTest() {
         ).getOrThrow().items
 
         assertThat(searchById).extracting { it.name }.containsOnly("Loreal Paris")
+    }
+
+    @Test
+    fun searchByIdOnly() {
+        val product1 = productRepository.save(createProduct(1).toProductCreationDTO()).getOrThrow()
+        val product2 = productRepository.save(createProduct(2).toProductCreationDTO()).getOrThrow()
+        val product3 = productRepository.save(createProduct(3).toProductCreationDTO()).getOrThrow()
+        assertThat(product1.uid).isEqualTo(1)
+        assertThat(product2.uid).isEqualTo(2)
+        assertThat(product3.uid).isEqualTo(3)
+
+        val search1 = productRepository.search(
+            "#1",
+            PagedRequest(
+                1,
+                10,
+                order = SortingOrder.ASCENDING,
+                sortBy = ProductsRepository.SortBy.ID
+            )
+        ).getOrThrow()
+
+        assertThat(search1.items).extracting { it.uid }.containsOnly(1)
+
+        val search2 = productRepository.search(
+            "#10",
+            PagedRequest(
+                1,
+                10,
+                order = SortingOrder.ASCENDING,
+                sortBy = ProductsRepository.SortBy.ID
+            )
+        ).getOrThrow()
+        assertThat(search2.items).extracting { it.uid }.isEmpty()
+    }
+
+    @Ignore // FIXME https://github.com/drullar/Inventar-kt/issues/6
+    @Test
+    fun searchForCyrillicProductName() {
+        val product1 =
+            productRepository.save(createProduct(name = "Продукт").toProductCreationDTO())
+                .getOrThrow()
+        assertThat(product1.name).isEqualTo("Продукт")
+        assertThat(productRepository.getById(product1.uid).getOrThrow().name).isEqualTo("Продукт")
+
+        val search = productRepository.search(
+            searchQuery = "Продукт",
+            PagedRequest(1, 10, sortBy = ProductsRepository.SortBy.NAME)
+        ).getOrThrow()
+
+        assertThat(search.items).extracting { it.name }.containsExactly("Продукт")
     }
 
     @Test

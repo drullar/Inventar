@@ -8,7 +8,7 @@ import io.drullar.inventar.utils.file.DataExportFile
 fun ExportResultDialog(exportFile: DataExportFile, onAcknowledge: () -> Unit) {
     SingleActionAlertDialog(
         text = getText("label.export.completed", exportFile.getAbsolutePath()),
-        actionButtonText = getText("label.acknowledge"),
+        actionButtonText = "OK",
         onAction = onAcknowledge
     )
 }

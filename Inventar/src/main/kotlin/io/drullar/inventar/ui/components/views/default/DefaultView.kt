@@ -70,7 +70,6 @@ fun DefaultView(
 ) {
     val activeDialogWindow by viewModel.getActiveDialog().collectAsState()
     val activeExternalWindow by viewModel.getActiveWindow().collectAsState()
-    val previewChangeIsAllowed by viewModel.previewChangeIsAllowed.collectAsState()
     val draftOrdersCount by viewModel.getDraftOrdersCount().collectAsState()
     val preview by viewModel.preview.collectAsState()
     val settings by viewModel.getSettings().collectAsState()
@@ -78,28 +77,44 @@ fun DefaultView(
     var page by remember { mutableStateOf(1) }
     val sortBy by viewModel._sortBy.collectAsState()
     val sortingOrder by viewModel._sortingOrder.collectAsState()
+    var totalProducts by remember { mutableStateOf(0) }
     val products = remember {
         mutableStateListOf<ProductDTO>().apply {
             addAll(
                 viewModel.fetchProducts(
                     PagedRequest(page, PRODUCTS_PER_PAGE, sortingOrder, sortBy)
-                ).items
+                ).let {
+                    totalProducts = it.totalItems.toInt()
+                    it.items
+                }
             )
         }
     }
 
-    val lastScanTime by viewModel.getLastScanTime().collectAsState()
-
-    LaunchedEffect(lastScanTime) {
-        snapshotFlow { lastScanTime }
-            .drop(1) // Ignore on initial composition, otherwise when switching back and forth a dialog window based on the scan will be rendered
-            .collect {
-                handleBarcodeScan(viewModel)
-            }
-    }
-
     // Handle switching between Normal and Compact layout
     handleLayoutStyleChange(layout, viewModel)
+
+    // Lambdas
+    val onProductSelectCallback = remember {
+        { product: ProductDTO ->
+            viewModel.selectProduct(
+                product
+            )
+        }
+    }
+
+    val onProductDeleteCallback: (ProductDTO) -> Unit = remember {
+        { product: ProductDTO ->
+            viewModel.deleteProduct(product)
+            products.remove(product)
+        }
+    }
+
+    val onAddProductToOrderLambda = remember {
+        { product: ProductDTO ->
+            viewModel.showAddProductToOrderDialog(product)
+        }
+    }
 
     Column(modifier = modifier) {
         Row(
@@ -161,7 +176,9 @@ fun DefaultView(
                         key = { _, product -> product.hashCode() }
                     ) { _, product ->
 
-                        if (scrollState.layoutInfo.visibleItemsInfo.lastOrNull()?.index == products.size - 1) {
+                        if (scrollState.layoutInfo.visibleItemsInfo.lastOrNull()?.index == products.size - 1
+                            && totalProducts > products.size
+                        ) {
                             page += 1
                             products.addAll(
                                 viewModel.fetchProducts(
@@ -176,17 +193,13 @@ fun DefaultView(
                         }
 
                         ProductSummarizedPreviewCard(
-                            product,
+                            productData = product,
                             currency = settings.defaultCurrency,
-                            onClickCallback = { viewModel.selectProduct(it) },
+                            onClickCallback = onProductSelectCallback,
                             locale = settings.language.locale,
-                            selectionIsAllowed = previewChangeIsAllowed,
-                            onEditRequest = { viewModel.selectProduct(it) },
-                            onDeleteRequest = {
-                                viewModel.deleteProduct(it)
-                                products.remove(product)
-                            },
-                            onAddToOrderRequest = { viewModel.showAddProductToOrderDialog(it) }
+                            onEditRequest = onProductSelectCallback,
+                            onDeleteRequest = onProductDeleteCallback,
+                            onAddToOrderRequest = onAddProductToOrderLambda
                         )
                     }
                 }
@@ -203,10 +216,7 @@ fun DefaultView(
                         val product = (preview as DetailedProductPreview).getData().data
                         EditProductCard(
                             productData = product,
-                            onRevert = {
-                                viewModel.allowPreviewChange(true)
-                                product
-                            },
+                            onRevert = { product },
                             onSave = { updatedProductDTO ->
                                 val updatedValue = viewModel.updateProduct(updatedProductDTO)
                                 val originalProductIndex = products.indexOf(product)
@@ -333,7 +343,7 @@ private fun handleDialogWindowRender(
             val product = viewModel.getActiveDialogPayload<ProductDTO>().value.getData()
             OrderProductConfirmationDialog(
                 product = product,
-                initialQuantity = viewModel.getCurrentOrderTargetProductQuantity(product) ?: 1,
+                initialQuantity = 1,
                 onConfirm = { quantity ->
                     viewModel.addProductToOrder(product, quantity)
                     viewModel.closeDialogWindow()
@@ -468,34 +478,5 @@ private fun swapOrderPreviewToCompactLayout(viewModel: DefaultViewViewModel) {
             OrderWindowPayload(order)
         )
         viewModel.setPreview<Unit>(null)
-    }
-}
-
-private fun handleBarcodeScan(viewModel: DefaultViewViewModel) {
-    val lastScannedBarcode = viewModel.getLastScannedBarcode().value
-    if (lastScannedBarcode.isBlank()) return
-
-    val settings = viewModel.getSettings().value
-    val product = viewModel.searchProducts(
-        lastScannedBarcode,
-        PagedRequest(0, 1, SortingOrder.DESCENDING, ProductsRepository.SortBy.NAME)
-    ).items.firstOrNull()
-
-    if (product == null) {
-        viewModel.setActiveDialog(
-            DialogWindowType.NEW_PRODUCT,
-            BarcodePayload(lastScannedBarcode)
-        )
-        return
-    }
-
-    when (settings.onScan) {
-        OnScan.ADD_TO_ORDER -> {
-            viewModel.addProductToOrder(product, 1)
-        }
-
-        OnScan.RESTOCK -> {
-            viewModel.showChangeProductQuantity(product)
-        }
     }
 }

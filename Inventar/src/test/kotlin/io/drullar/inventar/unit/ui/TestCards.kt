@@ -27,6 +27,7 @@ import io.drullar.inventar.unit.utils.Factory.createProduct
 import org.junit.Test
 import java.math.BigDecimal
 import java.util.Currency
+import java.util.Locale
 
 @OptIn(ExperimentalTestApi::class)
 class TestCards : AbstractUiTest() {
@@ -50,12 +51,12 @@ class TestCards : AbstractUiTest() {
                         selectedProduct = it
                         isSelected = true
                     },
-                    isSelected = isSelected,
                     selectionIsAllowed = true,
                     currency = Currency.getInstance("BGN"),
                     onDeleteRequest = { isDeleted = true },
                     onEditRequest = { /* Context menu can't be tested with current version of Compose multiplatform*/ },
                     onAddToOrderRequest = { addedProductToOrder = it },
+                    locale = Locale.getDefault()
                 )
             }
         }
@@ -107,7 +108,8 @@ class TestCards : AbstractUiTest() {
                     order = order.copy(productToQuantity = updatedMap)
                 },
                 renderContext = OrderDetailCardRenderContext.PREVIEW,
-                currency = Currency.getInstance("BGN")
+                currency = Currency.getInstance("BGN"),
+                locale = Locale.getDefault()
             )
         }
 
