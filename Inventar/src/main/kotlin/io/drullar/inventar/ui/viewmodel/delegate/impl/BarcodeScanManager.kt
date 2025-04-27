@@ -17,13 +17,13 @@ class BarcodeScanManager : BarcodeScanManagerInterface {
     private var barcodeBuffer = ""
     private var lastScannedBarcode = MutableStateFlow("")
     private val lastScanTime = MutableStateFlow<Long?>(null)
+    private var lastAppendTime: LocalDateTime? = null
 
     override fun append(character: Char) {
-        if (barcodeBuffer.length == BARCODE_LENGTH) {
-            complete()
-            return
-        }
+        if (lastAppendTime != null && LocalDateTime.now().second - lastAppendTime!!.second >= 1)
+            barcodeBuffer = ""
         barcodeBuffer += character
+        lastAppendTime = LocalDateTime.now()
     }
 
     override fun complete() {

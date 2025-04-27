@@ -41,7 +41,7 @@ fun OrderCreationWindow(
         state = rememberWindowState(
             placement = WindowPlacement.Floating,
             position = WindowPosition.Aligned(Alignment.CenterEnd),
-            size = DpSize(500.dp, 800.dp)
+            size = DpSize(500.dp, 500.dp)
         ),
         onKeyEvent = { event -> handleEvent(event, barcodeScanManager) },
         alwaysOnTop = false,
