@@ -7,11 +7,11 @@ Inventar provides the following features:
 - Order management
 - Support for barcode scanners with the following working modes:
   - Addition - Adding the product to an order by scanning it.
-  - Restock - Changing the availability of the product by scanning it.
+  - Restock - Changing the availability of the product by scanning it
 - Minimal visual statistic data
   - Show the total amount of times a product was sold for a given date range.
   - Show the amount of times a product has been sold over time for a given date range (daily, yearly, monthly period)
-- Export completed orders data in .csv format.
+- Export completed orders data in .csv format
 - Internationalisation. Supported languages:
   - English
   - Bulgarian
